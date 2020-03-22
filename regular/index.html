@@ -6,6 +6,18 @@
 </head>
 <body>
 <script>
+    const string = 'abc.dss.sds.wer';
+    const pattern = /^(...).{3}/;
+    console.log(pattern.test(string));
+
+    const mails = ['test@gmail.com', 'test1@yahoo.com.tw', 'TEST@test.edu.jp'];
+    const mailsPattern = /(\w@)(\w+\.)(.+)/;
+
+    function judgeMails (mails) {
+        return mails.map(item => mailsPattern.test(item));
+    }
+    console.log(judgeMails(mails));
+
 </script>
 </body>
 </html>
