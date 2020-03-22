@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Get-Set</title>
+</head>
+<body>
+<script>
+    class Person {
+        constructor(name) {
+            this.name = name;
+        }
+
+        get getName() {
+            return this.name;
+        }
+
+        set setName(value) {
+            this.name = value;
+        }
+    }
+
+    const member = new Person('Andy');
+
+    const test = {
+        content: ['aaa', 'bbb'],
+        get: function () {
+            return this.content;
+        },
+        set: function (value) {
+            this.content = value;
+        }
+    };
+
+    // console.log(test.get());
+    // test.set('789');
+    // console.log(test.get());
+    // console.log(member);
+    member.setName = 'Tina';
+    console.log(member.getName());
+</script>
+</body>
+</html>

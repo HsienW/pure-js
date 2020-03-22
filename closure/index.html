@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Closure</title>
+</head>
+<body>
+<div id="show-count1"></div>
+<button onclick="count1.add()">count1 add</button>
+<button onclick="count1.less()">count1 less</button>
+<br/>
+<div id="show-count2"></div>
+<button onclick="count2.add()">count2 add</button>
+<button onclick="count2.less()">count2 less</button>
+<script>
+    function CreateCount(target, value) {
+        this.value = value;
+        this.init = () => {
+            document.getElementById(target).innerHTML = this.value;
+        };
+        this.add = () => {
+            this.value++;
+            document.getElementById(target).innerHTML = this.value;
+        };
+        this.less = () => {
+            this.value--;
+            document.getElementById(target).innerHTML = this.value;
+        };
+    }
+
+    const count1 = new CreateCount('show-count1', 10);
+    const count2 = new CreateCount('show-count2', 50);
+
+    count1.init();
+    count2.init();
+</script>
+</body>
+</html>
