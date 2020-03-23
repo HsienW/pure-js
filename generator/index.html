@@ -5,25 +5,42 @@
     <title>Generator</title>
 </head>
 <body>
+    <div id="tree">
+        <h3>Login</h3>
+        <form>
+            <label for="account">Account:</label>
+            <br>
+            <input type="text" id="account" name="account" value="account-demo">
+            <br>
+            <label for="password">Password:</label>
+            <br>
+            <input type="password" id="password" name="password" value="password-demo">
+            <br><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
 <script>
-    function* getIndexA() {
+    // index
+    function* GetIndexA() {
         let index = 0;
 
-        while(true) {
+        while (true) {
             yield index++;
         }
     }
 
-    const getA = getIndexA();
+    const getA = GetIndexA();
 
     console.log(getA.next().value);
     console.log(getA.next().value);
     console.log(getA.next().value);
 
-    function* getIndexB() {
+    // use for-of
+
+    function* GetIndexB() {
         let index = 0;
 
-        while(true) {
+        while (true) {
             yield index++;
             if (index > 3) {
                 break;
@@ -31,9 +48,70 @@
         }
     }
 
-    for (let i of getIndexB()) {
+    for (let i of GetIndexB()) {
         console.log(i);
     }
+
+    // Generator in Generator
+
+    function* CreateNameA() {
+        yield 'Andy';
+        yield* CreateNameB();
+        yield 'Jack';
+    }
+
+    function* CreateNameB() {
+        yield 'Kelly';
+        yield 'Julie';
+    }
+
+    for (let i of CreateNameA()) {
+        console.log(i);
+    }
+
+    // create id
+
+    function* CreateId() {
+        let id = 0;
+
+        while (true) {
+            yield id++;
+        }
+    }
+
+    const idGenerator = CreateId();
+    const data = [
+        {name: 'Andy'},
+        {name: 'Jack'},
+        {name: 'Julie'},
+        {name: 'Kelly'},
+    ];
+
+    const newData = data.map(item => {
+        item.id = idGenerator.next().value;
+        return item;
+    });
+
+    console.log(newData);
+
+    // get html tag name
+
+    function* GetDomHandle(element) {
+        yield element;
+        element = element.firstElementChild;
+
+        while (element) {
+            yield* GetDomHandle(element);
+            element = element.nextElementSibling;
+        }
+    }
+
+    const domTree = document.getElementById('tree');
+
+    for (let element of GetDomHandle(domTree)) {
+        console.log(element.nodeName);
+    }
+
 </script>
 </body>
 </html>
