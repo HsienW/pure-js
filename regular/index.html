@@ -18,6 +18,16 @@
     }
     console.log(judgeMails(mails));
 
+    const myPhone = 'Hello my phone number is 0944-555666 thanks';
+    const phoneNumbers = ['09-88666777', '0988-666777', '0988-666-777', '02-1112222'];
+    const phonePattern = /(\d{2}|\d{4})-(\d)+(-\d|\d)+/;
+
+    function judgePhoneNumbers (phoneNumbers) {
+        return phoneNumbers.map(item => phonePattern.test(item));
+    }
+    console.log(judgePhoneNumbers(phoneNumbers));
+    console.log(myPhone.match(phonePattern));
+
 </script>
 </body>
 </html>
