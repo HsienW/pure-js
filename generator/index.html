@@ -6,6 +6,34 @@
 </head>
 <body>
 <script>
+    function* getIndexA() {
+        let index = 0;
+
+        while(true) {
+            yield index++;
+        }
+    }
+
+    const getA = getIndexA();
+
+    console.log(getA.next().value);
+    console.log(getA.next().value);
+    console.log(getA.next().value);
+
+    function* getIndexB() {
+        let index = 0;
+
+        while(true) {
+            yield index++;
+            if (index > 3) {
+                break;
+            }
+        }
+    }
+
+    for (let i of getIndexB()) {
+        console.log(i);
+    }
 </script>
 </body>
 </html>
