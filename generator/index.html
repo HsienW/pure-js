@@ -1,24 +1,31 @@
 <!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Generator</title>
 </head>
 <body>
-    <div id="tree">
-        <h3>Login</h3>
-        <form>
-            <label for="account">Account:</label>
-            <br>
-            <input type="text" id="account" name="account" value="account-demo">
-            <br>
-            <label for="password">Password:</label>
-            <br>
-            <input type="password" id="password" name="password" value="password-demo">
-            <br><br>
-            <input type="submit" value="Submit">
-        </form>
-    </div>
+<div id="tree">
+    <h3>Login</h3>
+    <form>
+        <label for="account">Account:</label>
+        <br>
+        <input type="text" id="account" name="account" value="account-demo">
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="password" id="password" name="password" value="password-demo">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+<div>
+    <h3>Lazy list</h3>
+    <ul id="lazy-list"></ul>
+    <button onclick="addLizyListItem()">Add item</button>
+</div>
 <script>
     // index
     function* GetIndexA() {
@@ -110,6 +117,36 @@
 
     for (let element of GetDomHandle(domTree)) {
         console.log(element.nodeName);
+    }
+
+    // lazy list add dom
+
+    const lizyData = [
+        {name: 'Apple'},
+        {name: 'Banana'},
+        {name: 'Pineapple'},
+        {name: 'Guava'},
+    ];
+
+    function* HandelList(item) {
+        yield renderItem(item);
+    }
+
+    // function* CreateLazyListDom(data) {
+    //     yield renderItem(data);
+    // }
+
+    function renderItem(item) {
+        const parentDom = document.getElementById('lazy-list');
+        const childDom = document.createElement('li');
+        childDom.innerHTML = item.name;
+        parentDom.appendChild(childDom);
+    }
+
+    function addLizyListItem(data) {
+        for (let item of data) {
+            HandelList().next(item);
+        }
     }
 
 </script>
