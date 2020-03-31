@@ -5,24 +5,26 @@
     <title>Generator</title>
 </head>
 <body>
-    <div id="tree">
-        <h3>Login</h3>
-        <form>
-            <label for="account">Account:</label>
-            <br>
-            <input type="text" id="account" name="account" value="account-demo">
-            <br>
-            <label for="password">Password:</label>
-            <br>
-            <input type="password" id="password" name="password" value="password-demo">
-            <br><br>
-            <input type="submit" value="Submit">
-        </form>
-    </div>
-    <div id="timer-render">
-        <h3>Timer Render</h3>
-        <ul id="timer-render-list"></ul>
-    </div>
+<div id="tree">
+    <h3>Login</h3>
+    <form>
+        <label for="account">Account:</label>
+        <br>
+        <input type="text" id="account" name="account" value="account-demo">
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="password" id="password" name="password" value="password-demo">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+<div>
+    <h3>Lazy list</h3>
+    <ul id="lazy-list"></ul>
+    <button onclick="addLizyListItem()">Add item</button>
+</div>
 <script>
     // index
     function* GetIndexA() {
@@ -84,19 +86,19 @@
     }
 
     const idGenerator = CreateId();
-    const userData = [
+    const data = [
         {name: 'Andy'},
         {name: 'Jack'},
         {name: 'Julie'},
         {name: 'Kelly'},
     ];
 
-    const newUserData = userData.map(item => {
+    const newData = data.map(item => {
         item.id = idGenerator.next().value;
         return item;
     });
 
-    console.log(newUserData);
+    console.log(newData);
 
     // get html tag name
 
@@ -116,34 +118,35 @@
         console.log(element.nodeName);
     }
 
-    // simulation render multiple items
+    // lazy list add dom
 
-    // const colorData = [
-    //     {color: 'Red'},
-    //     {color: 'Blue'},
-    //     {color: 'Yellow'},
-    //     {color: 'Gray'},
-    //     {color: 'Green'},
-    //     {color: 'Purple'},
-    //     {color: 'Black'},
-    //     {color: 'White'},
-    // ];
-    //
-    // function createTimerRenderList(listData, targetDomId, addDomType) {
-    //     function* RenderDom(listData, targetDomId, addDomType) {
-    //         yield* domItemRender(targetDomId, addDomType);
-    //     }
-    //     const renderDom = RenderDom();
+    const lizyData = [
+        {name: 'Apple'},
+        {name: 'Banana'},
+        {name: 'Pineapple'},
+        {name: 'Guava'},
+    ];
+
+    function* HandelList(item) {
+        yield renderItem(item);
+    }
+
+    // function* CreateLazyListDom(data) {
+    //     yield renderItem(data);
     // }
-    //
-    // function domItemRender(targetDomId, addDomType) {
-    //     const parentDom = document.getElementById(targetDomId);
-    //     const childDom = document.createElement(addDomType);
-    //     childDom.innerHTML = '123';
-    //     parentDom.appendChild(childDom);
-    // }
-    //
-    // console.log(createTimerRenderList(colorData, 'timer-render-list', 'li'));
+
+    function renderItem(item) {
+        const parentDom = document.getElementById('lazy-list');
+        const childDom = document.createElement('li');
+        childDom.innerHTML = item.name;
+        parentDom.appendChild(childDom);
+    }
+
+    function addLizyListItem(data) {
+        for (let item of data) {
+            HandelList().next(item);
+        }
+    }
 
 </script>
 </body>
