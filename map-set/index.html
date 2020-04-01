@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Map-Set</title>
+</head>
+<body>
+<script>
+    // Map
+    const testObj = {
+        123: '123'
+    };
+
+    const map1 = new Map();
+    const map2 = new Map([
+        ['first', 1],
+        [10, 'ten'],
+        [{sayHi: 'Hi'}, 'obj']
+    ]);
+    map1.set(
+        ['first', 1],
+        [10, 'ten'],
+    );
+    console.log(typeof testObj[123] === 'string');
+    // console.log(map1);
+    // console.log(map2);
+
+    for (let [key, value] of map2) {
+        console.log(key);
+        console.log(value);
+        console.log([key, value]);
+    }
+
+    // Array type
+    const user1 = {name: 'Peter'};
+    const user2 = {name: 'Sam'};
+    const user3 = {name: 'Cindy'};
+
+    const userList = new Map([
+        [user1, 'user1'], [user2, 'user2'], [user3, 'user3']
+    ]);
+
+    for(let [user, key] of userList) {
+        console.log(`${user.name} is ${key}`);
+    }
+    console.log(userList);
+    console.log([...userList.keys()]);
+    console.log([...userList.values()]);
+    console.log(userList.has(user1));
+    console.log(userList.size);
+    userList.delete(user2);
+    console.log(userList);
+    userList.clear();
+    console.log(userList);
+
+    //Set
+
+    const array = [1, 2, 3, 4, 5, 5, {number: 6}];
+    const set1 = new Set(array);
+    for (let i of set1) {
+        console.log(i)
+    }
+
+    set1.add(7);
+    console.log(set1);
+    console.log(set1.size);
+    set1.delete(3);
+    console.log(set1);
+</script>
+</body>
+</html>
