@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Copy</title>
+</head>
+<body>
+<script>
+    let userA = 'Andy';
+    let userB = userA; // 把原本 userA 的值, Andy 複製並存入 userB
+
+    userA = 'Billy'; // 修改 userA 的值為 Billy
+
+    console.log(userA); // Billy
+    console.log(userB);  // Andy
+
+    let userAObj = {
+        name: 'Andy'
+    };
+    let userBObj = userAObj;
+
+    userAObj.name = 'Billy';
+
+    console.log(userAObj.name); // Billy
+    console.log(userBObj.name); // Billy
+
+    let assignUserAObj = {
+        name: 'Andy'
+    };
+    let assignUserBObj = Object.assign({}, assignUserAObj);
+
+    assignUserAObj.name = 'Billy';
+
+    console.log(assignUserAObj.name); // Billy
+    console.log(assignUserBObj.name); // Andy
+
+    let operatorUserAObj = {
+        name: 'Andy'
+    };
+    let operatorUserBObj = { ...operatorUserAObj };
+
+    operatorUserAObj.name = 'Billy';
+
+    console.log(operatorUserAObj.name); // Billy
+    console.log(operatorUserBObj.name); // Andy
+
+    let stringifyUserAObj = {
+        name: 'Andy',
+        personData: {
+            sex: 'male',
+            age: 30
+        }
+    };
+    let stringifyUserBObj = { ...stringifyUserAObj };
+    let stringifyUserCObj = JSON.parse(JSON.stringify(stringifyUserAObj));
+
+    stringifyUserAObj.personData.age = 99;
+
+    console.log(stringifyUserBObj.personData.age); // 99
+    console.log(stringifyUserCObj.personData.age); // 30
+</script>
+</body>
+</html>

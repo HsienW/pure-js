@@ -40,7 +40,7 @@
         [user1, 'user1'], [user2, 'user2'], [user3, 'user3']
     ]);
 
-    for(let [user, key] of userList) {
+    for (let [user, key] of userList) {
         console.log(`${user.name} is ${key}`);
     }
     console.log(userList);
@@ -66,6 +66,24 @@
     console.log(set1.size);
     set1.delete(3);
     console.log(set1);
+
+    const demo1 = new Set([1, 2, 3, 3, 3, 4]);
+    const demo2 = new Set([2, 2, 4, 4, 5, 6, 6]);
+    const intersect = new Set([...demo1].filter(value => demo2.has(value)));
+    const union = new Set([...demo1, ...demo2]);
+    const difference1 = new Set([...demo1].filter(value => !demo2.has(value)));
+    const difference2 = new Set([...demo2].filter(value => !demo1.has(value)));
+
+    console.log('--------------');
+    console.log(intersect);
+    console.log(union);
+    console.log(difference1);
+    console.log(difference2);
+
+    const weakSetDemo = new WeakMap();
+    weakSetDemo.set({name: '123'}, 'name');
+    console.log(weakSetDemo.get({name: '123'}));
+
 </script>
 </body>
 </html>
