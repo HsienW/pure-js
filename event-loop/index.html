@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Event loops</title>
+</head>
+<body>
+<table><tbody></tbody></table>
+<script>
+    // 執行佇列 use serTimeout handle large table DOM create case
+    // 並未拆分一次執行, 創建 100000 個 DOM 將導致, 執行佇列內一個巨大的微任務跑很久
+    // const tbody = document.querySelector('tbody');
+    //
+    // for(let i=0; i<100000; i++) {
+    //     const tr = document.createElement('tr');
+    //
+    //     for(let t=0; t<6; t++) { // 拆成一行 6 格
+    //         const td = document.createElement('td');
+    //         td.appendChild(document.createTextNode(i + ',' + t));
+    //         tr.appendChild(td);
+    //     }
+    //     tbody.appendChild(tr);
+    // }
+
+    // 拆分成 100 次微任務, 釋放執行佇列跑的時間, 每次做完瀏覽器都可以跑一次 render
+    const rowCount = 100000;
+    const divide = 100;
+    const chunkSize = rowCount / divide;
+    let iteration = 0;
+
+    console.log(chunkSize * iteration);
+
+    const tbody = document.getElementsByTagName('tbody')[0];
+    setTimeout(function createRows() {
+        const base = chunkSize * iteration;
+
+        for(let i=0; i<chunkSize; i++) { // 拆成一行 6 格
+            const tr = document.createElement('tr');
+
+            for(let t=0; t<6; t++) {
+                const td = document.createElement('td');
+                td.appendChild(document.createTextNode((i + base) + ',' + t + ',' + iteration));
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+        iteration ++;
+
+        if (iteration < divide) {
+            setTimeout(createRows, 0)
+        }
+    }, 0);
+</script>
+</body>
+</html>
