@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Event loops</title>
+</head>
+<body>
+<table id="table"><tbody></tbody></table>
+<script>
+    const table = document.getElementById("table");
+    const tbody = document.querySelector('tbody');
+
+    for(let i=0; i<100; i++) {
+        const tr = document.createElement('tr');
+
+        for(let t=0; t<10; t++) {
+            const td = document.createElement('td');
+            td.appendChild(document.createTextNode(t));
+            tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+    }
+
+    table.addEventListener('click', function(event) {
+        if(event.target.tagName.toLowerCase() === 'td') {
+            event.target.style.backgroundColor = 'red';
+        }
+    })
+</script>
+</body>
+</html>
