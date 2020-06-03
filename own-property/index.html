@@ -21,6 +21,34 @@
     console.log(userA.hasOwnProperty('prop'));   // 回傳 true
     changeUserProp(userA);
     console.log(userA.hasOwnProperty('prop'));   //
+
+
+    const userB = new User();
+
+    for (let i in userB) {
+        if (userB.hasOwnProperty(i)) {
+            console.log('this is fog (' + i + ') for sure. Value: ' + userB[i]);
+        }
+        else {
+            console.log(name); // toString or something else
+        }
+    }
+
+
+    const userFakeFunc = {
+        hasOwnProperty: function() { // 被自身同名子的 function 蓋掉了
+            return false;
+        },
+        prop: 'exists'
+    };
+
+    console.log(userFakeFunc.hasOwnProperty('prop')); // 總是回傳 false
+
+    // 使用其他物件的 hasOwnProperty 和 call it with 'this' set to userFakeFunc object
+    // 此例子使用原生{} 物件當做綁入 call 來拿到的 hasOwnProperty 方法的目標
+    console.log(({}).hasOwnProperty.call(userFakeFunc, 'prop'));
+    // 用原型鍊來拿到物件原型的 hasOwnProperty 方法的目標
+    console.log(Object.prototype.hasOwnProperty.call(userFakeFunc, 'prop'));
 </script>
 </body>
 </html>
