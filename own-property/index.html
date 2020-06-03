@@ -34,7 +34,6 @@
         }
     }
 
-
     const userFakeFunc = {
         hasOwnProperty: function() { // 被自身同名子的 function 蓋掉了
             return false;
@@ -47,7 +46,7 @@
     // 使用其他物件的 hasOwnProperty 和 call it with 'this' set to userFakeFunc object
     // 此例子使用原生{} 物件當做綁入 call 來拿到的 hasOwnProperty 方法的目標
     console.log(({}).hasOwnProperty.call(userFakeFunc, 'prop'));
-    // 用原型鍊來拿到物件原型的 hasOwnProperty 方法的目標
+    // 用原型鍊來拿到物件原型的 hasOwnProperty 方法
     console.log(Object.prototype.hasOwnProperty.call(userFakeFunc, 'prop'));
 </script>
 </body>
