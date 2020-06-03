@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Own Property</title>
+</head>
+<body>
+<script>
+    // 每個 Object 的後代物件, 都有繼承 hasOwnProperty 方法
+    // hasOwnProperty 用來判斷, 某個物件是否帶有指定的自身屬性
+
+    const User = function () {
+        this.prop = 'exists';
+    }
+    const userA = new User();
+
+    function changeUserProp(target) {
+        delete target.prop;
+    }
+
+    console.log(userA.hasOwnProperty('prop'));   // 回傳 true
+    changeUserProp(userA);
+    console.log(userA.hasOwnProperty('prop'));   //
+</script>
+</body>
+</html>
