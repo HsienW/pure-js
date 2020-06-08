@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate New</title>
+</head>
+<body>
+<script>
+    const simulateNew = function (target, ...arguments) {
+        if(typeof target !== 'function'){
+            throw 'simulateNew function the first param must be a function';
+        }
+
+        let newObject = {};
+        newObject.__proto__ = Object.create(target.prototype);
+        let result = target.apply(newObject, ...arguments);
+
+        let isObject = typeof result === 'object' && typeof result !== null;
+        let isFunction = typeof result === 'function';
+
+        return isObject || isFunction ? result : newObject;
+    }
+
+    const Person = function (name) {
+        this.name = name;
+    }
+
+    const andy = simulateNew(Person, 'Andy');
+
+    console.log(andy);
+</script>
+</body>
+</html>
