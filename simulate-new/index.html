@@ -6,28 +6,37 @@
 </head>
 <body>
 <script>
-    const simulateNew = function (target, ...arguments) {
-        if(typeof target !== 'function'){
-            throw 'simulateNew function the first param must be a function';
-        }
-
-        let newObject = {};
-        newObject.__proto__ = Object.create(target.prototype);
-        let result = target.apply(newObject, ...arguments);
-
-        let isObject = typeof result === 'object' && typeof result !== null;
-        let isFunction = typeof result === 'function';
-
-        return isObject || isFunction ? result : newObject;
-    }
+    // const simulateNew = function (target, ...arguments) {
+    //     if (typeof target !== 'function') {
+    //         throw 'simulateNew function the first param must be a function';
+    //     }
+    //
+    //     let newObject = {};
+    //     newObject.__proto__ = Object.create(target.prototype);
+    //     let result = target.apply(newObject, ...arguments);
+    //
+    //     let isObject = typeof result === 'object' && typeof result !== null;
+    //     let isFunction = typeof result === 'function';
+    //
+    //     return isObject || isFunction ? result : newObject;
+    // }
 
     const Person = function (name) {
         this.name = name;
     }
 
-    const andy = simulateNew(Person, 'Andy');
+    // const andy = simulateNew(Person, 'Andy');
+    // console.log(andy);
 
-    console.log(andy);
+    function objectFactory() {
+        let obj = {};
+        obj.Constructor = [].shift.call(arguments);
+        obj.__proto__ = obj.Constructor.prototype;
+        obj.Constructor.apply(obj, arguments);
+        return obj;
+    }
+
+    const billy = objectFactory(Person, 'Andy');
 </script>
 </body>
 </html>
