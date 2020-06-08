@@ -20,7 +20,7 @@
     //
     //     return isObject || isFunction ? result : newObject;
     // }
-
+    //
     const Person = function (name) {
         this.name = name;
     }
@@ -30,13 +30,17 @@
 
     function objectFactory() {
         let obj = {};
-        obj.Constructor = [].shift.call(arguments);
-        obj.__proto__ = obj.Constructor.prototype;
-        obj.Constructor.apply(obj, arguments);
+        console.log([].shift.call(arguments))
+
+        let Constructor = [].shift.call(arguments); // 拿取傳入的第一個引數, 就是 Person 建構函式
+        obj.__proto__ = Constructor.prototype;
+        Constructor.apply(obj, arguments);
         return obj;
     }
 
     const billy = objectFactory(Person, 'Andy');
+
+
 </script>
 </body>
 </html>
