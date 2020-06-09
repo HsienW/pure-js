@@ -23,32 +23,48 @@
     //
     const Person = function (name) {
         this.name = name;
+        return ['123'];
     }
 
-    Person.sayYourName = function () {
+    Person.prototype.sayYourName = function () {
         console.log('I am ' + this.name);
     }
 
     // const andy = simulateNew(Person, 'Andy');
-    // console.log(andy);
+    // console.log(Person.prototype.constructor);
 
-    function objectFactory() {
-        let obj = {};
+    function objectFactory(constructor, ...arguments) {
+        if (typeof constructor !== 'function') {
+            throw 'objectFactory function the first param must be a function';
+        }
+
+        let newObj = {};
 
         // 拿取傳入的第一個引數, 就是 Person 建構函式
-        let Constructor = [].shift.call(arguments);
+        // let Constructor = [].shift.call(arguments);
+        // console.log(constructor);
+        // console.log(constructor.prototype);
         // 為了拿到原型的屬性, 把新 obj 的原型鍊(__proto__) 指向 Person 的 prototype 對應建構式物件
-        obj.__proto__ = Constructor.prototype;
+
+        newObj.__proto__ = constructor.prototype;
         // 用 apply 修改 Constructor (Person 函式)的 this 指向新 obj 物件, 並帶入其他引數
-        Constructor.apply(obj, arguments);
-        // 最後返回 obj 物件
-        return obj;
+        let newConstructorObj = constructor.apply(newObj, arguments);
+
+        let isObject = typeof newConstructorObj === 'object' && newConstructorObj !== null;
+        let isFunction = typeof newConstructorObj === 'function';
+
+        if(isObject || isFunction){
+            return newConstructorObj;
+        }
+        return newObj;
     }
 
-    const billy = objectFactory(Person, 'Billy');
+    const billyA = objectFactory(Person, 'Billy');
+    const billyB = new Person('Billy');
 
-    // console.log(billy)
-    billy.sayYourName();
+    console.log(billyA);
+    console.log(billyB);
+    // billy.sayYourName();
 
 
 </script>
