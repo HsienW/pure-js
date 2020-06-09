@@ -25,6 +25,10 @@
         this.name = name;
     }
 
+    Person.sayYourName = function () {
+        console.log('I am ' + this.name);
+    }
+
     // const andy = simulateNew(Person, 'Andy');
     // console.log(andy);
 
@@ -43,7 +47,8 @@
 
     const billy = objectFactory(Person, 'Billy');
 
-    console.log(billy)
+    // console.log(billy)
+    billy.sayYourName();
 
 
 </script>
