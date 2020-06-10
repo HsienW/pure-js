@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Bind</title>
+</head>
+<body>
+<script>
+
+    const person = {
+        name: 'Andy'
+    }
+
+    function sayYourName() {
+        return this.name;
+    }
+
+    function haveArgument(phone, sex, saySome) {
+        console.log(phone);
+        console.log(sex);
+        console.log(saySome);
+    }
+
+    Function.prototype.customBind = function (context) {
+        // call customBind 的是 haveArgument, 所以 this 指向 haveArgument
+        let self = this;
+
+        // 這層的 arguments 是綁定時丟入的參數而來的, 所以是 person, '0912'
+        let getArguments = Array.prototype.slice.call(arguments, 1);
+
+        return function () {
+            // 這層 function 是已經被指向 testD 了, 所以 arguments 是從 call testD 時給的
+            let bindArgs = Array.prototype.slice.call(arguments);
+            return self.apply(context);
+        }
+    }
+
+    const testA = sayYourName.bind(person)
+    // const testB = sayYourName.newBind(person)
+    const testC = haveArgument.bind(person, '0912')
+    const testD = haveArgument.customBind(person, '0912')
+    testD(20, 'hello boy');
+    // console.log(testA());
+    // console.log(testB());
+    // console.log(test());
+</script>
+</body>
+</html>
