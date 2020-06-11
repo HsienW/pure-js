@@ -16,9 +16,9 @@
     }
 
     function haveArgument(phone, sex, saySome) {
-        console.log(phone);
-        console.log(sex);
-        console.log(saySome);
+        // console.log(phone);
+        // console.log(sex);
+        // console.log(saySome);
     }
 
     Function.prototype.customBind = function (context) {
@@ -35,14 +35,62 @@
         }
     }
 
-    const testA = sayYourName.bind(person)
-    // const testB = sayYourName.newBind(person)
-    const testC = haveArgument.bind(person, '0912')
-    const testD = haveArgument.customBind(person, '0912')
+    const testA = sayYourName.bind(person);
+    // const testB = sayYourName.newBind(person);
+    const testC = haveArgument.bind(person, '0912');
+    const testD = haveArgument.customBind(person, '0912');
     testD(20, 'hello boy');
     // console.log(testA());
     // console.log(testB());
     // console.log(test());
+
+    monkey = {
+        sex: 'male'
+    }
+
+    animal = 'test';
+
+    function Animal(name, age) {
+        this.type = 'animal';
+        this.name = name;
+        this.age = age;
+        console.log(name);
+        console.log(age);
+    }
+
+    Animal.prototype.friend = 'human';
+
+    const createMonkey = Animal.bind(monkey, 'Joe');
+    const monkeyJoeObj = new createMonkey('2');
+
+    // console.log(monkeyJoeObj.friend);
+    // console.log(monkeyJoeObj.type);
+
+    // Function.prototype.customBindTwo = function (context) {
+    //     // call customBind 的是 haveArgument, 所以 this 指向 haveArgument
+    //     let self = this;
+    //
+    //     // 這層的 arguments 是綁定時丟入的參數而來的, 所以是 person, '0912'
+    //     let getArguments = Array.prototype.slice.call(arguments, 1);
+    //
+    //     let newFunction = function () {
+    //         // 這層 function 是已經被指向 testD 了, 所以 arguments 是從 call testD 時給的
+    //         let bindArgs = Array.prototype.slice.call(arguments);
+    //
+    //
+    //         console.log('===========================');
+    //         console.log(this instanceof newFunction);
+    //         return self.apply(this instanceof newFunction ? this : context, arguments.concat(bindArgs));
+    //         // return self.apply(context);
+    //     }
+    //
+    //     newFunction.prototype = this.prototype;
+    //     return newFunction;
+    // }
+    //
+    // const Human = haveArgument.customBindTwo(person, '0912');
+    // const PersonNewTest = new Human('18');
+
 </script>
 </body>
 </html>
