@@ -20,13 +20,28 @@
     }
 
     function haveArgument(phone, year, saySome) {
-        console.log(this);
-        console.log('phone: ' + phone);
-        console.log('year: '+ year);
-        console.log('saySome: ' + saySome);
+        // console.log(this);
+        // console.log('phone: ' + phone);
+        // console.log('year: ' + year);
+        // console.log('saySome: ' + saySome);
     }
 
+    // bind 本身支持 Currying (柯里化)
+    // Curry 就是在 call function 時只傳遞一部分參數進行使用
+    // 而 function 會返回一個 new function 去處理剩下的參數
+
+    function curry(x, y) {
+        return function (y) {
+            console.log(x * y);
+        }
+    }
+    const curryA = curry(2);
+    curryA(3) // 6
+
+    curry(4)(5) // 20
+
     Function.prototype.customBind = function (context) {
+        // 要先存起來 this, 不然在執行綁定完成的 function 時, 內部 this 會指向 window
         // call customBind 的是 haveArgument, 所以 this 指向 haveArgument
         let self = this;
 
@@ -50,8 +65,6 @@
     // testD(20, 'I am boy');
 
     const testE = new testC(36, 'I am women');
-
-    console.log(testE);
 
     // monkey = {
     //     sex: 'male'
