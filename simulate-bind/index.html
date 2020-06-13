@@ -7,25 +7,6 @@
 <body>
 <script>
 
-    const boy = {
-        name: 'Andy'
-    }
-
-    const girl = {
-        name: 'Ann'
-    }
-
-    function sayYourName() {
-        return this.name;
-    }
-
-    function haveArgument(phone, year, saySome) {
-        // console.log(this);
-        // console.log('phone: ' + phone);
-        // console.log('year: ' + year);
-        // console.log('saySome: ' + saySome);
-    }
-
     // bind 本身支持 Currying (柯里化)
     // Curry 就是在 call function 時只傳遞一部分參數進行使用
     // 而 function 會返回一個 new function 去處理剩下的參數
@@ -35,83 +16,63 @@
             console.log(x * y);
         }
     }
+
     const curryA = curry(2);
     curryA(3) // 6
 
     curry(4)(5) // 20
 
+    const boy = {
+        name: 'Andy'
+    }
+
+    const girl = {
+        name: 'Ann'
+    }
+
+    function haveArgument(phone, year, saySome) {
+        console.log(this);
+        console.log('phone: ' + phone);
+        console.log('year: ' + year);
+        console.log('saySome: ' + saySome);
+    }
+
     Function.prototype.customBind = function (context) {
+        // 先判斷 constructor 是否為 function
+        if (typeof context !== "function") {
+            throw 'customBind function the first param must be a function';
+        }
+
         // 要先存起來 this, 不然在執行綁定完成的 function 時, 內部 this 會指向 window
-        // call customBind 的是 haveArgument, 所以 this 指向 haveArgument
+        // 傳入 customBind 的是 context, 所以 this 指向將要被綁定的那個 object (第一個參數)
         let self = this;
 
-        // 拿取 call bind function 被傳入的, this 以外的其他參數
+        // 拿取 call bind function 被傳入的, this 以外的其他參數, 所以 [1] 開始
         // 這層的 arguments 是綁定時丟入的參數而來的, 所以是 person, '0912'
         let callBindArguments = Array.prototype.slice.call(arguments, 1);
 
-        return function newBindFunction() {
-            // 拿取 return function 被傳入的其他參數
+        let newBindFunction = function () {
+            // 拿取 return function 被傳入的其他參數, 柯里化的第2層
             // 這層 function 是已經被指向 testD 了, 所以 arguments 是從 call testD 時給的, 所以是 20, 'hello boy'
-            let callReturnArguments = Array.prototype.slice.call(arguments);
-            return self.apply(context, callBindArguments.concat(callReturnArguments));
+            let callCurryArguments = Array.prototype.slice.call(arguments);
+
+            //只要使用的是 new, this 的 constructor 一定指向構造函數, 所以 this.constructor === self 一定為true
+            //用來區分當前 call 是 new 還是一般呼叫
+            //是 new 時, this 指向 new 出來的 object, 把它丟入 apply 中
+            //是一般呼叫時, this 指向要使用 bind 的 object
+            self.apply(this.constructor === self ? this : context, callBindArguments.concat(callCurryArguments));
         }
+
+        newBindFunction.prototype = self.prototype;
+        return newBindFunction;
     }
 
-    // const testA = sayYourName.bind(person);
-    // const testB = sayYourName.newBind(person);
-    const testC = haveArgument.bind(girl, '0912');
-    const testD = haveArgument.customBind(boy, '0988');
-    testC(18, 'I am girl');
-    // testD(20, 'I am boy');
+    const testA = haveArgument.bind(girl, '0912');
+    const testB = haveArgument.customBind(boy, '0988');
+    testA(18, 'I am girl');
+    testB(20, 'I am boy');
 
-    const testE = new testC(36, 'I am women');
-
-    // monkey = {
-    //     sex: 'male'
-    // }
-    //
-    // animal = 'test';
-    //
-    // function Animal(name, age) {
-    //     this.type = 'animal';
-    //     this.name = name;
-    //     this.age = age;
-    //     console.log(name);
-    //     console.log(age);
-    // }
-    //
-    // Animal.prototype.friend = 'human';
-    //
-    // const createMonkey = Animal.bind(monkey, 'Joe');
-    // const monkeyJoeObj = new createMonkey('2');
-
-    // console.log(monkeyJoeObj.friend);
-    // console.log(monkeyJoeObj.type);
-
-    // Function.prototype.customBindTwo = function (context) {
-    //     // call customBind 的是 haveArgument, 所以 this 指向 haveArgument
-    //     let self = this;
-    //
-    //     // 這層的 arguments 是綁定時丟入的參數而來的, 所以是 person, '0912'
-    //     let getArguments = Array.prototype.slice.call(arguments, 1);
-    //
-    //     let newFunction = function () {
-    //         // 這層 function 是已經被指向 testD 了, 所以 arguments 是從 call testD 時給的
-    //         let bindArgs = Array.prototype.slice.call(arguments);
-    //
-    //
-    //         console.log('===========================');
-    //         console.log(this instanceof newFunction);
-    //         return self.apply(this instanceof newFunction ? this : context, arguments.concat(bindArgs));
-    //         // return self.apply(context);
-    //     }
-    //
-    //     newFunction.prototype = this.prototype;
-    //     return newFunction;
-    // }
-    //
-    // const Human = haveArgument.customBindTwo(person, '0912');
-    // const PersonNewTest = new Human('18');
+    const testC = new testB(36, 'I am women');
 
 </script>
 </body>
