@@ -38,7 +38,7 @@
     }
 
     Function.prototype.customBind = function (context) {
-        // 先判斷 constructor 是否為 function
+        // 先判斷 context 是否為 function
         if (typeof context !== "function") {
             throw 'customBind function the first param must be a function';
         }
@@ -63,6 +63,7 @@
             self.apply(this.constructor === self ? this : context, callBindArguments.concat(callCurryArguments));
         }
 
+        //將 return function prototype 改成傳入要 bind 的 context 的 prototype, new 出來的 object 繼承 context 原型中的屬性
         newBindFunction.prototype = self.prototype;
         return newBindFunction;
     }
