@@ -40,7 +40,7 @@
     Function.prototype.customBind = function (context) {
         // 先判斷 context 是否為 function
         if (typeof context !== "function") {
-            throw 'customBind function the first param must be a function';
+            throw 'customBind the first param must be a function';
         }
 
         // 要先存起來 this, 不然在執行綁定完成的 function 時, 內部 this 會指向 window
@@ -50,6 +50,10 @@
         // 拿取 call bind function 被傳入的, this 以外的其他參數, 所以 [1] 開始
         // 這層的 arguments 是綁定時丟入的參數而來的, 所以是 person, '0912'
         let callBindArguments = Array.prototype.slice.call(arguments, 1);
+
+        // 建立存放 prototype 的中介層 function, 用來存 context 原始的 prototype
+        // 避免使用 new 出來的 object 不小心修改到原型鍊(__proto__)的 value, 導致大家跟著被改變
+        let backupPrototype = function () {};
 
         let newBindFunction = function () {
             // 拿取 return function 被傳入的其他參數, 柯里化的第2層
@@ -63,8 +67,11 @@
             self.apply(this.constructor === self ? this : context, callBindArguments.concat(callCurryArguments));
         }
 
-        //將 return function prototype 改成傳入要 bind 的 context 的 prototype, new 出來的 object 繼承 context 原型中的屬性
-        newBindFunction.prototype = self.prototype;
+        // 先把 self.prototype 指給 backupPrototype 做中介層暫存
+        // 在將 newBindFunction.prototype 透過 new backupPrototype 的方式, 變成 new 出來的 object 繼承 context 原型中的屬性
+        // 這樣就在原型鍊中做了一層阻擋
+        backupPrototype.prototype = self.prototype;
+        newBindFunction.prototype = new backupPrototype();
         return newBindFunction;
     }
 
