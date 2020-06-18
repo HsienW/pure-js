@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Call Apply</title>
+</head>
+<body>
+<script>
+
+    const girl = {
+        name: 'Ann'
+    }
+
+    function test(sex, year) {
+        console.log(this);
+        console.log(sex);
+        console.log(year);
+    }
+
+    Function.prototype.customCall = function (object) {
+        // 拿取要修改 this 的 object 之外的其他引數, 所以例子是 'girl', 18
+        let saveArguments = Array.prototype.slice.call(arguments, 1)
+
+        // 對 object 先新增新屬性 thisFunction, 用來暫存原本的 this 這裡指向 test function
+        object.thisFunction = this;
+
+        // 執行暫存的 thisFunction (test function), 並解構其餘的引數, 之後再傳入給 thisFunction
+        object.thisFunction(...saveArguments);
+
+        // 移除暫存的 thisFunction 屬性, 不然每 call 都會增加一個屬性
+        delete object.thisFunction;
+    }
+
+    test.call(girl, 'girl', 18); // girl, 'girl', 18
+    test.customCall(girl, 'girl', 18); // girl, 'girl', 18
+
+</script>
+</body>
+</html>
