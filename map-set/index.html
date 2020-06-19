@@ -6,83 +6,133 @@
 </head>
 <body>
 <script>
-    // Map
-    const testObj = {
-        123: '123'
-    };
 
+    // Initial
+    const map = new Map();
+
+    // Use set()
     const map1 = new Map();
+    map1.set('name1', 'Andy');
+    map1.set('name2', 'Billy');
+    console.log(map1); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
+
+    // Init setting value
     const map2 = new Map([
-        ['first', 1],
-        [10, 'ten'],
-        [{sayHi: 'Hi'}, 'obj']
+        ['name', 'Andy'],
+        ['name2', 'Billy']
     ]);
-    map1.set(
-        ['first', 1],
-        [10, 'ten'],
-    );
-    console.log(typeof testObj[123] === 'string');
-    // console.log(map1);
-    // console.log(map2);
+    console.log(map2); // Map(2) {"name" => "Andy", "name2" => "Billy"}
 
-    for (let [key, value] of map2) {
-        console.log(key);
-        console.log(value);
-        console.log([key, value]);
+    // Object change to Map
+    const object = {
+        name1: 'Andy',
+        name2: 'Billy'
     }
+    const map3 = new Map(Object.entries(object));
+    console.log(map3); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
 
-    // Array type
-    const user1 = {name: 'Peter'};
-    const user2 = {name: 'Sam'};
-    const user3 = {name: 'Cindy'};
+    // Map change to Object
+    const obj = Object.fromEntries(map3);
+    console.log(obj); // {name1: "Andy", name2: "Billy"}
 
-    const userList = new Map([
-        [user1, 'user1'], [user2, 'user2'], [user3, 'user3']
+    // has: 用來檢查是否有個 key 存在
+    const map4 = new Map([
+        ['name', 'Andy'],
+        ['name2', 'Billy']
     ]);
+    console.log(map4.has('name'));// false
+    console.log(map4.has('name123')); // true
 
-    for (let [user, key] of userList) {
-        console.log(`${user.name} is ${key}`);
-    }
-    console.log(userList);
-    console.log([...userList.keys()]);
-    console.log([...userList.values()]);
-    console.log(userList.has(user1));
-    console.log(userList.size);
-    userList.delete(user2);
-    console.log(userList);
-    userList.clear();
-    console.log(userList);
+    // get: 通過 key 取得 item value
+    console.log(map4.get('name')); // "Andy"
 
-    //Set
+    // size: 取得當下存在 Map 中有多少 item
+    console.log(map4.size); // 2
 
-    const array = [1, 2, 3, 4, 5, 5, {number: 6}];
-    const set1 = new Set(array);
-    for (let i of set1) {
-        console.log(i)
-    }
+    // delete: 通過 key 刪除某個 item
+    map4.delete('name2');
+    console.log(map4) // Map(1) {"name" => "Andy"}
 
-    set1.add(7);
-    console.log(set1);
-    console.log(set1.size);
-    set1.delete(3);
-    console.log(set1);
-
-    const demo1 = new Set([1, 2, 3, 3, 3, 4]);
-    const demo2 = new Set([2, 2, 4, 4, 5, 6, 6]);
-    const intersect = new Set([...demo1].filter(value => demo2.has(value)));
-    const union = new Set([...demo1, ...demo2]);
-    const difference1 = new Set([...demo1].filter(value => !demo2.has(value)));
-    const difference2 = new Set([...demo2].filter(value => !demo1.has(value)));
-
-    console.log('--------------');
-    console.log(intersect);
-    console.log(union);
-    console.log(difference1);
-    console.log(difference2);
-
-    const weakSetDemo = new WeakMap();
-    weakSetDemo.set({name: '123'}, 'name');
-    console.log(weakSetDemo.get({name: '123'}));
+    // clear: 清空整個 Map
+    map4.clear();
+    console.log(map4); // Map(0) {}
+    // // Map
+    // const testObj = {
+    //     123: '123'
+    // };
+    //
+    // const map1 = new Map();
+    // const map2 = new Map([
+    //     ['first', 1],
+    //     [10, 'ten'],
+    //     [{sayHi: 'Hi'}, 'obj']
+    // ]);
+    // map1.set(
+    //     ['first', 1],
+    //     [10, 'ten'],
+    // );
+    // console.log(typeof testObj[123] === 'string');
+    // // console.log(map1);
+    // // console.log(map2);
+    //
+    // for (let [key, value] of map2) {
+    //     console.log(key);
+    //     console.log(value);
+    //     console.log([key, value]);
+    // }
+    //
+    // // Array type
+    // const user1 = {name: 'Peter'};
+    // const user2 = {name: 'Sam'};
+    // const user3 = {name: 'Cindy'};
+    //
+    // const userList = new Map([
+    //     [user1, 'user1'], [user2, 'user2'], [user3, 'user3']
+    // ]);
+    //
+    // for (let [user, key] of userList) {
+    //     console.log(`${user.name} is ${key}`);
+    // }
+    // console.log(userList);
+    // console.log([...userList.keys()]);
+    // console.log([...userList.values()]);
+    // console.log(userList.has(user1));
+    // console.log(userList.size);
+    // userList.delete(user2);
+    // console.log(userList);
+    // userList.clear();
+    // console.log(userList);
+    //
+    // //Set
+    //
+    // const array = [1, 2, 3, 4, 5, 5, {number: 6}];
+    // const set1 = new Set(array);
+    // for (let i of set1) {
+    //     console.log(i)
+    // }
+    //
+    // set1.add(7);
+    // console.log(set1);
+    // console.log(set1.size);
+    // set1.delete(3);
+    // console.log(set1);
+    //
+    // const demo1 = new Set([1, 2, 3, 3, 3, 4]);
+    // const demo2 = new Set([2, 2, 4, 4, 5, 6, 6]);
+    // const intersect = new Set([...demo1].filter(value => demo2.has(value)));
+    // const union = new Set([...demo1, ...demo2]);
+    // const difference1 = new Set([...demo1].filter(value => !demo2.has(value)));
+    // const difference2 = new Set([...demo2].filter(value => !demo1.has(value)));
+    //
+    // console.log('--------------');
+    // console.log(intersect);
+    // console.log(union);
+    // console.log(difference1);
+    // console.log(difference2);
+    //
+    // const weakSetDemo = new WeakMap();
+    // weakSetDemo.set({name: '123'}, 'name');
+    // console.log(weakSetDemo.get({name: '123'}));
 
 </script>
 </body>
