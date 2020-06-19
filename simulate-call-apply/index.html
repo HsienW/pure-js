@@ -36,11 +36,11 @@
         delete object.thisFunction;
     }
 
-    // test.call('test', 'girl', 18); // test, 'girl', 18
-    // test.customCall('test', 'girl', 18); // test, 'girl', 18
-    //
-    // test.call(girl, 'girl', 18); // girl, 'girl', 18
-    // test.customCall(girl, 'girl', 18); // girl, 'girl', 18
+    test.call('test', 'girl', 18); // test, 'girl', 18
+    test.customCall('test', 'girl', 18); // test, 'girl', 18
+
+    test.call(girl, 'girl', 18); // girl, 'girl', 18
+    test.customCall(girl, 'girl', 18); // girl, 'girl', 18
 
 
     Function.prototype.customApply = function (object, argumentArray) {
@@ -66,11 +66,11 @@
 
     test.apply('test', ['girl', 18]); // test, 'girl', 18
     test.customApply('test', ['girl', 18]); // test, 'girl', 18
-    test.customApply('test', []); // test, undefined', undefined
+    test.customApply('test', []); // test, undefined, undefined
 
     test.apply(girl, ['girl', 18]); // girl, 'girl', 18
     test.customApply(girl, ['girl', 18]); // girl, 'girl', 18
-    test.customApply(girl, []); // girl, undefined', undefined
+    test.customApply(girl, []); // girl, undefined, undefined
 
 </script>
 </body>
