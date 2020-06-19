@@ -35,11 +35,20 @@
     const obj = Object.fromEntries(map3);
     console.log(obj); // {name1: "Andy", name2: "Billy"}
 
-    // has: 用來檢查是否有個 key 存在
+
+    // Map 有的屬性操作
     const map4 = new Map([
         ['name', 'Andy'],
         ['name2', 'Billy']
     ]);
+
+    // keys: 取得 Map 當前全部的 key
+    console.log(map4.keys()); // MapIterator {"name", "name2"}
+
+    // values: 取得 Map 當前全部的 key
+    console.log(map4.values()); // MapIterator {"Andy", "Billy"}
+
+    // has: 用來檢查是否有個 key 存在
     console.log(map4.has('name'));// false
     console.log(map4.has('name123')); // true
 
@@ -56,6 +65,60 @@
     // clear: 清空整個 Map
     map4.clear();
     console.log(map4); // Map(0) {}
+
+    const map5 = new Map([
+        ['name', 'Andy'],
+        ['name2', 'Billy'],
+        ['name3', 'Billy'],
+        ['name4', 'Killy']
+    ]);
+
+    // 第一個參數是 value, 第二個是 key
+    map5.forEach((value, key) => {
+        console.log(`${key}: ${value}`)
+    })
+
+    for (const [key, value] of map5) {
+        console.log(`${key}: ${value}`)
+    }
+    // 兩個都會 log 出一樣的結過
+    // name: Andy
+    // name2: Billy
+    // name3: Billy
+    // name4: Killy
+
+    // Map 設定不同 type 當 key
+    const map6 = new Map([
+        ['1', 'Andy'],
+        [1, 'Billy'],
+        [true, 'Killy'],
+    ]);
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+
+    map6.set('1', 'Change');
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+
+    map6.set('2', 'Change');
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+
+
+    // Map Object 當 key 的地雷
+    const map7 = new Map();
+    map7.set({}, 'Andy')
+    map7.set({}, 'Billy')
+
+    // 每 set 一個 {} 其實相當於 new Object
+    console.log(map7); // Map(2) {{…} => "Andy", {…} => "Billy"}
+
+    const obj2 = {}
+    const map8 = new Map();
+
+    map8.set(obj2, 'Andy')
+    map8.set(obj2, 'Billy')
+
+    // obj2 對 Mpa 來說相當於同一個 key 所以 value 產生後蓋前的問題
+    console.log(map8); // Map(1) {{…} => "Billy"}
+
     // // Map
     // const testObj = {
     //     123: '123'
