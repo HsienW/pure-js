@@ -7,10 +7,83 @@
 <body>
 <script>
 
+    /** Stack **/
+
+    const Stack = function () {
+        let item = [];
+
+        this.push = function (target) {
+            item.push(target);
+        }
+        this.pop = function () {
+            return item.pop();
+        }
+        this.peek = function () {
+            return item[item.length - 1];
+        }
+        this.isEmpty = function () {
+            return item.length === 0;
+        }
+        this.size = function () {
+            return item.length;
+        }
+        this.clear = function () {
+            return item = [];
+        }
+    }
+
+    function change2(number) {
+        let stack = new Stack();
+        let cacl;
+        let output = '';
+
+        while (number > 0) {
+            cacl = Math.floor(number % 2);
+            stack.push(cacl);
+            number = Math.floor(number / 2);
+        }
+
+        while (!stack.isEmpty()) {
+            output += stack.pop().toString();
+        }
+
+        return output;
+    }
+
     /** Queue **/
-    //創建元素為一個 Object
+
+    const Queue = function () {
+        let item = [];
+
+        this.content = function () {
+            return item;
+        }
+        this.push = function (target) {
+            item.push(target);
+        }
+        this.shift = function () {
+            return item.shift();
+        }
+        this.peek = function () {
+            return item[item.length - 1];
+        }
+        this.isEmpty = function () {
+            return item.length === 0;
+        }
+        this.size = function () {
+            return item.length;
+        }
+        this.clear = function () {
+            return item = [];
+        }
+    }
+
+    console.log(change2(209));
+
+    /** Priority Queue **/
+    //創建一個 Object
     function User(name, priority) {
-        this.name = name; //元素
+        this.name = name; // item
         this.priority = priority; //優先順序
     }
 
@@ -49,7 +122,7 @@
             //不是空的, 迴圈歷遍佇列, 比較優先值
             for (let i = 0; i < items.length; i++) {
 
-                // 迴圈佇列, 如果優先順序小於當前 i 位置元素, 就插入
+                // 迴圈佇列, 如果優先順序小於當前 i 位置 item, 就插入
                 if (priority < items[i].priority) {
                     items.splice(i, 0, queueObj);
                     // 表示 Object 已被排入佇列
@@ -70,6 +143,40 @@
     queue.enqueue('Andy', 3);
     queue.enqueue('Billy', 2);
     queue.enqueue('Camila', 1);
+
+
+    /** Circular Queue **/
+
+
+    function circular(list, number) {
+        //創建一個空佇列
+        let queue = new Queue()
+
+        //把 list item 全部都先放入佇列
+        for (let i = 0; i < list.length; i++) {
+            queue.push(list[i]);
+        }
+
+        //開始迴圈直到佇列內剩1個
+        while (queue.size() > 1) {
+
+            //開始每次都歷遍一次 list 全部
+            for (let i = 0; i < number; i++) {
+                //每次歷遍都把第一個移到最後一個
+                queue.push(queue.shift());
+            }
+
+            //每次歷遍完, 都移除第一個 item
+            let removeSomeOne = queue.shift();
+            console.log('被刪除的是: ' + removeSomeOne);
+        }
+
+        return queue.shift();
+    }
+
+    const user = ['Andy', 'Billy', 'Camila', 'David', 'Emily', 'Frank'];
+    const startCircular = circular(user, 9)
+    console.log('最後剩下的是: ' + startCircular);
 </script>
 </body>
 </html>
