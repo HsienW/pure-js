@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Basic algorithm</title>
+</head>
+<body>
+<script>
+
+    /** Queue **/
+    //創建元素為一個 Object
+    function User(name, priority) {
+        this.name = name; //元素
+        this.priority = priority; //優先順序
+    }
+
+    function PriorityQueue() {
+        let items = [];
+
+        this.dequeue = function () {
+            return items.shift();
+        };
+        this.front = function () {
+            return items[0];
+        };
+        this.isEmpty = function () {
+            return items.length === 0;
+        };
+        this.size = function () {
+            return items.length;
+        };
+        this.clear = function () {
+            items = [];
+        };
+        this.enqueue = function (name, priority) {
+            //建立佇列 Object
+            let queueObj = new User(name, priority);
+
+            // Object 是否已經有被排入佇列
+            let isEnqueue = false;
+
+            //如果佇列是空的, 直接插入
+            if (this.isEmpty()) {
+                items.push(queueObj);
+                console.log(items);
+                return
+            }
+
+            //不是空的, 迴圈歷遍佇列, 比較優先值
+            for (let i = 0; i < items.length; i++) {
+
+                // 迴圈佇列, 如果優先順序小於當前 i 位置元素, 就插入
+                if (priority < items[i].priority) {
+                    items.splice(i, 0, queueObj);
+                    // 表示 Object 已被排入佇列
+                    isEnqueue = true;
+                    return
+                }
+            }
+
+            // 如果迴圈一圈, 都沒有找到能插入的位置, 直接插入佇列最後
+            if (!isEnqueue) {
+                items.push(queueObj);
+            }
+            console.log(items);
+        };
+    }
+
+    const queue = new PriorityQueue()
+    queue.enqueue('Andy', 3);
+    queue.enqueue('Billy', 2);
+    queue.enqueue('Camila', 1);
+</script>
+</body>
+</html>
