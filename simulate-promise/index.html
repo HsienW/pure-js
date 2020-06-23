@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Promise</title>
+</head>
+<body>
+<script>
+
+    /** Simple Promise **/
+
+    function customPromise(callback) {
+        // promise 當前的 status
+        this.status = 'pending';
+
+        // 用來存放 resolve or reject 結果的 value 變數
+        this.value;
+
+        this.resolve = function (respond) {
+            if (this.status === 'pending') {
+                this.status = 'success';
+                this.value = respond;
+            }
+        }
+
+        this.reject = function (respond) {
+            if (this.status === 'pending') {
+                this.status = 'reject';
+                this.value = respond;
+            }
+        }
+
+        // call 丟入的 callback 並給它 resolve & reject
+        try {
+            callback(this.resolve, this.reject);
+        } catch (error) {
+            this.reject(error);
+        }
+
+        this.then = function (success, failed) {
+            if (this.status === 'success') {
+                return success(this.value);
+            }
+            if (this.status === 'reject') {
+                return failed(this.value);
+            }
+        }
+        this.catch = function (callback) {
+            this.then(null, callback);
+        }
+    }
+</script>
+</body>
+</html>
