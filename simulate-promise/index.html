@@ -7,10 +7,10 @@
 <body>
 <script>
 
-    /** Simple Promise **/
+    /**  Version-1 Promise **/
 
     function customPromise(callback) {
-        // promise 當前的 status
+        // promise 初始的 status
         this.status = 'pending';
 
         // 用來存放 resolve or reject 結果的 value 變數
@@ -49,6 +49,110 @@
             this.then(null, callback);
         }
     }
+
+    /** Version-2 Promise **/
+
+    function CustomPromise2(executor) {
+        let self = this;
+
+        // promise 初始的 status
+        self.status = 'pending'
+
+        // 用來存 then 中的第一個參數, 就是 resolve handler function (new 出去的 Promise 實例全部的 handler)
+        self.onResolvedCallbacks = []
+
+        // 用來存 then 中的第二個參數, 就是 reject handler function (new 出去的 Promise 實例全部的 handler)
+        self.onRejectedCallbacks = []
+
+        this.resolve = function (respondValue) {
+            if (self.status === 'pending') {
+                self.status = 'resolved';
+                self.respondValue = respondValue;
+                self.onResolvedCallbacks.forEach(resolvesFunction => {
+                    resolvesFunction()
+                })
+            }
+        }
+
+        this.reject = function (rejectValue) {
+            if (self.status === 'pending') {
+                self.status = 'rejected';
+                self.rejectValue = rejectValue;
+                self.onRejectedCallbacks.forEach(rejectsFunction => {
+                    rejectsFunction()
+                })
+            }
+        }
+
+        executor(this.resolve, this.reject);
+    }
+
+    CustomPromise2.prototype.then = function (onCompleted, onRejected) {
+        let self = this
+
+        // 當 status 還是 pending 時, 表示已經有 Promise 實例 call 了
+        if (self.status === 'pending') {
+
+            // 把所有 Promise 實例的 resolve & reject handler 存起來
+            // 因為不知道多久後會才會用到
+            // 等待 then 內部用到時, 在 call
+            self.onResolvedCallbacks.push(function () {
+                onCompleted(self.respondValue)
+            })
+
+            self.onRejectedCallbacks.push(function () {
+                onRejected(self.rejectValue)
+            })
+        }
+
+        if (self.status === 'resolved') {
+            onCompleted(self.respondValue)
+        }
+        if (self.status === 'rejected') {
+            onRejected(self.rejectValue)
+        }
+
+        // Promise 實例的 total resolve handler
+        console.log(self.onResolvedCallbacks)
+    }
+
+    let testA = new CustomPromise2(function (resolve, reject) {
+        console.log('start')
+        setTimeout(function () {
+            resolve('data A')
+        }, 3000)
+    })
+
+    let testB = new CustomPromise2(function (resolve, reject) {
+        console.log('start')
+        setTimeout(function () {
+            resolve('data B')
+        }, 2000)
+    })
+
+    testA.then((value) => {
+            console.log('第一個 testA success： ' + value)
+        }, (value) => {
+            console.log('第一個 testA error： ' + value)
+        }
+    )
+
+    testA.then((value) => {
+            console.log('第二個 testA success： ' + value)
+        }, (value) => {
+            console.log('第二個 testA error： ' + value)
+        }
+    )
+
+    testB.then((value) => {
+            console.log('testB success： ' + value)
+        }, (value) => {
+            console.log('testB error： ' + value)
+        }
+    )
+
+    console.log('end')
+
 </script>
 </body>
 </html>
