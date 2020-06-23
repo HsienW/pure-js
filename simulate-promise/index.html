@@ -116,42 +116,120 @@
         console.log(self.onResolvedCallbacks)
     }
 
-    let testA = new CustomPromise2(function (resolve, reject) {
-        console.log('start')
-        setTimeout(function () {
-            resolve('data A')
-        }, 3000)
-    })
+    CustomPromise2.prototype.then2 = function (onCompleted, onRejected) {
+        let self = this
 
-    let testB = new CustomPromise2(function (resolve, reject) {
+        return new CustomPromise2(function (resolve, reject) {
+            if (self.status === 'resolved') {
+                try {
+                    let x = onCompleted(self.respondValue)
+                    resolve(x) // 这是 x 是常量的时候，但x可能是一个新的promise，
+                } catch (e) {
+                    reject(e)
+                }
+            }
+            if (self.status === 'rejected') {
+                try {
+                    let x = onRejected(self.rejectValue)
+                    resolve(x)
+                } catch (e) {
+                    reject(e)
+                }
+            }
+            if (self.status === 'pending') {
+                self.onResolvedCallbacks.push(function () {
+                    try {
+                        let x = onCompleted(self.respondValue)
+                        resolve(x)
+                    } catch (e) {
+                        reject(e)
+                    }
+                })
+                self.onRejectedCallbacks.push(function () {
+                    try {
+                        let x = onRejected(self.rejectValue)
+                        resolve(x)
+                    } catch (e) {
+                        reject(e)
+                    }
+                })
+            }
+        });
+    }
+
+    // let testA = new CustomPromise2(function (resolve, reject) {
+    //     console.log('start')
+    //     setTimeout(function () {
+    //         resolve('data A')
+    //     }, 3000)
+    // })
+    //
+    // let testB = new CustomPromise2(function (resolve, reject) {
+    //     console.log('start')
+    //     setTimeout(function () {
+    //         resolve('data B')
+    //     }, 2000)
+    // })
+
+    let testC = new CustomPromise2(function (resolve, reject) {
         console.log('start')
         setTimeout(function () {
-            resolve('data B')
+            resolve('data C')
         }, 2000)
     })
 
-    testA.then((value) => {
-            console.log('第一個 testA success： ' + value)
-        }, (value) => {
-            console.log('第一個 testA error： ' + value)
-        }
-    )
+    // testA.then((value) => {
+    //         console.log('第一個 testA success： ' + value)
+    //     }, (value) => {
+    //         console.log('第一個 testA error： ' + value)
+    //     }
+    // )
+    //
+    // testA.then((value) => {
+    //         console.log('第二個 testA success： ' + value)
+    //     }, (value) => {
+    //         console.log('第二個 testA error： ' + value)
+    //     }
+    // )
+    //
+    // testB.then((value) => {
+    //         console.log('testB success： ' + value)
+    //     }, (value) => {
+    //         console.log('testB error： ' + value)
+    //     }
+    // )
 
-    testA.then((value) => {
-            console.log('第二個 testA success： ' + value)
-        }, (value) => {
-            console.log('第二個 testA error： ' + value)
-        }
-    )
-
-    testB.then((value) => {
-            console.log('testB success： ' + value)
-        }, (value) => {
-            console.log('testB error： ' + value)
-        }
-    )
+    testC
+        .then2((respond) => {
+                console.log('第一層 testC success：');
+                console.log(respond);
+                return respond;
+            }, (cache) => {
+                console.log('第一層 testC error： ');
+                console.log(cache);
+            }
+        )
+        .then2((respond) => {
+                console.log('第二層 testC success： ');
+                console.log(respond);
+                return {test: 'testObj'};
+            }, (cache) => {
+                console.log('第二層 testC error： ');
+                console.log(cache);
+            }
+        )
+        .then2((respond) => {
+                console.log('第三層 testC success： ');
+                console.log(respond);
+                return respond;
+            }, (cache) => {
+                console.log('第三層 testC error： ');
+                console.log(cache);
+            }
+        )
 
     console.log('end')
+
 
 </script>
 </body>
