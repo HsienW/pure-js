@@ -58,10 +58,9 @@
         // promise 初始的 status
         self.status = 'pending'
 
-        // 用來存 then 中的第一個參數, 就是 resolve handler function (new 出去的 Promise 實例全部的 handler)
+        // 用來存 then 中的第一個 & 第二個參數,
+        // 就是 resolve & reject handler function (new 出去的 Promise 實例全部的 handler)
         self.onResolvedCallbacks = []
-
-        // 用來存 then 中的第二個參數, 就是 reject handler function (new 出去的 Promise 實例全部的 handler)
         self.onRejectedCallbacks = []
 
         this.resolve = function (respondValue) {
@@ -117,42 +116,47 @@
     }
 
     CustomPromise2.prototype.then2 = function (onCompleted, onRejected) {
+        // onCompleted 是使用 then2 時, 傳入的第一個參數 (function)
+        // onRejected 是使用 then2 時, 傳入的第二個參數 (function)
+
         let self = this
 
+        // Promise 能一直 then 下去, 是因為每次都 return 一個 new Promise
         return new CustomPromise2(function (resolve, reject) {
-            if (self.status === 'resolved') {
-                try {
-                    let x = onCompleted(self.respondValue)
-                    resolve(x) // 这是 x 是常量的时候，但x可能是一个新的promise，
-                } catch (e) {
-                    reject(e)
-                }
-            }
-            if (self.status === 'rejected') {
-                try {
-                    let x = onRejected(self.rejectValue)
-                    resolve(x)
-                } catch (e) {
-                    reject(e)
-                }
-            }
+
+            // 把所有 Promise 實例的 resolve & reject handler 存起來
+            // 因為不知道多久後會才會用到
+            // 等待 then 內部用到時, 在 call
             if (self.status === 'pending') {
                 self.onResolvedCallbacks.push(function () {
                     try {
-                        let x = onCompleted(self.respondValue)
-                        resolve(x)
-                    } catch (e) {
-                        reject(e)
+                        resolve(onCompleted(self.respondValue))
+                    } catch (error) {
+                        reject(error)
                     }
                 })
                 self.onRejectedCallbacks.push(function () {
                     try {
-                        let x = onRejected(self.rejectValue)
-                        resolve(x)
-                    } catch (e) {
-                        reject(e)
+                        resolve(onRejected(self.rejectValue))
+                    } catch (error) {
+                        reject(error)
                     }
                 })
+            }
+            if (self.status === 'resolved') {
+                try {
+                    // 把上一層 then 的 onCompleted 放入, 下一層 then resolve, 才能串起 Promise 鍊
+                    resolve(onCompleted(self.respondValue))
+                } catch (error) {
+                    reject(error)
+                }
+            }
+            if (self.status === 'rejected') {
+                try {
+                    resolve(onRejected(self.rejectValue))
+                } catch (error) {
+                    reject(error)
+                }
             }
         });
     }
