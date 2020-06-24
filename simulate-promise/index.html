@@ -56,19 +56,19 @@
         let self = this;
 
         // promise 初始的 status
-        self.status = 'pending'
+        self.status = 'pending';
 
         // 用來存 then 中的第一個 & 第二個參數,
         // 就是 resolve & reject handler function (new 出去的 Promise 實例全部的 handler)
-        self.onResolvedCallbacks = []
-        self.onRejectedCallbacks = []
+        self.onResolvedCallbacks = [];
+        self.onRejectedCallbacks = [];
 
         this.resolve = function (respondValue) {
             if (self.status === 'pending') {
                 self.status = 'resolved';
                 self.respondValue = respondValue;
                 self.onResolvedCallbacks.forEach(resolvesFunction => {
-                    resolvesFunction()
+                    resolvesFunction();
                 })
             }
         }
@@ -78,7 +78,7 @@
                 self.status = 'rejected';
                 self.rejectValue = rejectValue;
                 self.onRejectedCallbacks.forEach(rejectsFunction => {
-                    rejectsFunction()
+                    rejectsFunction();
                 })
             }
         }
@@ -87,7 +87,7 @@
     }
 
     CustomPromise2.prototype.then = function (onCompleted, onRejected) {
-        let self = this
+        let self = this;
 
         // 當 status 還是 pending 時, 表示已經有 Promise 實例 call 了
         if (self.status === 'pending') {
@@ -96,30 +96,30 @@
             // 因為不知道多久後會才會用到
             // 等待 then 內部用到時, 在 call
             self.onResolvedCallbacks.push(function () {
-                onCompleted(self.respondValue)
+                onCompleted(self.respondValue);
             })
 
             self.onRejectedCallbacks.push(function () {
-                onRejected(self.rejectValue)
+                onRejected(self.rejectValue);
             })
         }
 
         if (self.status === 'resolved') {
-            onCompleted(self.respondValue)
+            onCompleted(self.respondValue);
         }
         if (self.status === 'rejected') {
-            onRejected(self.rejectValue)
+            onRejected(self.rejectValue);
         }
 
         // Promise 實例的 total resolve handler
-        console.log(self.onResolvedCallbacks)
+        console.log(self.onResolvedCallbacks);
     }
 
     CustomPromise2.prototype.then2 = function (onCompleted, onRejected) {
         // onCompleted 是使用 then2 時, 傳入的第一個參數 (function)
         // onRejected 是使用 then2 時, 傳入的第二個參數 (function)
 
-        let self = this
+        let self = this;
 
         // Promise 能一直 then 下去, 是因為每次都 return 一個 new Promise
         return new CustomPromise2(function (resolve, reject) {
@@ -130,32 +130,32 @@
             if (self.status === 'pending') {
                 self.onResolvedCallbacks.push(function () {
                     try {
-                        resolve(onCompleted(self.respondValue))
+                        resolve(onCompleted(self.respondValue));
                     } catch (error) {
-                        reject(error)
+                        reject(error);
                     }
                 })
                 self.onRejectedCallbacks.push(function () {
                     try {
-                        resolve(onRejected(self.rejectValue))
+                        resolve(onRejected(self.rejectValue));
                     } catch (error) {
-                        reject(error)
+                        reject(error);
                     }
                 })
             }
             if (self.status === 'resolved') {
                 try {
                     // 把上一層 then 的 onCompleted 放入, 下一層 then resolve, 才能串起 Promise 鍊
-                    resolve(onCompleted(self.respondValue))
+                    resolve(onCompleted(self.respondValue));
                 } catch (error) {
-                    reject(error)
+                    reject(error);
                 }
             }
             if (self.status === 'rejected') {
                 try {
-                    resolve(onRejected(self.rejectValue))
+                    resolve(onRejected(self.rejectValue));
                 } catch (error) {
-                    reject(error)
+                    reject(error);
                 }
             }
         });
@@ -176,9 +176,9 @@
     // })
 
     let testC = new CustomPromise2(function (resolve, reject) {
-        console.log('start')
+        console.log('start');
         setTimeout(function () {
-            resolve('data C')
+            resolve('data C');
         }, 2000)
     })
 
@@ -232,7 +232,7 @@
             }
         )
 
-    console.log('end')
+    console.log('end');
 
 
 </script>
