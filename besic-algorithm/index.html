@@ -115,7 +115,7 @@
             //如果佇列是空的, 直接插入
             if (this.isEmpty()) {
                 items.push(queueObj);
-                console.log(items);
+                // console.log(items);
                 return
             }
 
@@ -135,7 +135,7 @@
             if (!isEnqueue) {
                 items.push(queueObj);
             }
-            console.log(items);
+            // console.log(items);
         };
     }
 
@@ -146,7 +146,6 @@
 
 
     /** Circular Queue **/
-
 
     function circular(list, number) {
         //創建一個空佇列
@@ -168,7 +167,7 @@
 
             //每次歷遍完, 都移除第一個 item
             let removeSomeOne = queue.shift();
-            console.log('被刪除的是: ' + removeSomeOne);
+            // console.log('被刪除的是: ' + removeSomeOne);
         }
 
         return queue.shift();
@@ -176,7 +175,72 @@
 
     const user = ['Andy', 'Billy', 'Camila', 'David', 'Emily', 'Frank'];
     const startCircular = circular(user, 9)
-    console.log('最後剩下的是: ' + startCircular);
+
+    // console.log('最後剩下的是: ' + startCircular);
+
+    /** Linked List **/
+
+    function LinkedItem(element) {
+        // 新增的鏈結 item
+        this.element = element;
+
+        // 指向下一個鏈結 item, 初始視為空
+        this.nextItem = null;
+    }
+
+    function LinkedList() {
+        // 當前鏈結的長度
+        let length = 0;
+
+        // 當前鏈結的第一個 item
+        let head = null;
+
+        this.append = function (element) {
+            // 產生新 item 實例
+            let node = new LinkedItem(element);
+            let currentItem;
+
+            if (head === null) {
+                head = node;
+            } else {
+                currentItem = head;
+
+                while (currentItem.nextItem) {
+                    currentItem = currentItem.nextItem;
+                }
+
+                currentItem.nextItem = node;
+            }
+            length++;
+        }
+        this.insert = function (element, position) {
+
+        }
+        this.removeAt = function (position) {
+            if (position > -1 && position > length) {
+
+            }
+        }
+        this.remove = function (element) {
+
+        }
+        this.indexOf = function (element) {
+
+        }
+        this.isEmpty = function () {
+
+        }
+        this.size = function () {
+            return length;
+        }
+    }
+
+    const testList = new LinkedList();
+
+    testList.append({key: 1});
+    testList.append({key: 2});
+
+    console.log(testList.size());
 </script>
 </body>
 </html>
