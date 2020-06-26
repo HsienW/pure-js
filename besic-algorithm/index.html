@@ -226,21 +226,28 @@
                 // 作為移除有2個以上 item 鏈結, 前一個指針的暫存
                 let previous;
 
-                //  // 作為移除有2個以上 item 鏈結, 新的 index
+                // 當作移除有2個以上 item 鏈結, 對比 position 用的 index
                 let index = 0;
 
                 if (position === 0) {
-
+                    // 如果 position 是第一個, 就直接把 head 指向下一個 nextItem
                     head = currentItem.nextItem;
                 } else {
-
+                    // 如果 position 不是第一個, 用迴圈歷遍鏈結, index 當指標去找到 position 位置的 item
+                    // 從 0 個 item 開始遞增去找
                     while (index++ < position) {
+                        // previous 用來保存 currentItem 用來紀錄上一個 item
                         previous = currentItem;
+
+                        // 再把 currentItem.nextItem 指向 currentItem, 把 current 刷新成下一個
                         currentItem = currentItem.nextItem;
                     }
                 }
 
+                // 完成後再把 length 減少一個
                 length--;
+
+                // 最後把 return currentItem 的實例
                 return currentItem.element;
             } else {
                 return null;
