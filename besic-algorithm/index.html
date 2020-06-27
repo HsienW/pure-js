@@ -214,7 +214,46 @@
             length++;
         }
         this.insert = function (element, position) {
+            // 判斷 position 是否超過鏈結
+            if (position >= 0 && position <= length) {
+                // 產生要插入的 item 實例
+                let node = new LinkedItem(element);
 
+                // 先將當前的 item 指向 head, 因為都要從頭一路找下去
+                let currentItem = head;
+
+                // 作為有2個以上 item 鏈結, 前一個指針的暫存
+                let previous;
+
+                // 當作有2個以上 item 鏈結, 對比 position 用的 index
+                let index = 0;
+
+                if (position === 0) {
+                    // 若插入的位置是第一個, 將新 item 的 next 指向 currentItem (這邊是原本的head)
+                    node.nextItem = currentItem;
+                    // 把 head 改成新 item
+                    head = node;
+                } else {
+                    // 如果 position 不是第一個, 用迴圈歷遍鏈結, index 當指標去找到 position 位置的 item
+                    // 從 0 個 item 開始遞增去找
+                    while (index++ < position) {
+                        // previous 用來保存 currentItem 紀錄插入前的當前 item
+                        // 準備將 previous 的 nextItem 給新 item
+                        previous = currentItem;
+
+                        // 把原本當前的 currentItem.nextItem 指向 currentItem, 往前移一位
+                        // 騰出位子給新 item
+                        currentItem = currentItem.nextItem;
+                    }
+                    node.nextItem = currentItem;
+                    previous.nextItem = node;
+                }
+                length++;
+
+                return true;
+            } else {
+                return false;
+            }
         }
         this.removeAt = function (position) {
             // 判斷 position 是否超過鏈結
@@ -223,10 +262,10 @@
                 // 因為是從中移除, 所以必須從 head 開始一路找 nextItem 直到目標
                 let currentItem = head;
 
-                // 作為移除有2個以上 item 鏈結, 前一個指針的暫存
+                // 作為有2個以上 item 鏈結, 前一個指針的暫存
                 let previous;
 
-                // 當作移除有2個以上 item 鏈結, 對比 position 用的 index
+                // 當作有2個以上 item 鏈結, 對比 position 用的 index
                 let index = 0;
 
                 if (position === 0) {
@@ -236,7 +275,7 @@
                     // 如果 position 不是第一個, 用迴圈歷遍鏈結, index 當指標去找到 position 位置的 item
                     // 從 0 個 item 開始遞增去找
                     while (index++ < position) {
-                        // previous 用來保存 currentItem 用來紀錄上一個 item
+                        // previous 用來保存 currentItem 紀錄移除前的上一個 item
                         previous = currentItem;
 
                         // 再把 currentItem.nextItem 指向 currentItem, 把 current 刷新成下一個
@@ -271,8 +310,12 @@
 
     testList.append({key: 1});
     testList.append({key: 2});
+    testList.append({key: 4});
+    testList.append({key: 5});
 
     console.log(testList.size());
+
+    testList.insert({key: 3}, 2);
 </script>
 </body>
 </html>
