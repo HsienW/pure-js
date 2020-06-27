@@ -292,11 +292,47 @@
                 return null;
             }
         }
-        this.remove = function (element) {
+        this.remove = function () {
+            if (this.size() <= 0) {
+                return false;
+            } else {
+                // 因為是從中移除, 所以必須從 head 開始一路找 nextItem 直到目標
+                let currentItem = head;
 
+                // 作為有2個以上 item 鏈結, 前一個指針的暫存
+                let previous;
+
+                // 當作有2個以上 item 鏈結, 對比 position 用的 index
+                let index = 0;
+
+                while (index++ <= length) {
+                    previous = currentItem;
+                    currentItem = currentItem.nextItem;
+                    // if (index === length - 1) {
+                    //     currentItem.nextItem = null;
+                    // }
+                }
+                length++;
+                return true;
+            }
         }
         this.indexOf = function (element) {
+            let currentItem = head;
+            let index = -1;
+            console.log('==');
 
+            console.log(currentItem);
+            while(currentItem) {
+                // 迴圈歷遍開始找, 找到的話就回傳 index
+                if(element === currentItem.element) {
+                    console.log('---------');
+                    console.log(index);
+                    return index;
+                }
+                index++;
+                currentItem = currentItem.nextItem;
+            }
+            return -1;
         }
         this.isEmpty = function () {
 
@@ -316,6 +352,7 @@
     console.log(testList.size());
 
     testList.insert({key: 3}, 2);
+    testList.indexOf({key: 3});
 </script>
 </body>
 </html>
