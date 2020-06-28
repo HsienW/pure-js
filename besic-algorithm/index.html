@@ -417,6 +417,64 @@
                 return true;
             }
         }
+
+        this.removeAt = function (position) {
+            // 因為是從中段移除, 所以必須從 head 開始一路找 nextItem 直到目標
+            let currentItem = head;
+
+            // 作為有2個以上 item 鏈結, 前一個指向的暫存
+            let previous;
+
+            // 當作有2個以上 item 鏈結, 對比 position 用的 index
+            let index = 0;
+
+            if (position > -1 && position < length) {
+
+                if (position === 0) {
+                    // 若要移除的是第一個 item, 將原本的 head (currentItem), 刷新成指向 currentItem.nextItem
+                    head = currentItem.nextItem;
+
+                    // 加上鏈結剛好只有一個 item 的話, tail 指向 null
+                    if (length === 1) {
+                        tail = null;
+                    } else {
+                        // 鏈結有一個以上的 item
+                        // 前面已經把原本的 head (currentItem) 刷新成 currentItem.nextItem
+                        // 所以 head.prevItem 也等於 currentItem.nextItem.prevItem
+                        // 必須修改成 null
+                        head.prevItem = null;
+                    }
+                }
+                // 移除最後一個 item, 由於有 tail 指到最後, 所以就不用使用迴圈方式
+                else if (position === length - 1) {
+                    // 先將 tail 指向 currentItem 暫存, 方便後續作業
+                    currentItem = tail;
+
+                    // 把 tail 刷新成當前的 currentItem.prevItem (就是原有的前一個)
+                    tail = currentItem.prevItem;
+
+                    // 再把 tail 的 nextItem 刷新成 null
+                    tail.nextItem = null;
+                }
+            } else {
+                while (index++ < position) {
+                    // 過程中, 把 currentItem 暫存到 previous
+                    // 把 currentItem 刷新成 currentItem.nextItem, 一路歷遍
+                    previous = currentItem;
+                    currentItem = currentItem.nextItem;
+                }
+
+                // 找到目標後, 把上一個 currentItem 的 nextItem 刷新成 previous.nextItem
+                previous.nextItem = currentItem.nextItem;
+
+                // 把上一個 previous 指派給 currentItem.nextItem.prevItem 等於直接跳過 currentItem
+                currentItem.nextItem.prevItem = previous;
+            }
+
+            length++
+
+            return currentItem.element;
+        }
     }
 </script>
 </body>
