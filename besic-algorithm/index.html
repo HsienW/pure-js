@@ -257,7 +257,7 @@
         }
         this.removeAt = function (position) {
             // 判斷 position 是否超過鏈結
-            if (position > -1 && position > length) {
+            if (position > -1 && position < length) {
 
                 // 因為是從中移除, 所以必須從 head 開始一路找 nextItem 直到目標
                 let currentItem = head;
@@ -292,50 +292,27 @@
                 return null;
             }
         }
-        this.remove = function () {
-            if (this.size() <= 0) {
-                return false;
-            } else {
-                // 因為是從中移除, 所以必須從 head 開始一路找 nextItem 直到目標
-                let currentItem = head;
-
-                // 作為有2個以上 item 鏈結, 前一個指針的暫存
-                let previous;
-
-                // 當作有2個以上 item 鏈結, 對比 position 用的 index
-                let index = 0;
-
-                while (index++ <= length) {
-                    previous = currentItem;
-                    currentItem = currentItem.nextItem;
-                    // if (index === length - 1) {
-                    //     currentItem.nextItem = null;
-                    // }
-                }
-                length++;
-                return true;
-            }
+        this.remove = function (element) {
+            let index = this.indexOf(element);
+            return this.removeAt(index);
         }
         this.indexOf = function (element) {
             let currentItem = head;
-            let index = -1;
-            console.log('==');
+            let index = 0
 
-            console.log(currentItem);
             while(currentItem) {
                 // 迴圈歷遍開始找, 找到的話就回傳 index
                 if(element === currentItem.element) {
-                    console.log('---------');
-                    console.log(index);
                     return index;
                 }
                 index++;
                 currentItem = currentItem.nextItem;
             }
+            // 沒找到 or 到底了就是 -1
             return -1;
         }
         this.isEmpty = function () {
-
+            return length === 0;
         }
         this.size = function () {
             return length;
@@ -344,15 +321,15 @@
 
     const testList = new LinkedList();
 
-    testList.append({key: 1});
-    testList.append({key: 2});
-    testList.append({key: 4});
-    testList.append({key: 5});
+    testList.append('{key: 1}');
+    testList.append('{key: 2}');
+    testList.append('{key: 4}');
+    testList.append('{key: 5}');
+
+    testList.insert('{key: 3}', 2);
+    testList.remove('{key: 3}');
 
     console.log(testList.size());
-
-    testList.insert({key: 3}, 2);
-    testList.indexOf({key: 3});
 </script>
 </body>
 </html>
