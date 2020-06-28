@@ -300,9 +300,9 @@
             let currentItem = head;
             let index = 0
 
-            while(currentItem) {
+            while (currentItem) {
                 // 迴圈歷遍開始找, 找到的話就回傳 index
-                if(element === currentItem.element) {
+                if (element === currentItem.element) {
                     return index;
                 }
                 index++;
@@ -330,6 +330,94 @@
     testList.remove('{key: 3}');
 
     console.log(testList.size());
+
+
+    /**  DoublyLinkedList **/
+
+    function DoublyItem(element) {
+        // 新增的鏈結 item
+        this.element = element;
+
+        // 存取下一個鏈結 item, 初始視為空
+        this.nextItem = null;
+
+        // 存取上一個鏈結 item, 初始視為空
+        this.prevItem = null;
+    }
+
+    function DoublyLinkedList() {
+        let length = 0;
+        let head = null;
+
+        // 可以由尾部開始
+        let tail = null;
+
+        this.insert = function (element, position) {
+            // 產生要插入的 item 實例
+            let node = new DoublyItem(element);
+
+            // 先將當前的 item 指向 head, 因為都要從頭一路找下去
+            let currentItem = head;
+
+            // 作為有2個以上 item 鏈結, 前一個指針的暫存
+            let previous;
+
+            // 當作有2個以上 item 鏈結, 對比 position 用的 index
+            let index = 0;
+
+            if (position >= 0 && position <= length) {
+                // 插入在鏈結的第一個位置
+                if (position === 0) {
+                    // head 是 false, 表示當前鏈結是空的
+                    if (!head) {
+                        // 只有第一個 item, 所以頭尾都是它 (new node item)
+                        head = node;
+                        tail = node;
+                    } else {
+                        // head 是 true, 表示當前鏈結有舊 item
+                        // 把 currentItem (當前舊有的 head), 指成 node 的 nextItem, 往後推一個
+                        node.nextItem = currentItem;
+                        // 把 node (新的 item), 指成 currentItem (當前舊有的 head) 的 prevItem, 往前插入一個
+                        currentItem.prevItem = node;
+                        // 再把 head 刷新成 node (新的 item)
+                        head = node;
+                    }
+                }
+            } else if (position === length) {
+                // 插入在鏈結的最後一個位置
+                // 先把 currentItem 改成指向 tail
+                currentItem = tail;
+                // 把 currentItem (當前舊有的 tail) 改成指向 node (新的 item)
+                currentItem.nextItem = node;
+                // 把 node (新的 item) 上一個指標刷新成 currentItem (當前舊有的 tail)
+                node.prevItem = currentItem;
+                // 再把 tail 刷新成 node (新的 item)
+                tail = node;
+            } else {
+                // 迴圈歷遍開始找要插入位置, 從 0 開始找
+                while (index++ < position) {
+                    // 過程中, 把 currentItem 暫存到 previous
+                    // 把 currentItem 刷新成 currentItem.nextItem, 一路歷遍
+                    previous = currentItem;
+                    currentItem = currentItem.nextItem;
+                }
+
+                // 找到後把舊有的 currentItem, 指成 node (新的 item) nextItem, 往後移一個
+                node.nextItem = currentItem;
+                // 把舊有的 previous 的 nextItem, 指成 node (新的 item) 往前移一個
+                previous.nextItem = node;
+
+                // 新增的雙向鏈結, 把當前舊有的 currentItem 的 prevItem 指成 node (新的 item)
+                currentItem.prevItem = node;
+                // 新增的雙向鏈結, 把 node (新的 item) 的 prevItem 指成 previous
+                node.prevItem = previous;
+
+                index++;
+
+                return true;
+            }
+        }
+    }
 </script>
 </body>
 </html>
