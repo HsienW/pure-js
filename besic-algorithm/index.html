@@ -356,7 +356,7 @@
             // 產生要插入的 item 實例
             let node = new DoublyItem(element);
 
-            // 先將當前的 item 指向 head, 因為都要從頭一路找下去
+            // 先暫時把 head 當作找尋的初始起點, 也可以從 tail 開始
             let currentItem = head;
 
             // 作為有2個以上 item 鏈結, 前一個指針的暫存
@@ -365,6 +365,7 @@
             // 當作有2個以上 item 鏈結, 對比 position 用的 index
             let index = 0;
 
+            // 檢查是否 position 有在正常範圍內
             if (position >= 0 && position <= length) {
                 // 插入在鏈結的第一個位置
                 if (position === 0) {
@@ -382,17 +383,26 @@
                         // 再把 head 刷新成 node (新的 item)
                         head = node;
                     }
+                    length++;
+                    return true;
                 }
             } else if (position === length) {
+                console.log('============');
                 // 插入在鏈結的最後一個位置
                 // 先把 currentItem 改成指向 tail
                 currentItem = tail;
+
                 // 把 currentItem (當前舊有的 tail) 改成指向 node (新的 item)
                 currentItem.nextItem = node;
+
                 // 把 node (新的 item) 上一個指標刷新成 currentItem (當前舊有的 tail)
                 node.prevItem = currentItem;
+
                 // 再把 tail 刷新成 node (新的 item)
                 tail = node;
+
+                length++;
+                return true;
             } else {
                 // 迴圈歷遍開始找要插入位置, 從 0 開始找
                 while (index++ < position) {
@@ -404,22 +414,23 @@
 
                 // 找到後把舊有的 currentItem, 指成 node (新的 item) nextItem, 往後移一個
                 node.nextItem = currentItem;
+
                 // 把舊有的 previous 的 nextItem, 指成 node (新的 item) 往前移一個
                 previous.nextItem = node;
 
                 // 新增的雙向鏈結, 把當前舊有的 currentItem 的 prevItem 指成 node (新的 item)
                 currentItem.prevItem = node;
+
                 // 新增的雙向鏈結, 把 node (新的 item) 的 prevItem 指成 previous
                 node.prevItem = previous;
 
-                index++;
-
+                length++;
                 return true;
             }
         }
 
         this.removeAt = function (position) {
-            // 因為是從中段移除, 所以必須從 head 開始一路找 nextItem 直到目標
+            // 先暫時把 head 當作找尋的初始起點, 也可以從 tail 開始
             let currentItem = head;
 
             // 作為有2個以上 item 鏈結, 前一個指向的暫存
@@ -475,7 +486,27 @@
 
             return currentItem.element;
         }
+        this.isEmpty = function () {
+            return length === 0;
+        }
+        this.size = function () {
+            console.log(length);
+            return length;
+        }
     }
+
+    const doublyTestList = new DoublyLinkedList();
+
+    doublyTestList.insert('{key: 1}', 0);
+    doublyTestList.insert('{key: 2}', 1);
+    // doublyTestList.insert('{key: 3}', 2);
+
+    doublyTestList.size();
+
+    // doublyTestList.removeAt(1);
+
+    // doublyTestList.size();
+
 </script>
 </body>
 </html>
