@@ -383,8 +383,9 @@
                         // 再把 head 刷新成 node (新的 item)
                         head = node;
                     }
-                } else if (position === length) {
-                    // 插入在鏈結的最後一個位置
+                }
+                // 插入在鏈結的最後一個位置
+                else if (position === length) {
                     // 先把 currentItem 改成指向 tail
                     currentItem = tail;
 
@@ -397,7 +398,9 @@
                     // 再把 tail 刷新成 node (新的 item)
                     tail = node;
 
-                } else {
+                }
+                // 在鏈結中段插入某一個 item
+                else {
                     // 迴圈歷遍開始找要插入位置, 從 0 開始找
                     while (index++ < position) {
                         // 過程中, 把 currentItem 暫存到 previous
@@ -464,24 +467,28 @@
                     // 再把 tail 的 nextItem 刷新成 null
                     tail.nextItem = null;
                 }
-            } else {
-                while (index++ < position) {
-                    // 過程中, 把 currentItem 暫存到 previous
-                    // 把 currentItem 刷新成 currentItem.nextItem, 一路歷遍
-                    previous = currentItem;
-                    currentItem = currentItem.nextItem;
+                // 移除鏈結中段某一個 item
+                else {
+                    // 迴圈歷遍開始找要移除的前一個 item, 從 0 開始找
+                    while (index++ < position) {
+                        // 過程中, 把 currentItem 暫存到 previous
+                        // 把 currentItem 刷新成 currentItem.nextItem, 一路歷遍
+                        previous = currentItem;
+                        currentItem = currentItem.nextItem;
+                    }
+
+                    // 找到目標後, 把上一個 currentItem 的 nextItem 刷新成 previous.nextItem
+                    previous.nextItem = currentItem.nextItem;
+
+                    // 把上一個 previous 指派給 currentItem.nextItem.prevItem 等於直接跳過 currentItem
+                    currentItem.nextItem.prevItem = previous;
                 }
 
-                // 找到目標後, 把上一個 currentItem 的 nextItem 刷新成 previous.nextItem
-                previous.nextItem = currentItem.nextItem;
-
-                // 把上一個 previous 指派給 currentItem.nextItem.prevItem 等於直接跳過 currentItem
-                currentItem.nextItem.prevItem = previous;
+                length--
+                return currentItem.element;
+            } else {
+                return  null;
             }
-
-            length++
-
-            return currentItem.element;
         }
         this.isEmpty = function () {
             return length === 0;
@@ -500,9 +507,8 @@
 
     doublyTestList.size();
 
-    // doublyTestList.removeAt(1);
-
-    // doublyTestList.size();
+    doublyTestList.removeAt(1);
+    doublyTestList.size();
 
 </script>
 </body>
