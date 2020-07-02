@@ -49,6 +49,15 @@
         };
     }
 
+    const testDictionary = new Dictionary();
+
+    testDictionary.set('Andy', 'andy@gmail.com');
+    testDictionary.set('Billy', 'billy@gmail.com');
+    testDictionary.set('Candy', 'candy@gmail.com');
+
+    console.log(testDictionary.has('Billy')); // true
+    console.log(testDictionary.size()); // 3
+
 </script>
 </body>
 </html>
