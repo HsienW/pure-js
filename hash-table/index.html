@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hash Table</title>
+</head>
+<body>
+<script>
+
+    // 雙輸 function, 把 key 轉成每個字母的 ASCLL 值相加
+    const loseLoseHash = function (key) {
+        let hash = 0;
+
+        for (let i = 0; i < key.length; i++) {
+            hash += key.charCodeAt(i);
+        }
+        return hash % 37;
+    }
+
+    function HashTable() {
+        let table = [];
+
+        this.put = function (key, value) {
+            let position = loseLoseHash(key);
+            table[position] = value;
+        }
+
+        this.get = function (key) {
+            return table[loseLoseHash(key)];
+        }
+
+        this.remove = function (key) {
+            table[loseLoseHash(key)] = undefined;
+        }
+    }
+
+    const testHash = new HashTable();
+
+    testHash.put('Andy', 'andy@gmail.com');
+    testHash.put('Billy', 'billy@gmail.com');
+    testHash.put('Candy', 'candy@gmail.com');
+
+    console.log(testHash.get('Andy'));
+    console.log(testHash.get('Billy'));
+</script>
+</body>
+</html>
