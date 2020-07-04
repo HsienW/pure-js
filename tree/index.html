@@ -61,8 +61,13 @@
             }
 
         }
-
-        // 中序遍歷：是由小到大的升冪順序查訪節點方式, 也是一種排序
+        // 中序遍歷：是由小到大的升冪順序去訪問節點, 也是一種排序
+        // 1.root 節點出發
+        // 2.直接跳過中間層, 到左側最底下沒訪問過的子節點
+        // 3.之後上去訪問這個節點的父節點
+        // 4.接著再到下一層的右側節點
+        // 5.右側都沒有子節點時, 往上到位訪問過的第一個祖先節點
+        // 6.在第 2 3 4 5 步驟之間重複, 直到右側都沒有子節點為止
         this.inOrderTraverse = function(callback) {
             // 從 root 出發
             this.inOrderTraverseNode(root, callback);
@@ -83,9 +88,11 @@
         }
 
         // 先序遍歷：是以後代節點為優先的順序, 去訪問每個節點
-        // 1.會以訪問本身節點為開始
-        // 2.在一路訪問左側的節點到底
-        // 3.最後在訪問右側的節點
+        // 1.root 節點出發
+        // 2.一路訪問左側的節點到最底
+        // 3.之後訪問這個節點, 同層的右側節點, 直到沒有
+        // 4.接著訪問右側上一層的父節點
+        // 5.在第 3 跟 4 步驟之間重複, 直到右側都沒有子節點為止
         this.preOrderTraverse = function(callback) {
             // 從 root 出發
             this.preOrderTraverseNode(root, callback);
@@ -97,6 +104,27 @@
                 callback(node.key);
                 this.preOrderTraverseNode(node.left, callback);
                 this.preOrderTraverseNode(node.right, callback);
+            }
+        };
+
+        // 後序遍歷：都以先訪問節點的後代, 在訪問節點本身
+        // 1.root 節點出發
+        // 2.直接跳過中間層, 到左側最底下沒訪問過的子節點
+        // 3.之後訪問這個節點, 同層的右側節點, 直到沒有
+        // 4.接著訪問左側上一層的父節點, 一路往上, 直到沒有
+        // 5.從第 2 到 3 再到 4 步驟之間重複, 直到左側都沒有父層
+        // 6.最後回到 root
+        this.postOrderTraverse = function(callback) {
+            // 從 root 出發
+            this.postOrderTraverseNode(root, callback);
+        };
+
+        this.postOrderTraverseNode = function(node, callback) {
+            // 若當前 node 不為空的話就繼續查訪下去
+            if (node !== null) {
+                this.postOrderTraverseNode(node.left, callback);
+                this.postOrderTraverseNode(node.right, callback);
+                callback(node.key);
             }
         };
     }
@@ -112,8 +140,9 @@
     testTree.insert(17);
     testTree.insert(26);
 
-    // testTree.inOrderTraverse(logNode);
+    testTree.inOrderTraverse(logNode);
     testTree.preOrderTraverse(logNode);
+    testTree.postOrderTraverse(logNode);
 
 
 </script>
