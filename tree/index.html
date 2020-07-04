@@ -81,6 +81,24 @@
                 this.inOrderTraverseNode(node.right, callback);
             }
         }
+
+        // 先序遍歷：是以後代節點為優先的順序, 去訪問每個節點
+        // 1.會以訪問本身節點為開始
+        // 2.在一路訪問左側的節點到底
+        // 3.最後在訪問右側的節點
+        this.preOrderTraverse = function(callback) {
+            // 從 root 出發
+            this.preOrderTraverseNode(root, callback);
+        };
+
+        this.preOrderTraverseNode = function(node, callback) {
+            // 若當前 node 不為空的話就繼續查訪下去
+            if (node !== null) {
+                callback(node.key);
+                this.preOrderTraverseNode(node.left, callback);
+                this.preOrderTraverseNode(node.right, callback);
+            }
+        };
     }
 
     const testTree = new BinarySearchTree();
@@ -94,7 +112,8 @@
     testTree.insert(17);
     testTree.insert(26);
 
-    testTree.inOrderTraverse (logNode)
+    // testTree.inOrderTraverse(logNode);
+    testTree.preOrderTraverse(logNode);
 
 
 </script>
