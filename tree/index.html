@@ -8,7 +8,7 @@
 <script>
 
     function Node(key) {
-        // key 就是子傑點
+        // key 就是子節點
         this.key = key;
         this.left = null;
         this.right = null;
@@ -40,6 +40,9 @@
         }
     }
 
+    function logNode(value) {
+        console.log(value);
+    }
 
     function BinarySearchTree() {
         let root = null;
@@ -52,11 +55,31 @@
             if (root === null) {
                 root = newNode;
             }
-            // tree 不是空的話, 用 addNode function 尋找插入點
+            // tree 不是空的話, 遞迴使用 addNode function 尋找插入點
             else {
                 addNode(root, newNode);
             }
 
+        }
+
+        // 中序遍歷：是由小到大的升冪順序查訪節點方式, 也是一種排序
+        this.inOrderTraverse = function(callback) {
+            // 從 root 出發
+            this.inOrderTraverseNode(root, callback);
+        }
+
+        this.inOrderTraverseNode = function (node, callback) {
+            // 若當前 node 不為空的話就繼續查訪下去
+            if (node !== null) {
+
+                // 先從左邊開始查訪, 因為當前左邊的是較小的
+                this.inOrderTraverseNode(node.left, callback);
+
+                callback(node.key);
+
+                // 先從右邊開始查訪, 因為當前右邊的是較大的
+                this.inOrderTraverseNode(node.right, callback);
+            }
         }
     }
 
@@ -65,6 +88,14 @@
     testTree.insert(18);
     testTree.insert(9);
     testTree.insert(11);
+    testTree.insert(4);
+    testTree.insert(33);
+    testTree.insert(2);
+    testTree.insert(17);
+    testTree.insert(26);
+
+    testTree.inOrderTraverse (logNode)
+
 
 </script>
 </body>
