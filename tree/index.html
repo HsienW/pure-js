@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Tree</title>
+</head>
+<body>
+<script>
+
+    function Node(key) {
+        // key 就是子傑點
+        this.key = key;
+        this.left = null;
+        this.right = null;
+    }
+
+    function addNode(node, newNode) {
+        // 若 newNode key 小於 node key 表示放入左側
+        if (newNode.key < node.key) {
+
+            // 若當前左側都為空, 就插入
+            if (node.left === null) {
+                node.left = newNode;
+            }
+            // 若當前左側不為空的的話, 遞迴使用 addNode 直到找到可插入點
+            else {
+                addNode(node.left, newNode);
+            }
+        }
+        // 若 newNode key 大於 node key 表示放入右側
+        else {
+            // 若當前右側都為空, 就插入
+            if (node.right === null) {
+                node.right = newNode;
+            }
+            // 若當前右側不為空的的話, 遞迴使用 addNode 直到找到可插入點
+            else {
+                addNode(node.right, newNode);
+            }
+        }
+    }
+
+
+    function BinarySearchTree() {
+        let root = null;
+
+        this.insert = function (key) {
+            // 創建子節點
+            let newNode = new Node(key);
+
+            // 整個 tree 都是空的話, 新子節點當成 root
+            if (root === null) {
+                root = newNode;
+            }
+            // tree 不是空的話, 用 addNode function 尋找插入點
+            else {
+                addNode(root, newNode);
+            }
+
+        }
+    }
+
+    const testTree = new BinarySearchTree();
+
+    testTree.insert(18);
+    testTree.insert(9);
+    testTree.insert(11);
+
+</script>
+</body>
+</html>
