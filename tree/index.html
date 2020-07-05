@@ -68,7 +68,7 @@
         // 4.接著再到下一層的右側節點
         // 5.右側都沒有子節點時, 往上到位訪問過的第一個祖先節點
         // 6.在第 2 3 4 5 步驟之間重複, 直到右側都沒有子節點為止
-        this.inOrderTraverse = function(callback) {
+        this.inOrderTraverse = function (callback) {
             // 從 root 出發
             this.inOrderTraverseNode(root, callback);
         }
@@ -93,12 +93,12 @@
         // 3.之後訪問這個節點, 同層的右側節點, 直到沒有
         // 4.接著訪問右側上一層的父節點
         // 5.在第 3 跟 4 步驟之間重複, 直到右側都沒有子節點為止
-        this.preOrderTraverse = function(callback) {
+        this.preOrderTraverse = function (callback) {
             // 從 root 出發
             this.preOrderTraverseNode(root, callback);
         };
 
-        this.preOrderTraverseNode = function(node, callback) {
+        this.preOrderTraverseNode = function (node, callback) {
             // 若當前 node 不為空的話就繼續查訪下去
             if (node !== null) {
                 callback(node.key);
@@ -114,12 +114,12 @@
         // 4.接著訪問左側上一層的父節點, 一路往上, 直到沒有
         // 5.從第 2 到 3 再到 4 步驟之間重複, 直到左側都沒有父層
         // 6.最後回到 root
-        this.postOrderTraverse = function(callback) {
+        this.postOrderTraverse = function (callback) {
             // 從 root 出發
             this.postOrderTraverseNode(root, callback);
         };
 
-        this.postOrderTraverseNode = function(node, callback) {
+        this.postOrderTraverseNode = function (node, callback) {
             // 若當前 node 不為空的話就繼續查訪下去
             if (node !== null) {
                 this.postOrderTraverseNode(node.left, callback);
@@ -127,6 +127,66 @@
                 callback(node.key);
             }
         };
+
+        // Search tree
+
+        this.min = function () {
+            return this.minNode(root);
+        }
+
+        this.minNode = function (node) {
+            if (node) {
+                // 找最小值, 一路往左側子節點往下找即可
+                while (node && node.left !== null) {
+                    node = node.left;
+                }
+                console.log(node);
+                return node.key;
+            }
+
+            return null;
+        }
+
+        this.max = function () {
+            return this.maxNode(root);
+        }
+
+        this.maxNode = function (node) {
+            if (node) {
+                // 找最大值, 一路往右側子節點往下找即可
+                while (node && node.right !== null) {
+                    node = node.right;
+                }
+                console.log(node);
+                return node.key;
+            }
+
+            return null;
+        }
+
+        this.search = function (key) {
+            return this.searchNode(root, key);
+        }
+
+        this.searchNode = function (node, key) {
+            // 找某個節點, 先過濾掉空的 node
+            if (node === null) {
+                return false;
+            }
+
+            // 若 key 小於當前節點的 key, 一路往左側找下去
+            if (key < node.key) {
+                return this.searchNode(node.left, key);
+            }
+
+            // 若 key 大於當前節點的 key, 一路往右側找下去
+            if (key > node.key) {
+                return this.searchNode(node.right, key);
+            }
+
+            console.log(node);
+            return true;
+        }
     }
 
     const testTree = new BinarySearchTree();
@@ -143,6 +203,11 @@
     testTree.inOrderTraverse(logNode);
     testTree.preOrderTraverse(logNode);
     testTree.postOrderTraverse(logNode);
+
+    testTree.min();
+    testTree.max();
+
+    testTree.search(17);
 
 
 </script>
