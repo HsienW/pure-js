@@ -187,6 +187,61 @@
             console.log(node);
             return true;
         }
+
+        this.removeNode = function (node, key) {
+            // 先過濾掉, 是否給的是空節點
+            if (node === null) {
+                return null;
+            }
+
+            // 若是要移除的 key, 比當前 node.key 小, 表示一路往左側找下去
+            if (key < node.key) {
+                node.left = this.removeNode(node.left, key);
+                return node;
+            }
+
+            if (key > node.key) {
+                // 若是要移除的 key, 比當前 node.key 大, 表示一路往右側找下去
+                node.right = this.removeNode(node.right, key);
+                return node;
+            }
+
+            // 兩個 key 相等, 表示找到目標了
+            if (key === node.key) {
+
+                // 當目標節點, 都沒有子節點時, 直接給 null 即可
+                if (node.left === null && node.right === null) {
+                    node = null;
+                    return node;
+                }
+
+                // 當目標節點, 沒左側 只有右側時, 提升右節點來取代目標節點
+                if (node.left === null) {
+                    node = node.right;
+                    return node;
+                }
+
+                // 當目標節點, 沒右側 只有左側時, 提升左節點來取代目標節點
+                if (node.right === null) {
+                    node = node.left;
+                    return node;
+                }
+
+                // 當目標節點, 是個完整子樹時
+                // 可以從左子樹找到最大值或右子樹找到最小值的節點
+                // 來取代被移除的節點位置，同時找到的節點, 它的子節點取代自身的位置
+
+                // 先找右子樹找到最小值的節點
+                let isMinNode = this.minNode(node.right);
+                // 把找到的子節點 key 用來取代本來 node 的 key
+                node.key = isMinNode.key;
+
+                // 把目標節點移除
+                node.right = this.removeNode(node.right, isMinNode.key);
+                return node;
+            }
+        }
+
     }
 
     const testTree = new BinarySearchTree();
@@ -208,7 +263,6 @@
     testTree.max();
 
     testTree.search(17);
-
 
 </script>
 </body>
