@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fiber</title>
+</head>
+<body>
+<script>
+
+    let count = 0;
+
+    const loopWork = setInterval(() => {
+        if (count < 5) {
+            console.log('event loop working');
+        } else {
+            clearInterval(loopWork);
+        }
+    }, 1000)
+
+    const fakeApi = function () {
+        return new Promise((resolve, reject) => {
+            const success = true;
+            if (success) {
+                setTimeout(() => {
+                    resolve({
+                        userName: 'demo',
+                        token: '1234567890'
+                    });
+                }, 2000);
+            } else {
+                reject([]);
+            }
+        });
+    };
+
+    window.requestIdleCallback((deadline) => {
+        while (deadline.timeRemaining() > 0) {
+            fakeApi().then(data => {
+                console.log(data);
+            });
+        }
+    });
+
+</script>
+</body>
+</html>
