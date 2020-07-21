@@ -10,7 +10,8 @@
     let count = 0;
 
     const loopWork = setInterval(() => {
-        if (count < 5) {
+        if (count <= 5) {
+            count++;
             console.log('event loop working');
         } else {
             clearInterval(loopWork);
@@ -34,7 +35,10 @@
     };
 
     window.requestIdleCallback((deadline) => {
+        console.log('進入');
         while (deadline.timeRemaining() > 0) {
+            console.log(deadline.timeRemaining());
+
             fakeApi().then(data => {
                 console.log(data);
             });
