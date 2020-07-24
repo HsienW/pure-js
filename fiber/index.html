@@ -2,48 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Fiber</title>
+    <title>Simulate Simple Fiber</title>
 </head>
 <body>
 <script>
 
-    let count = 0;
+    /* RequestIdleCallback test*/
 
-    const loopWork = setInterval(() => {
-        if (count <= 5) {
-            count++;
-            console.log('event loop working');
-        } else {
-            clearInterval(loopWork);
+    // let count = 0;
+    //
+    // const loopWork = setInterval(() => {
+    //     if (count <= 5) {
+    //         count++;
+    //         console.log('event loop working');
+    //     } else {
+    //         clearInterval(loopWork);
+    //     }
+    // }, 1000)
+
+    // const fakeApi = function () {
+    //     return new Promise((resolve, reject) => {
+    //         const success = true;
+    //         if (success) {
+    //             setTimeout(() => {
+    //                 resolve({
+    //                     userName: 'demo',
+    //                     token: '1234567890'
+    //                 });
+    //             }, 2000);
+    //         } else {
+    //             reject([]);
+    //         }
+    //     });
+    // };
+
+    // window.requestIdleCallback((deadline) => {
+    //     console.log('進入');
+    //     while (deadline.timeRemaining() > 0) {
+    //         console.log(deadline.timeRemaining());
+    //
+    //         console.log('do some thing');
+    //         // fakeApi().then(data => {
+    //         //     console.log(data);
+    //         // });
+    //     }
+    // });
+
+
+    function workLoopSync(deadline) {
+        // 迴圈會在 task 做完 or timeRemaining (event loop) 的空閒時間快沒了的時後結束
+
+        // Step1 確認當前是否有 fiber task & event loop 的空檔可以做事
+        while(nextPartOfWork && deadline.timeRemaining() > 1) {
+
+            // Step2 兩者都有, 開始執行 fiber task
+            nextPartOfWork = performPartOfWork(nextPartOfWork);
         }
-    }, 1000)
 
-    const fakeApi = function () {
-        return new Promise((resolve, reject) => {
-            const success = true;
-            if (success) {
-                setTimeout(() => {
-                    resolve({
-                        userName: 'demo',
-                        token: '1234567890'
-                    });
-                }, 2000);
-            } else {
-                reject([]);
-            }
-        });
-    };
+        // Step3 如果 task 沒做完, 但時間要結束了
+        // 把剩餘的 task 註冊到下一次的 requestIdleCallback
+        window.requestIdleCallback(workLoopSync);
+    }
 
-    window.requestIdleCallback((deadline) => {
-        console.log('進入');
-        while (deadline.timeRemaining() > 0) {
-            console.log(deadline.timeRemaining());
-
-            fakeApi().then(data => {
-                console.log(data);
-            });
-        }
-    });
+    // Step4 performUnitOfWork 是執行的 function
+    // 參數是當前的 fiber task，同時它會 return 下一個 task
+    function performPartOfWork(fiber) {
+        console.log('do some thing');
+    }
+    window.requestIdleCallback(workLoopSync);
 
 </script>
 </body>
