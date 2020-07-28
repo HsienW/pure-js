@@ -50,14 +50,14 @@
 
     // 一個 Virtual Dom 下的 Node 展開後, 類似下面這個 element object
     let element = {
-        tagName: 'ul',  // Node 標籤名
+        type: 'ul',  // Node 標籤名
         props: {  // DOM 的屬性，用一個對象存儲鍵值對
             id: 'list'
         },
         children: [  // Node 的子節點
-            {tagName: 'li', props: {class: 'item'}, children: ["Item 1"]},
-            {tagName: 'li', props: {class: 'item'}, children: ["Item 2"]},
-            {tagName: 'li', props: {class: 'item'}, children: ["Item 3"]},
+            {type: 'li', props: {class: 'item'}, children: ["Item 1"]},
+            {type: 'li', props: {class: 'item'}, children: ["Item 2"]},
+            {type: 'li', props: {class: 'item'}, children: ["Item 3"]},
         ]
     }
 
@@ -127,7 +127,7 @@
             // 取出每個 currentTaskNodes, 執行轉換
             for (let i = 0; i < currentTaskNodes.length; i++) {
 
-                // 每個取出的 Node 都會轉為一個 fiber task 以供鍊表往上 or 往下查詢
+                // 每個取出的 Node 都會轉為一個 fiber task 以供鏈結往上 or 往下查詢
                 let newTask = {
                     tagName: currentTaskNodes[i].tagName,
                     props: currentTaskNodes[i].props,
@@ -135,7 +135,7 @@
                     dom: null
                 }
 
-                // 當 child 是第一個子節點時, 把 partTask 的 child 屬性指向它, 用以完成鍊表的指向
+                // 當 child 是第一個子節點時, 把 partTask 的 child 屬性指向它, 用以完成鏈結的指向
                 if (i === 0) {
                     partTask.child = newTask;
                 } else {
@@ -172,6 +172,85 @@
     }
 
     // window.requestIdleCallback(workLoopSync);
+
+
+
+
+
+
+
+
+    const TEXT_NODE = Symbol('__text_node');
+
+    function isTextNode(type) {
+        return type === TEXT_NODE
+    }
+
+    function createFiber(type, props, children) {
+        // 保存每個 node 的 key
+        let key = props.key;
+
+        // 已經取出另存為 key 到 vNode 上, 可從 props 移除
+        delete props.key;
+
+        // 建立虛擬 node object
+        let vNode = {
+            type,
+            props,
+            key,
+            element: null,
+            index: 0
+        };
+
+        children = children.map((child, index) => {
+
+            // 若當前的 child 沒有 type, 通常為 string
+            if (!child.type) {
+
+                // 對這個 child 增加 type & props 等等...歸類為 string 的屬性
+                child = {
+                    type: TEXT_NODE,
+                    props: {
+                        nodeValue: child
+                    },
+                    children: []
+                }
+            }
+            return child;
+        })
+
+        vNode.children = createFiberLinkedList(vNode, children)
+        return vNode
+    }
+
+    function createFiberLinkedList(parentNode, childrenNode) {
+        // 先定義一個 catchChild 變數, 之後用以暫存每個 child node
+        let catchChild;
+
+        return childrenNode.map((child, index) => {
+            // 讓每個 child 都帶有 parentNode, 可以存取自己的父層
+            child.parentNode = parentNode;
+            child.index = index;
+
+            // 當迴圈遇到第一個 child 時, catchChild 還為空的
+            if (!catchChild) {
+                // parentNode 用一個 child 屬性, 存起來第一個 child (以供鏈結做查詢)
+                parentNode.child = child;
+            }
+            // 迴圈其餘的 child, catchChild 就會有上一個 child node 的值
+            else {
+                // 每次都讓上一個 child node (catchChild) 帶有 sibling 屬性, 
+                // 用它來存下一個兄弟節點 (以供鏈結做查詢)
+                catchChild.sibling = child;
+            }
+
+            // 存完之後, 刷新 catchChild 的值, 成為當前這個 child
+            catchChild = child;
+
+            // 最後對原本的 childrenNode array 回傳, 經過綁定處理的 fiber child (已經設好鏈結的 node)
+            return child;
+        })
+    }
 
 </script>
 </body>
