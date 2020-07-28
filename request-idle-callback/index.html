@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>RequestIdleCallback</title>
+</head>
+<body>
+<script>
+
+    /* RequestIdleCallback test*/
+
+    // let count = 0;
+    //
+    // const loopWork = setInterval(() => {
+    //     if (count <= 5) {
+    //         count++;
+    //         console.log('event loop working');
+    //     } else {
+    //         clearInterval(loopWork);
+    //     }
+    // }, 1000)
+
+    // const fakeApi = function () {
+    //     return new Promise((resolve, reject) => {
+    //         const success = true;
+    //         if (success) {
+    //             setTimeout(() => {
+    //                 resolve({
+    //                     userName: 'demo',
+    //                     token: '1234567890'
+    //                 });
+    //             }, 2000);
+    //         } else {
+    //             reject([]);
+    //         }
+    //     });
+    // };
+
+    // window.requestIdleCallback((deadline) => {
+    //     console.log('進入');
+    //     while (deadline.timeRemaining() > 0) {
+    //         console.log(deadline.timeRemaining());
+    //
+    //         console.log('do some thing');
+    //         // fakeApi().then(data => {
+    //         //     console.log(data);
+    //         // });
+    //     }
+    // });
+
+    // 一個 Virtual Dom 下的 Node 展開後, 類似下面這個 element object
+    // let element = {
+    //     type: 'ul',  // Node 標籤名
+    //     props: {  // DOM 的屬性，用一個對象存儲鍵值對
+    //         id: 'list'
+    //     },
+    //     children: [  // Node 的子節點
+    //         {type: 'li', props: {class: 'item'}, children: ["Item 1"]},
+    //         {type: 'li', props: {class: 'item'}, children: ["Item 2"]},
+    //         {type: 'li', props: {class: 'item'}, children: ["Item 3"]},
+    //     ]
+    // }
+
+    /**
+     Fiber 是深度優先的去歷遍 DOM (樹) 的雙向鏈結, 該鏈結的節點具有 3種指向 & 4種節點指向的路線:
+
+     節點:
+     1.prevNode = 當前的上一個節點, 通常指向 上一個子節點 (child) 的 nextNode
+     2.currentNode = 當前執行 task 的節點
+     3.nextNode = 當前執行 task 的節點, 通常指向 下一個子節點 (child) 的 prevNode
+
+     關係:
+     1.root = 初始節點, 通常具有子節點 (child), 沒有兄弟節點 (sibling)
+     2.child = 子節點之一, 具有一定有父節點, 兄弟節點可有可無
+     3.sibling = 子節點之一, 具有一定有父節點, 兄弟節點可有可無, 通常為樹中第一個 child 節點右側的節點 (同層)
+     4.return = 因深度優先的規則, 當沒有 child 時會往右邊 (sibling) 尋找, 當 sibling 也找完之後, 指針會往上一層的父節點指,
+     此時會產生同個節點, 二次出現在指向的路線中, 所以 return 的節點(當下層的父節點)不會作為 nextNode (下一個 task)
+     只有 child 和 sibling 才會當成下一個 nextNode
+     **/
+
+    // function workLoopSync(deadline) {
+    //     let nextPartOfWork = null;
+    //
+    //     // 迴圈會在 task 做完 or timeRemaining (event loop) 的空閒時間快沒了的時後結束
+    //
+    //     // Step1 確認當前是否有 fiber task & event loop 的空檔可以做事
+    //     while (nextPartOfWork && deadline.timeRemaining() > 1) {
+    //
+    //         // Step2 兩者都有, 開始執行 fiber task
+    //         nextPartOfWork = performPartOfWork(nextPartOfWork);
+    //     }
+    //
+    //     // Step3 如果 task 沒做完, 但時間要結束了
+    //     // 把剩餘的 task 註冊到下一次的 requestIdleCallback
+    //     window.requestIdleCallback(workLoopSync);
+    // }
+    //
+    // // Step4 performUnitOfWork 是執行的 function
+    // // 參數是當前的 fiber task, 同時它會 return 下一個 task
+    // function performPartOfWork(partTask) {
+    //
+    //     // partTask 的 dom 就是每個要執行 fiber 任務的 dom (也可當作是 render container)
+    //     // 如果當前的 partTask 沒有這個屬性, 表示它不是 root dom
+    //     // 所以需要在當下的 partTask 創建這個 dom, 並掛上去
+    //     if (!partTask.dom) {
+    //
+    //         // todo should add createDom function to example
+    //         partTask.dom = document.createElement(partTask.tagName);
+    //         // partTask.dom = createDom(partTask);
+    //     }
+    //
+    //     // 如果當下的 partTask 有父節點, 表示為要 render 的子節點, 同時它可能有同層的兄弟節點
+    //     // 所以需要在 partTask 的父節點掛上去這個 dom
+    //     if (partTask.return) {
+    //         partTask.return.dom.appendChild(partTask.dom);
+    //     }
+    //
+    //     // 開始把虛擬 dom 結構轉換成 fiber 結構 (從非 root 的節點開始, 通常子節點)
+    //     const currentTaskNodes = partTask.children;
+    //
+    //     // 這邊先暫時定義當前 partTask 的上一個節點為空 (後續用來指向代表上一個節點)
+    //     let prevNode = null;
+    //
+    //     // 確認當前的 currentTaskNodes (children) 是有的
+    //     if (currentTaskNodes && currentTaskNodes.length) {
+    //
+    //         // 取出每個 currentTaskNodes, 執行轉換
+    //         for (let i = 0; i < currentTaskNodes.length; i++) {
+    //
+    //             // 每個取出的 Node 都會轉為一個 fiber task 以供鏈結往上 or 往下查詢
+    //             let newTask = {
+    //                 tagName: currentTaskNodes[i].tagName,
+    //                 props: currentTaskNodes[i].props,
+    //                 return: partTask, // 返回當下的這個 fiber task
+    //                 dom: null
+    //             }
+    //
+    //             // 當 child 是第一個子節點時, 把 partTask 的 child 屬性指向它, 用以完成鏈結的指向
+    //             if (i === 0) {
+    //                 partTask.child = newTask;
+    //             } else {
+    //                 // 每個子節點, 都有指向下一個 newTask (下一個子節點) 的 next 屬性
+    //                 prevNode.next = newTask;
+    //             }
+    //
+    //             prevNode = newTask;
+    //         }
+    //     }
+
+        // 深度優先, 一般都是 return 下一個 task
+        // 從上到下, 從左到右
+        // 1.先找子節點
+        // 2.再找兄弟節點
+        // 3.回上層到父節點
+        // 4.找父節點的兄弟節點
+
+        // 若是 partTask 有找到子節點, 就 return 它
+    //     if (partTask.child) {
+    //         return partTask.child;
+    //     }
+    //
+    //     // 這邊先暫時定義當前 partTask 的下一個節點為 nextFiber (後續會透過迴圈往下一個到 next )
+    //     let nextFiber = partTask;
+    //
+    //     while (nextFiber) {
+    //         if (nextFiber.next) {
+    //             return nextFiber.next;
+    //         }
+    //
+    //         nextFiber = nextFiber.return;
+    //     }
+    // }
+
+    // window.requestIdleCallback(workLoopSync);
+
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    // const TEXT_NODE = Symbol('__text_node');
+    //
+    // function isTextNode(type) {
+    //     return type === TEXT_NODE
+    // }
+    //
+    // function createFiber(type, props, children) {
+    //     // 保存每個 node 的 key
+    //     let key = props.key;
+    //
+    //     // 已經取出另存為 key 到 vNode 上, 可從 props 移除
+    //     delete props.key;
+    //
+    //     // 建立虛擬 node object
+    //     let vNode = {
+    //         type,
+    //         props,
+    //         key,
+    //         element: null,
+    //         index: 0
+    //     };
+    //
+    //     children = children.map((child, index) => {
+    //
+    //         // 若當前的 child 沒有 type, 通常為 string
+    //         if (!child.type) {
+    //
+    //             // 對這個 child 增加 type & props 等等...歸類為 string 的屬性
+    //             child = {
+    //                 type: TEXT_NODE,
+    //                 props: {
+    //                     nodeValue: child
+    //                 },
+    //                 children: []
+    //             }
+    //         }
+    //         return child;
+    //     })
+    //
+    //     vNode.children = createFiberLinkedList(vNode, children)
+    //     return vNode
+    // }
+    //
+    // function createFiberLinkedList(parentNode, childrenNode) {
+    //     // 先定義一個 catchChild 變數, 之後用以暫存每個 child node
+    //     let catchChild;
+    //
+    //     return childrenNode.map((child, index) => {
+    //         // 讓每個 child 都帶有 parentNode, 可以存取自己的父層
+    //         child.parentNode = parentNode;
+    //         child.index = index;
+    //
+    //         // 當迴圈遇到第一個 child 時, catchChild 還為空的
+    //         if (!catchChild) {
+    //             // parentNode 用一個 child 屬性, 存起來第一個 child (以供鏈結做查詢)
+    //             parentNode.child = child;
+    //         }
+    //         // 迴圈其餘的 child, catchChild 就會有上一個 child node 的值
+    //         else {
+    //             // 每次都讓上一個 child node (catchChild) 帶有 sibling 屬性,
+    //             // 用它來存下一個兄弟節點 (以供鏈結做查詢)
+    //             catchChild.sibling = child;
+    //         }
+    //
+    //         // 存完之後, 刷新 catchChild 的值, 成為當前這個 child
+    //         catchChild = child;
+    //
+    //         // 最後對原本的 childrenNode array 回傳, 經過 create 的 fiber child (已經設好鏈結的 node)
+    //         return child;
+    //     })
+    // }
+
+</script>
+</body>
+</html>
