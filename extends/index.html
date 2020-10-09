@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Extends</title>
+</head>
+<body>
+<script>
+
+    // 組合式繼承
+    function SuperType(gender) {
+        this.gender = gender;
+    }
+
+    SuperType.prototype.sayGender = function () {
+        console.log(this.gender);
+    }
+
+
+    function SubType(name) {
+        SuperType.call(this, '男性')
+        this.name = name
+    }
+
+    SubType.prototype = new SuperType('男性');
+    // SubType.prototype.constructor = SubType;
+
+    const instance = new SubType('小强');
+
+    console.log(instance);
+    console.log(instance.sayGender());
+</script>
+</body>
+</html>
