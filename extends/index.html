@@ -7,7 +7,44 @@
 <body>
 <script>
 
-    // 組合式繼承
+    /** 原形繼承 **/
+
+    // case1: 手做 原形繼承 function
+    function object(o) {
+        const F = function () {
+            this.name = '我是 F 本身的';
+        };
+        F.prototype = o;
+        return new F();
+    }
+
+    const objectTest = {
+        sex: 'man',
+        seyYouSex: function () {
+            return this.sex;
+        }
+    }
+
+    const objectTestTwo = object(objectTest);
+
+    console.log(objectTestTwo);
+    console.log(objectTestTwo.sex);
+    console.log(objectTestTwo.seyYouSex);
+
+    // case2: 使用 es5 Object.create() 來做原型繼承
+
+    const obj = {
+        "fruitList": ["apple", "orange"]
+    }
+    const obj2 = Object.create(obj);
+    obj2.fruitList.push("banana");
+    const obj3 = Object.create(obj);
+
+    console.log(obj3.fruitList);
+
+
+    /** 組合式繼承 **/
+
     function SuperType(gender) {
         this.gender = gender;
     }
@@ -15,7 +52,6 @@
     SuperType.prototype.sayGender = function () {
         console.log(this.gender);
     }
-
 
     function SubType(name) {
         SuperType.call(this, '男性')
@@ -25,10 +61,12 @@
     SubType.prototype = new SuperType('男性');
     // SubType.prototype.constructor = SubType;
 
-    const instance = new SubType('小强');
+    const instance = new SubType('Andy');
 
-    console.log(instance);
-    console.log(instance.sayGender());
+    // console.log(instance);
+    // console.log(instance.sayGender());
+
+
 </script>
 </body>
 </html>
