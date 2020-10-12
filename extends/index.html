@@ -7,9 +7,53 @@
 <body>
 <script>
 
-    /** 原形繼承 **/
+    /** 最普通的繼承 **/
+    // 特性: 在 constructor 中, 為了 instance 屬性的私有性 & method 的複用跟共享
+    // 建議:
+    // 1. 將屬性封裝在 constructor 中
+    // 2. 將 method 定義在原型上
 
-    // case1: 手做 原形繼承 function
+    function A () {
+        this.name = name; // 屬性封裝在 constructor 中
+    }
+    A.prototype.say = function() {
+        console.log('hello'); // 複用的 method 定義在原型上
+   }
+
+    /** 原形鍊的繼承 **/
+    // 特性: 將父類的 instance 作為子類原型
+    // 優點：method 復用, 由於 method 定義在父類的原型上, 可以復用父類 constructor 的 method, 比如 sayParentName
+    // 缺點：創建子類 instance 的時候，不能傳參數。 子類實例共享了父類構造函數的引用屬性，比如arr屬性。
+
+    function Parent (name) {
+        // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
+        this.name = name;
+        // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
+        this.array = ['123', '456']
+    }
+    Parent.prototype.sayParentName = function() {
+        console.log('hello' + this.name);
+    }
+
+    function Child (name) {
+        this.name = name;
+    }
+
+    // 特性點 (將父類的 instance 作為子類原型)
+    // 缺點1, 這將導致 Billy & Carter 的 Parent 都是 Andy
+    Child.prototype = new Parent('Andy');
+
+    const childBilly = new Child('Billy');
+    const childCarter = new Child('Carter');
+
+    // 缺點2 這將導致 Billy & Carter 拿到的 array 都多了 789, 因為陣列是傳址的
+    childCarter.array.push('789');
+
+    console.log(childBilly);
+    console.log(childCarter);
+
+
+    /** 借用 constructor 型的繼承 **/
     function object(o) {
         const F = function () {
             this.name = '我是 F 本身的';
@@ -27,20 +71,22 @@
 
     const objectTestTwo = object(objectTest);
 
-    console.log(objectTestTwo);
-    console.log(objectTestTwo.sex);
-    console.log(objectTestTwo.seyYouSex);
+    // console.log(objectTestTwo);
+    // console.log(objectTestTwo.sex);
+    // console.log(objectTestTwo.seyYouSex);
 
-    // case2: 使用 es5 Object.create() 來做原型繼承
+    // case3: 使用 es5 Object.create() 來做原型繼承
 
     const obj = {
         "fruitList": ["apple", "orange"]
     }
     const obj2 = Object.create(obj);
+
     obj2.fruitList.push("banana");
+
     const obj3 = Object.create(obj);
 
-    console.log(obj3.fruitList);
+    // console.log(obj3.fruitList);
 
 
     /** 組合式繼承 **/
@@ -54,12 +100,12 @@
     }
 
     function SubType(name) {
-        SuperType.call(this, '男性')
-        this.name = name
+        SuperType.call(this, '男性');
+        this.name = name;
     }
 
     SubType.prototype = new SuperType('男性');
-    // SubType.prototype.constructor = SubType;
+    SubType.prototype.constructor = SubType; // 因為 SubType 的 prototype 被改寫了, 所以 constructor 必須要也要改寫
 
     const instance = new SubType('Andy');
 
