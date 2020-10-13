@@ -56,22 +56,22 @@
 
     console.log(childBilly);
     console.log(childCarter);
-    console.log(childBilly.array === childCarter.array) // true
-    console.log(childBilly.sayParentName === childCarter.sayParentName) // true
-
+    console.log(childBilly.array === childCarter.array); // true
+    console.log(childBilly.sayParentName === childCarter.sayParentName); // true
 
     /** 借用 constructor 型的繼承 **/
     // 特性: 借用父類的 constructor 來增強子類的 instance, 等於是複製父類的 instance 屬性給子類
-    // 優點：
+    // 優點:
     // 1.子類 instance, 可以向父類 constructor 傳參數
     // 2.子類 instance, 不會共享父類 constructor 的引用屬性, 例如原型鍊例子的 array 是引用類型的屬性
-    // 缺點：
+    // 缺點:
     // 1.父類的 method 不能共享, 正常 method 要全部子類的 instance, 都共享
     // 2.子類 instance, 繼承不了父類原型上的屬性 (因為根本沒有用到原型)
 
-    function Parent2(name) {
+    function Parent2(name, gender) {
         // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
         this.name = name;
+        this.gender = gender;
         // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
         this.array = ['123', '456'];
         this.sayParentName = function () {
@@ -81,37 +81,79 @@
 
     function Child2(name, gender) {
         // 特性點使用 call 把子類 constructor 的 this 綁定到父類
-        Parent2.call(this, name);
+        // 並使用 Parent2 的 constructor 去 new 出 instance
+        Parent2.call(this, name, gender);
     }
 
     const child1 = new Child2('Billy', '男生');
-    const child2 = new Child2('Caro', '女生 ');
+    const child2 = new Child2('Caro', '女生');
 
     // 對 child2 的 array 推上 789, child1 並不會有, 驗證兩個 instance 引用類型的屬性不再共享, 是各自獨立
     child2.array.push('789');
 
+    // 對父類原型 Parent2 掛上 sayHello method, 但 child1 & child2 並不會有, 因為根本沒有用到原型
     Parent2.prototype.sayHello = function () {
         console.log('hello');
     }
 
-    console.log(child1);
-    console.log(child2);
-    console.log(child1.array === child2.array)
-    console.log(child1.sayParentName === child2.sayParentName)
+    // console.log(child1);
+    // console.log(child2);
+    // console.log(child1.array === child2.array);
+    // console.log(child1.sayParentName === child2.sayParentName);
     // 以下兩個 instance sayHello is not a function, 驗證父類的 method 也不在共享
-    console.log(child1.sayHello());
-    console.log(child2.sayHello());
+    // console.log(child1.sayHello());
+    // console.log(child2.sayHello());
 
+    /** 組合繼承 **/
+    // 特性:
+    // 1.通過 call 父類 constructor, 先繼承父類的屬性, 保留可以傳參數的優點
+    // 2.再通過將父類 instance 作為子類原型, 達到 method 共享
+    // 優點:
+    // 1.具有 constructor 的優點, 創建子類 instance, 可以向父類 constructor 傳參數
+    // 2.具有原型鏈的優點, 父類 instance 的 method 定義在父類的原型對像上, 可以達到 method 共享
+    // 3.不共享父類的引用屬性, 例如原型鍊例子的 array 屬性, 不會子類 instance 有屬性互相影響問題
+    // 缺點: 由於 call 了2次父類的 constructor, 會存在一份多餘的父類 instance 屬性
+    // 注意: "組合繼承" 這種方式, 要記得修復 "子類.prototype.constructor" 指向
 
+    function Parent3(name) {
+        // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
+        this.parentName = name;
+        // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
+        this.array = ['123', '456'];
+    }
 
+    // method 定義在父類的原型對像上
+    Parent3.prototype.sayParentName = function () {
+        console.log('hello' + this.parentName);
+    }
 
+    function Child3(name, gender) {
+        // 第一次 call 父類 constructor
+        // 使用 call 把子類 constructor 的 this 綁定到父類 Parent3 的 constructor 去 new 出 instance
+        // 等於從父類拷貝一份父類 instance 屬性, 作為子類 instance 的屬性
+        Parent3.call(this, name);
+        // gender 是 Child3 的基本屬性
+        this.gender = gender;
+    }
 
+    // 修復 "子類.prototype.constructor" 指向
+    Child3.prototype.constructor = Parent3;
 
+    // 第二次 Child3.prototype = new Parent3()
+    // 創建父類 instance 作為子類原型, 此時這個父類 instance 就又有了一份相同的 instance 屬性
+    // 但這份會被第一次拷貝來的 instance 屬性屏蔽掉, 所以變得多餘
+    Child3.prototype = new Parent3();
 
+    const child3 = new Child3('David', '男生');
+    const child4 = new Child3('Sara', '女生');
 
+    child4.array.push('789');
 
-
-
+    console.log('-------------------------');
+    console.log(child3);
+    console.log(child4);
+    child3.sayParentName();
+    child4.sayParentName();
 
     function object(o) {
         const F = function () {
