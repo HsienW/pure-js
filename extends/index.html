@@ -13,47 +13,106 @@
     // 1. 將屬性封裝在 constructor 中
     // 2. 將 method 定義在原型上
 
-    function A () {
+    function A(name) {
         this.name = name; // 屬性封裝在 constructor 中
     }
-    A.prototype.say = function() {
+
+    A.prototype.say = function () {
         console.log('hello'); // 複用的 method 定義在原型上
-   }
+    }
 
     /** 原形鍊的繼承 **/
     // 特性: 將父類的 instance 作為子類原型
-    // 優點：method 復用, 由於 method 定義在父類的原型上, 可以復用父類 constructor 的 method, 比如 sayParentName
-    // 缺點：創建子類 instance 的時候，不能傳參數。 子類實例共享了父類構造函數的引用屬性，比如arr屬性。
+    // 優點: method 復用, 由於 method 定義在父類的原型上, 可以復用父類 constructor 的 method, 比如 sayParentName
+    // 缺點:
+    // 1.創建子類 instance 的時候不能傳參數
+    // 2.子類 instance 共享了父類 constructor 的引用屬性, 例如 array 屬性
 
-    function Parent (name) {
+    function Parent(name) {
         // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
         this.name = name;
         // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
-        this.array = ['123', '456']
+        this.array = ['123', '456'];
     }
-    Parent.prototype.sayParentName = function() {
+
+    Parent.prototype.sayParentName = function () {
         console.log('hello' + this.name);
     }
 
-    function Child (name) {
+    function Child(name) {
         this.name = name;
     }
 
     // 特性點 (將父類的 instance 作為子類原型)
-    // 缺點1, 這將導致 Billy & Carter 的 Parent 都是 Andy
+    // 缺點1.無法傳參數, 下面的例子將導致 Billy & Caro 的 Parent 被寫死成 Andy
     Child.prototype = new Parent('Andy');
 
     const childBilly = new Child('Billy');
-    const childCarter = new Child('Carter');
+    const childCarter = new Child('Caro');
 
-    // 缺點2 這將導致 Billy & Carter 拿到的 array 都多了 789, 因為陣列是傳址的
+    // 缺點2.子類 instance 共享了父類 constructor 的引用屬性
+    // 這將導致 Billy & Caro 拿到的 array 都多了 789, 因為陣列引用的屬性
     childCarter.array.push('789');
 
     console.log(childBilly);
     console.log(childCarter);
+    console.log(childBilly.array === childCarter.array) // true
+    console.log(childBilly.sayParentName === childCarter.sayParentName) // true
 
 
     /** 借用 constructor 型的繼承 **/
+    // 特性: 借用父類的 constructor 來增強子類的 instance, 等於是複製父類的 instance 屬性給子類
+    // 優點：
+    // 1.子類 instance, 可以向父類 constructor 傳參數
+    // 2.子類 instance, 不會共享父類 constructor 的引用屬性, 例如原型鍊例子的 array 是引用類型的屬性
+    // 缺點：
+    // 1.父類的 method 不能共享, 正常 method 要全部子類的 instance, 都共享
+    // 2.子類 instance, 繼承不了父類原型上的屬性 (因為根本沒有用到原型)
+
+    function Parent2(name) {
+        // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
+        this.name = name;
+        // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
+        this.array = ['123', '456'];
+        this.sayParentName = function () {
+            console.log('hello' + this.name);
+        }
+    }
+
+    function Child2(name, gender) {
+        // 特性點使用 call 把子類 constructor 的 this 綁定到父類
+        Parent2.call(this, name);
+    }
+
+    const child1 = new Child2('Billy', '男生');
+    const child2 = new Child2('Caro', '女生 ');
+
+    // 對 child2 的 array 推上 789, child1 並不會有, 驗證兩個 instance 引用類型的屬性不再共享, 是各自獨立
+    child2.array.push('789');
+
+    Parent2.prototype.sayHello = function () {
+        console.log('hello');
+    }
+
+    console.log(child1);
+    console.log(child2);
+    console.log(child1.array === child2.array)
+    console.log(child1.sayParentName === child2.sayParentName)
+    // 以下兩個 instance sayHello is not a function, 驗證父類的 method 也不在共享
+    console.log(child1.sayHello());
+    console.log(child2.sayHello());
+
+
+
+
+
+
+
+
+
+
+
+
     function object(o) {
         const F = function () {
             this.name = '我是 F 本身的';
