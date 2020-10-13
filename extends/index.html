@@ -128,21 +128,21 @@
     }
 
     function Child3(name, gender) {
-        // 第一次 call 父類 constructor
-        // 使用 call 把子類 constructor 的 this 綁定到父類 Parent3 的 constructor 去 new 出 instance
+        // 第二次 call 父類 constructor,
+        // 使用 call 來改變呼叫父類 constructor 時, this 的指向改成用子類的 instance, 所以最終執行的還是父類 constructor
         // 等於從父類拷貝一份父類 instance 屬性, 作為子類 instance 的屬性
         Parent3.call(this, name);
         // gender 是 Child3 的基本屬性
         this.gender = gender;
     }
 
-    // 修復 "子類.prototype.constructor" 指向
-    Child3.prototype.constructor = Parent3;
-
-    // 第二次 Child3.prototype = new Parent3()
+    // 第一次 call 父類 constructor, 因為 new 的時候會將 constructor 的 this 指向 新物件, 並執行一次 constructor
     // 創建父類 instance 作為子類原型, 此時這個父類 instance 就又有了一份相同的 instance 屬性
     // 但這份會被第一次拷貝來的 instance 屬性屏蔽掉, 所以變得多餘
     Child3.prototype = new Parent3();
+
+    // 修復 "子類.prototype.constructor" 指向
+    Child3.prototype.constructor = Parent3;
 
     const child3 = new Child3('David', '男生');
     const child4 = new Child3('Sara', '女生');
