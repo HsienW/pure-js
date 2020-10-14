@@ -200,26 +200,81 @@
     // 所以當你修改了子類 instance 的 constructor 屬性, 所有 constructor 的指向都會發生變化
     Child4.prototype = Parent4.prototype;
 
-    const child5 = new Child4('kevin', '男生');
+    const child5 = new Child4('Kevin', '男生');
     const child6 = new Child4('Sunny', '女生');
     const parent1 = new Parent4('Father', '男生');
 
-    console.log(child5);
-    console.log(child6);
-    console.log(parent1);
-    // 以下三個都會是 Parent4
-    console.log(child5.constructor);
-    console.log(child6.constructor);
-    console.log(parent1.constructor);
+    // console.log(child5);
+    // console.log(child6);
+    // console.log(parent1);
+    // // 以下三個都會是 Parent4
+    // console.log(child5.constructor);
+    // console.log(child6.constructor);
+    // console.log(parent1.constructor);
+    //
+    // // 嘗試修復子類 instance 的 constructor
+    // Child4.prototype.constructor = Child4;
+    //
+    // // 以下三個也都會是 Child4
+    // console.log(child5.constructor);
+    // console.log(child6.constructor);
+    // console.log(parent1.constructor); // 問題點就在這, 動了子類 instance 的 constructor, 全部都被改動
 
-    // 嘗試修復子類 instance 的 constructor
-    Child4.prototype.constructor = Child4;
 
-    // 以下三個也都會是 Child4
-    console.log(child5.constructor);
-    console.log(child6.constructor);
-    console.log(parent1.constructor); // 問題點就在這, 動了子類 instance 的 constructor, 全部都被改動
+    /** 組合繼承(優化版 2: 寄生式組合繼承) **/
+    // 特性: 通過創建中間 Object, 子類原型和父類原型, 就會隔離開, 因為不是同一個, 就能有效避免優化版1的問題
 
+    function Parent5(name) {
+        // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
+        this.parentName = name;
+        // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
+        this.array = ['123', '456'];
+    }
+
+    // method 定義在父類的原型對像上
+    Parent5.prototype.sayParentName = function () {
+        console.log('hello' + this.parentName);
+    }
+
+    function Child5(name, gender) {
+        Parent4.call(this, name);
+        // gender 是 Child3 的基本屬性
+        this.gender = gender;
+    }
+
+    // **特性點**
+    // Object.create 會對 create 的 Object, 在原型上進行查找屬性, 原型上沒有對應的屬性, 就會報錯
+    Child5.prototype = Object.create(Parent5.prototype);
+
+    // ** 若不使用 Object.create 的方法 **
+    // targetObj 是新建 Object 的原型
+    // function createParasitical(targetObj, name) {
+    // // Target 是作為父類, 拷貝並接收全部參數的 constructor
+    //     const Target = function () {
+    //         this.parentName = name;
+    //         this.array = ['123', '456'];
+    //     };
+    // // 再將 Target 的原型指定成 targetObj, 同時取得父類 & 子類的屬性
+    //     Target.prototype = targetObj;
+    //
+    // // 最後回傳一個 Target 的 instance
+    //     return new Target();
+    // }
+
+    // Child5.prototype = createParasitical(Parent5, 'Mother');
+    Child5.prototype.constructor = Child5;
+
+    const child7 = new Child5('Johnny', '男生');
+    const child8 = new Child5('Tina', '女生');
+    const parent2 = new Parent5('Mother', '女生');
+
+    child8.array.push('789');
+
+    console.log(child7);
+    console.log(child8);
+    console.log(parent2);
+    parent2.sayParentName();
+    child8.sayParentName();
 
 
 
