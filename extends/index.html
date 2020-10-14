@@ -8,7 +8,8 @@
 <script>
 
     /** 最普通的繼承 **/
-    // 特性: 在 constructor 中, 為了 instance 屬性的私有性 & method 的複用跟共享
+    // 特性:
+    // 在 constructor 中, 為了 instance 屬性的私有性 & method 的複用跟共享
     // 建議:
     // 1. 將屬性封裝在 constructor 中
     // 2. 將 method 定義在原型上
@@ -22,8 +23,10 @@
     }
 
     /** 原形鍊的繼承 **/
-    // 特性: 將父類的 instance 作為子類原型
-    // 優點: method 復用, 由於 method 定義在父類的原型上, 可以復用父類 constructor 的 method, 比如 sayParentName
+    // 特性:
+    // 將父類的 instance 作為子類原型
+    // 優點:
+    // method 復用, 由於 method 定義在父類的原型上, 可以復用父類 constructor 的 method, 比如 sayParentName
     // 缺點:
     // 1.創建子類 instance 的時候不能傳參數
     // 2.子類 instance 共享了父類 constructor 的引用屬性, 例如 array 屬性
@@ -43,7 +46,8 @@
         this.name = name;
     }
 
-    // 特性點 (將父類的 instance 作為子類原型)
+    // **特性點**
+    // 將父類的 instance 作為子類原型
     // 缺點1.無法傳參數, 下面的例子將導致 Billy & Caro 的 Parent 被寫死成 Andy
     Child.prototype = new Parent('Andy');
 
@@ -60,7 +64,8 @@
     console.log(childBilly.sayParentName === childCarter.sayParentName); // true
 
     /** 借用 constructor 型的繼承 **/
-    // 特性: 借用父類的 constructor 來增強子類的 instance, 等於是複製父類的 instance 屬性給子類
+    // 特性:
+    // 借用父類的 constructor 來增強子類的 instance, 等於是複製父類的 instance 屬性給子類
     // 優點:
     // 1.子類 instance, 可以向父類 constructor 傳參數
     // 2.子類 instance, 不會共享父類 constructor 的引用屬性, 例如原型鍊例子的 array 是引用類型的屬性
@@ -80,7 +85,8 @@
     }
 
     function Child2(name, gender) {
-        // 特性點使用 call 把子類 constructor 的 this 綁定到父類
+        // **特性點**
+        // 使用 call 把子類 constructor 的 this 綁定到父類
         // 並使用 Parent2 的 constructor 去 new 出 instance
         Parent2.call(this, name, gender);
     }
@@ -112,8 +118,10 @@
     // 1.具有 constructor 的優點, 創建子類 instance, 可以向父類 constructor 傳參數
     // 2.具有原型鏈的優點, 父類 instance 的 method 定義在父類的原型對像上, 可以達到 method 共享
     // 3.不共享父類的引用屬性, 例如原型鍊例子的 array 屬性, 不會子類 instance 有屬性互相影響問題
-    // 缺點: 由於 call 了2次父類的 constructor, 會存在一份多餘的父類 instance 屬性
-    // 注意: "組合繼承" 這種方式, 要記得修復 "子類.prototype.constructor" 指向
+    // 缺點:
+    // 由於 call 了2次父類的 constructor, 會存在一份多餘的父類 instance 屬性
+    // 注意:
+    // "組合繼承" 這種方式, 要記得修復 "子類.prototype.constructor" 指向
 
     function Parent3(name) {
         // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
@@ -136,24 +144,87 @@
         this.gender = gender;
     }
 
+    // **缺點**
     // 第一次 call 父類 constructor, 因為 new 的時候會將 constructor 的 this 指向 新物件, 並執行一次 constructor
     // 創建父類 instance 作為子類原型, 此時這個父類 instance 就又有了一份相同的 instance 屬性
     // 但這份會被第一次拷貝來的 instance 屬性屏蔽掉, 所以變得多餘
     Child3.prototype = new Parent3();
-
-    // 修復 "子類.prototype.constructor" 指向
-    Child3.prototype.constructor = Parent3;
 
     const child3 = new Child3('David', '男生');
     const child4 = new Child3('Sara', '女生');
 
     child4.array.push('789');
 
-    console.log('-------------------------');
-    console.log(child3);
-    console.log(child4);
-    child3.sayParentName();
-    child4.sayParentName();
+    // console.log(child3);
+    // console.log(child4);
+    // child3.sayParentName();
+    // child4.sayParentName();
+
+
+    /** 組合繼承(優化版 1) **/
+    // 特性:
+    // 改成砍掉父類的 instance 屬性, 在調用父類 constructor 的時候, 就不會初始化兩次 instance, 避免組合繼承的缺點
+    // 優點:
+    // 1.只會呼叫一次父類 constructor
+    // 2.保留 constructor 的優點, 創建子類 instance, 可以向父類 constructor 傳參數
+    // 3.保留原型鏈的優點, 父類的 instance method 定義在父類的原型對像上, 可以實現 method 復用
+    // 缺點:
+    // 修正 constructor 的指向之後, 父類 instance 的 constructor 指向, 同時也發生變化(這是我們不希望的)
+    // 注意:
+    // "組合繼承優化1" 這種方式, 要記得修復 Child.prototype.constructor 指向
+
+    function Parent4(name) {
+        // 一般屬性是每個 instance 的基本屬性, new 出去之後就不會共享了
+        this.parentName = name;
+        // 一般屬性不會有 array 只是 demo 用, 因為 array 是引用類型的屬性
+        this.array = ['123', '456'];
+    }
+
+    // method 定義在父類的原型對像上
+    Parent4.prototype.sayParentName = function () {
+        console.log('hello' + this.parentName);
+    }
+
+    function Child4(name, gender) {
+        // 第二次 call 父類 constructor
+        // 使用 call 來改變呼叫父類 constructor 時, this 的指向改成用子類的 instance, 所以最終執行的還是父類 constructor
+        // 等於從父類拷貝一份父類 instance 屬性, 作為子類 instance 的屬性
+        Parent4.call(this, name);
+        // gender 是 Child3 的基本屬性
+        this.gender = gender;
+    }
+
+    // **缺點**
+    // 因為是通過原型來實現繼承的, Child.prototype 的上面是沒有 constructor 屬性
+    // 這樣的話, 會一路往上透過 __proto__ 尋找, 就會找到了 Parent.prototype 上面的 constructor 屬性
+    // 所以當你修改了子類 instance 的 constructor 屬性, 所有 constructor 的指向都會發生變化
+    Child4.prototype = Parent4.prototype;
+
+    const child5 = new Child4('kevin', '男生');
+    const child6 = new Child4('Sunny', '女生');
+    const parent1 = new Parent4('Father', '男生');
+
+    console.log(child5);
+    console.log(child6);
+    console.log(parent1);
+    // 以下三個都會是 Parent4
+    console.log(child5.constructor);
+    console.log(child6.constructor);
+    console.log(parent1.constructor);
+
+    // 嘗試修復子類 instance 的 constructor
+    Child4.prototype.constructor = Child4;
+
+    // 以下三個也都會是 Child4
+    console.log(child5.constructor);
+    console.log(child6.constructor);
+    console.log(parent1.constructor); // 問題點就在這, 動了子類 instance 的 constructor, 全部都被改動
+
+
+
+
+
+
 
     function object(o) {
         const F = function () {
