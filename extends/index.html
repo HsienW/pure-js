@@ -244,21 +244,21 @@
 
     // **特性點**
     // Object.create 會對 create 的 Object, 在原型上進行查找屬性, 原型上沒有對應的屬性, 就會報錯
-    Child5.prototype = Object.create(Parent5.prototype);
-    Child5.prototype.constructor = Child5;
-    Child5.prototype.sayChildGender = function () {
-        console.log(this.gender);
-    }
+    // Child5.prototype = Object.create(Parent5.prototype);
+    Child5.prototype = object(Parent5.prototype);
 
     // ** 若不使用 Object.create 的方法 **
-    // function object(obj, name) {
-    //     const F = function () {};
-    //     F.prototype = obj;
-    //     // console.log('[[[[[[[[[');
-    //     // console.log(obj);
-    //     // console.log(new F());
-    //     return new F();
-    // }
+    function inherit(o) {
+        const t = object(o);
+        t.constructor = Child5;
+        return t;
+    }
+
+    function object(o) {
+        const F = function () {};
+        F.prototype = o;
+        return new F();
+    }
 
     const child7 = new Child5('Johnny', '男生');
     const child8 = new Child5('Tina', '女生');
@@ -272,31 +272,21 @@
     console.log(Child5.prototype);
     // parent2.sayParentName();
     child8.sayParentName();
-    child8.sayChildGender();
+    // child8.sayChildGender();
 
-    function AAA (name) {
-        this.name = name;
-    }
+    // function AAA (name) {
+    //     this.name = name;
+    // }
+    //
+    // function BBB () {
+    //     this.hello = 'hello';
+    // }
 
-    function BBB () {
-        this.hello = 'hello';
-    }
-
-    const test = new AAA('ANDY');
+    // const test = new AAA('ANDY');
 
     // console.log('rrrrrrrrrrrrrrrrrrrr');
     // child8.sayChildGender();
 
-
-
-
-    function object(o) {
-        const F = function () {
-            this.name = '我是 F 本身的';
-        };
-        F.prototype = o;
-        return new F();
-    }
 
     const objectTest = {
         sex: 'man',
