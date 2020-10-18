@@ -233,7 +233,7 @@
 
     // method 定義在父類的原型對像上
     Parent5.prototype.sayParentName = function () {
-        console.log('hello' + this.parentName);
+        console.log('hello ' + this.parentName);
     }
 
     function Child5(name, gender) {
@@ -245,99 +245,50 @@
     // **特性點**
     // Object.create 會對 create 的 Object, 在原型上進行查找屬性, 原型上沒有對應的屬性, 就會報錯
     // Child5.prototype = Object.create(Parent5.prototype);
-    Child5.prototype = object(Parent5.prototype);
+    Child5.prototype = inherit(Parent5.prototype);
 
-    // ** 若不使用 Object.create 的方法 **
-    function inherit(o) {
-        const t = object(o);
-        t.constructor = Child5;
-        return t;
+    /** 若不使用 Object.create 的方法 **/
+
+    // inherit 用來處理
+    // 1.取得父類 prototype 全部的東西
+    // 2.子類 constructor 指向問題
+    function inherit(targetPrototype) {
+        // 透過 handlePrototype 拿到擁有父類 prototype 的 instance
+        const newTarget = handlePrototype(targetPrototype);
+
+        // 因為是從 handlePrototype 來的 instance
+        // newTarget 目前的 constructor 是指向用來暫存的 CreatePrototypeObj
+        // 所以需要修復 newTarget.constructor 的指向, 指回自己子類
+        newTarget.constructor = Child5;
+        // 最後回傳處理好的 instance 給子類的 prototype
+        return newTarget;
     }
 
-    function object(o) {
-        const F = function () {};
-        F.prototype = o;
-        return new F();
+
+    // 因為前面例子的缺點
+    // 1.無法將父類 prototype 直接指定給子類 prototype,
+    // 2.無法直接 new 父類 instance
+    // 無法讓子類完美的取得父類的 prototype (包括 method 等等...掛在原型鍊上的東西)
+    // 所以透過 handlePrototype, 建立一個新的 constructor 隔開一層來處理,
+    function handlePrototype(targetPrototype) {
+        // 暫時用來存放父類用的 constructor
+        let CreatePrototypeObj = function () {
+        };
+        // 將想要的父類 prototype 直接指定給它的 prototype
+        CreatePrototypeObj.prototype = targetPrototype;
+        // 回傳暫時 constructor 的 instance, 就可以隔開原型鍊上跟 targetPrototype 相關的修改
+        // 不會有修改了子類 instance 的 constructor 屬性, 所有 constructor 的指向都會發生變化
+        return new CreatePrototypeObj();
     }
 
     const child7 = new Child5('Johnny', '男生');
     const child8 = new Child5('Tina', '女生');
     const parent2 = new Parent5('Mother', '女生');
 
-    // child8.array.push('789');
-
     console.log(child7);
     console.log(child8);
     console.log(parent2);
-    console.log(Child5.prototype);
-    // parent2.sayParentName();
     child8.sayParentName();
-    // child8.sayChildGender();
-
-    // function AAA (name) {
-    //     this.name = name;
-    // }
-    //
-    // function BBB () {
-    //     this.hello = 'hello';
-    // }
-
-    // const test = new AAA('ANDY');
-
-    // console.log('rrrrrrrrrrrrrrrrrrrr');
-    // child8.sayChildGender();
-
-
-    const objectTest = {
-        sex: 'man',
-        seyYouSex: function () {
-            return this.sex;
-        }
-    }
-
-    const objectTestTwo = object(objectTest);
-
-    // console.log(objectTestTwo);
-    // console.log(objectTestTwo.sex);
-    // console.log(objectTestTwo.seyYouSex);
-
-    // case3: 使用 es5 Object.create() 來做原型繼承
-
-    const obj = {
-        "fruitList": ["apple", "orange"]
-    }
-    const obj2 = Object.create(obj);
-
-    obj2.fruitList.push("banana");
-
-    const obj3 = Object.create(obj);
-
-    // console.log(obj3.fruitList);
-
-
-    /** 組合式繼承 **/
-
-    function SuperType(gender) {
-        this.gender = gender;
-    }
-
-    SuperType.prototype.sayGender = function () {
-        console.log(this.gender);
-    }
-
-    function SubType(name) {
-        SuperType.call(this, '男性');
-        this.name = name;
-    }
-
-    SubType.prototype = new SuperType('男性');
-    SubType.prototype.constructor = SubType; // 因為 SubType 的 prototype 被改寫了, 所以 constructor 必須要也要改寫
-
-    const instance = new SubType('Andy');
-
-    // console.log(instance);
-    // console.log(instance.sayGender());
-
 
 </script>
 </body>
