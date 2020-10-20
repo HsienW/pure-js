@@ -33,6 +33,84 @@
 
     count1.init();
     count2.init();
+
+
+    function parent() {
+        let count = 0;
+
+        function add() {
+            console.log(++count);
+        }
+
+        function less() {
+            console.log(--count);
+        }
+
+        return {
+            addCount: add,
+            lessCount: less
+        };
+    }
+
+    const test = parent();
+
+    test.addCount();
+    test.addCount();
+    test.lessCount();
+
+
+    // function a(){　　//建立函數a
+    //     let i=0;　　　　//定義變量i
+    //     function b(){　　　　//在函數a內套入函數b
+    //         console.log(++i);　　　　//提示框，輸出i的值
+    //     }
+    //     return b;　　　　　　//返回函數b的值
+    // }
+    //
+    // const c = a();　　　　//將函數a賦給變量c
+    // c();
+    // c();
+    // c();
+
+    function aa() {
+        let hello = 'hello';
+
+        function sayHello() {
+            return hello;
+        }
+
+        return sayHello;
+    }
+
+    const tttt = aa();
+
+    // console.log(tttt());
+
+    // window.onresize = function(){
+    //     console.log('onresize') //只想触发一次
+    // }
+
+    window.onresize = function () {
+        debounce(fn, 1000)
+    }
+
+    const fn = function () {
+        console.log('fn')
+    }
+
+    let time = '';
+
+    function debounce(fn, timeLong) {
+        if (time) {
+            clearTimeout(time)
+            time = '';
+        }
+
+        time = setTimeout(function () {
+            fn();
+        }, timeLong)
+    }
+
 </script>
 </body>
 </html>
