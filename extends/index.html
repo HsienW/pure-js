@@ -264,9 +264,8 @@
         return newTarget;
     }
 
-
     // 因為前面例子的缺點
-    // 1.無法將父類 prototype 直接指定給子類 prototype,
+    // 1.無法將父類 prototype 直接指定給子類 prototype
     // 2.無法直接 new 父類 instance
     // 無法讓子類完美的取得父類的 prototype (包括 method 等等...掛在原型鍊上的東西)
     // 所以透過 handlePrototype, 建立一個新的 constructor 隔開一層來處理,
