@@ -72,43 +72,58 @@
     // c();
     // c();
 
-    function aa() {
-        let hello = 'hello';
+    /** 這個只想最後拖動放開時 call 一次, 而不是隨著拖動狂 call **/
+        // window.onresize = function(){
+        //     console.log('我變換視窗大小了')
+        // }
 
-        function sayHello() {
-            return hello;
-        }
+    /** 方法:使用一般寫法 **/
+    // 缺點: 控制是否執行的變數 time 放在外部, 可能被東西竄改值
+    let time = null;
 
-        return sayHello;
+    const log = function () {
+        console.log('我變換視窗大小了');
     }
-
-    const tttt = aa();
-
-    // console.log(tttt());
-
-    // window.onresize = function(){
-    //     console.log('onresize') //只想触发一次
-    // }
 
     window.onresize = function () {
-        debounce(fn, 1000)
+        debounce1(log);
     }
 
-    const fn = function () {
-        console.log('fn')
-    }
-
-    let time = '';
-
-    function debounce(fn, timeLong) {
+    function debounce1(doFunction) {
         if (time) {
-            clearTimeout(time)
-            time = '';
+            clearTimeout(time);
+            time = null;
         }
 
         time = setTimeout(function () {
-            fn();
-        }, timeLong)
+            doFunction();
+        }, 1000)
+    }
+
+    /** 方法:使用閉包 **/
+        // 優點: 控制是否執行的變數 timer 所在 function 內部, 外部的東西是無法影響這個變數的
+    const callFunction = function () {
+        console.log('我變換視窗大小了')
+    }
+
+    window.onresize = debounce(callFunction);
+
+    function debounce(doFunction) {
+        // 當閉包裡的 timer 第一次被執行後, 就會保留在記憶體內,
+        // 因為 return function 內有用到變數 timer
+        // 所以 js 會判定變數 timer 還有引用, 不用被記憶體回收清掉
+        // 且 timer 被鎖在 debounce 中, 外部的東西是無法影響這個變數的
+        let timer = null;
+        return function () {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            timer = setTimeout(function () {
+                doFunction();
+            }, 1000)
+        }
+
     }
 
 </script>
