@@ -62,23 +62,23 @@
     // function a(){　　//建立函數a
     //     let i=0;　　　　//定義變量i
     //     function b(){　　　　//在函數a內套入函數b
-    //         console.log(++i);　　　　//提示框，輸出i的值
+    //         console.log(++i);　　　　//提示框, 輸出i的值
     //     }
     //     return b;　　　　　　//返回函數b的值
     // }
     //
-    // const c = a();　　　　//將函數a賦給變量c
+    // const c = a();　　　　//將函數 a 賦給變量c
     // c();
     // c();
     // c();
 
-    /** 這個只想最後拖動放開時 call 一次, 而不是隨著拖動狂 call **/
-        // window.onresize = function(){
-        //     console.log('我變換視窗大小了')
-        // }
+    /** 使用閉包防止狂 call **/
+    // window.onresize = function(){
+    //     console.log('我變換視窗大小了')
+    // }
 
-    /** 方法:使用一般寫法 **/
-    // 缺點: 控制是否執行的變數 time 放在外部, 可能被東西竄改值
+    /** 例子1:使用一般寫法 **/
+        // 缺點: 控制是否執行的變數 time 放在外部, 可能被其他全域的竄改值
     let time = null;
 
     const log = function () {
@@ -100,11 +100,11 @@
         }, 1000)
     }
 
-    /** 方法:使用閉包 **/
+    /** 例子2:使用閉包 **/
         // 優點: 控制是否執行的變數 timer 所在 function 內部, 外部的東西是無法影響這個變數的
     const callFunction = function () {
-        console.log('我變換視窗大小了')
-    }
+            console.log('我變換視窗大小了')
+        }
 
     window.onresize = debounce(callFunction);
 
@@ -123,8 +123,40 @@
                 doFunction();
             }, 1000)
         }
-
     }
+
+    /** 使用實現單例模式 **/
+    class Single {
+        constructor(name) {
+            this.name = name;
+        }
+
+        sayName() {
+            return this.name;
+        }
+    }
+
+    // 當 createSingle 被 call 時 IIFE 就會執行, 接著實例化了一個 Single 的 instance
+    const createSingle = (function () {
+        // 而閉包讓 call createSingle 可以永遠拿到存在裡面的 instance 變數
+        let instance = null;
+
+        // 這個匿名 function 永遠會 return 同一個存在 instance 變數裡的實例
+        return function (name) {
+            if (!instance) {
+                instance = new Single(name);
+            }
+            return instance;
+        }
+    })();
+
+    const andy = createSingle('Andy');
+    const billy = createSingle('Billy');
+
+    console.log(andy === billy);
+    // 所以即便用了兩個不同的 andy & billy 來呼叫, sayName 都相同是 Andy
+    console.log(andy.sayName()); // Andy
+    console.log(billy.sayName()); // Andy
 
 </script>
 </body>
