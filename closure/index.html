@@ -158,6 +158,32 @@
     console.log(andy.sayName()); // Andy
     console.log(billy.sayName()); // Andy
 
+    /** 常見地雷 - 過時的閉包 **/
+    function createIncrement(i) {
+        let value = 0;
+
+        function increment() {
+            value += i;
+            console.log(value);
+            const message = `Current value is ${value}`;
+            return function logValue() {
+                console.log(message);
+            };
+        }
+
+        return increment;
+    }
+
+    // 第一 call createIncrement 時傳入 1, 並賦予了 1 給 value 變數
+    const inc = createIncrement(1);
+    // 第一 call inc 時傳入, valueLog 變數時, 閉包所拿到的 value 是 1,
+    // 因為 function 再被定義時, 已經當下 value 變數的值所以會一直是 1
+    const valueLog = inc(); // 1
+    inc(); // 2
+    inc(); // 3
+    valueLog(); // "Current value is 1" 應該是要 3才對
+
+
 </script>
 </body>
 </html>
