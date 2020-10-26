@@ -165,6 +165,7 @@
         function increment() {
             value += i;
             console.log(value);
+            // 注意這裡 message 是定義在 return function 之外
             const message = `Current value is ${value}`;
             return function logValue() {
                 console.log(message);
@@ -177,12 +178,39 @@
     // 第一 call createIncrement 時傳入 1, 並賦予了 1 給 value 變數
     const inc = createIncrement(1);
     // 第一 call inc 時傳入, valueLog 變數時, 閉包所拿到的 value 是 1,
-    // 因為 function 再被定義時, 已經當下 value 變數的值所以會一直是 1
-    const valueLog = inc(); // 1
+    // 因為變數 message 再被定義時, 是拿當下 value 變數的值所以會一直是 1
+    // const valueLog = inc(); // 1
     inc(); // 2
     inc(); // 3
-    valueLog(); // "Current value is 1" 應該是要 3才對
+    // valueLog(); // "Current value is 1" 應該是要 3才對
 
+    /** 常見地雷 - 過時的閉包  第一種解法**/
+    const valueLog2 = inc();
+    valueLog2();
+
+    /** 常見地雷 - 過時的閉包  第二種解法**/
+    function createIncrement2(i) {
+        let value = 0;
+
+        function increment() {
+            value += i;
+            console.log(value);
+            return function logValue() {
+                // 注意這裡 message 是定義在 return function 之內
+                const message = `Current value is ${value}`;
+                console.log(message);
+            };
+        }
+
+        return increment;
+    }
+
+    const inc2 = createIncrement2(1);
+    const valueLog3 = inc2();
+    inc2(); // 2
+    inc2(); // 3
+
+    valueLog3(); // Current value is 3
 
 </script>
 </body>
