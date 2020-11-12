@@ -5,8 +5,92 @@
     <title>Event loops</title>
 </head>
 <body>
-<table><tbody></tbody></table>
+<table>
+    <tbody></tbody>
+</table>
+<div id="parent">
+    Parent
+    <button id="child">Child</button>
+</div>
 <script>
+    /**
+     Macro task = dom 操作 & 瀏覽器 API 等等 (EX: click event or setTimeout 等等...)
+     Micro task = 非同步的操作 (EX: promise or async 的 callback 等等...)
+     **/
+
+    /** Pure case **/
+    const a = () => {
+        console.log('1');
+        new Promise((resolve) => {
+            console.log('4');
+            resolve();
+        }).then(() => {
+            console.log('5');
+        }).catch(() => {
+            console.log('6');
+        })
+    }
+
+    // 第一次 render 2 1 4 5
+    // 第二次 render 3
+    const b = () => {
+        console.log('2');
+        a();
+        setTimeout(() => {
+            console.log('3');
+        }, 0);
+    }
+
+    b();
+
+    /** Event 冒泡 case **/
+    const parent = document.querySelector('#parent');
+    const child = document.querySelector('#child');
+
+    function isClick() {
+        // 同步執行, 會印出 click
+        console.log('click');
+
+        // promise 同步執行, 會印出 'promise start'
+        new Promise((resolve) => {
+            console.log('promise start');
+            resolve();
+        })
+            // promise 的 then 是非同步的, 註冊一個 Micro task
+            // 會進入 task queue 等候被拖入 call stack 執行
+            .then(() => {
+                console.log('promise then call back');
+            });
+
+        // setTimeout, 註冊一個 Macro task
+        // 會進入 task queue 等候全部 Micro task 執行完後, 再次 render 才會被執行
+        setTimeout(() => console.log('timeout'));
+
+        // requestAnimationFrame, 註冊一個 Macro task
+        // 目前 requestAnimationFrame 被瀏覽器定義的執行時間為
+        // 會進入 task queue 等候全部 Micro task 執行完後,
+        // 下次重新 render 前所執行的操作, 而重新 render 也是作為 Macro task 的一個步驟來存在的,
+        // 所以該步驟晚於 Micro task  的執行, 姑且算為 Macro task
+        requestAnimationFrame(() => console.log('animationFrame'));
+
+        // setAttribute, 屬於修改了 dom 的屬性, 這會導致重新 render
+        parent.setAttribute('data-random', Math.random());
+    }
+
+    new MutationObserver(_ => {
+        console.log('observer');
+    }).observe(parent, {
+        attributes: true
+    })
+
+    // 因為 click event 會冒泡,
+    // 對應的這次會觸發2次 isClick (1次在 parent 1次在 child)
+    // 而瀏覽器會優先執行冒泡的事件, 早於其他的 Macro task (重新 render 前),
+    // 也就是說 child log 出來的會重複印一次 (同步跟 Micro task 都會)
+    parent.addEventListener('click', isClick);
+    child.addEventListener('click', isClick);
+
+    /** Event table case **/
     // 執行佇列 use serTimeout handle large table DOM create case
     // 並未拆分一次執行, 創建 100000 個 DOM 將導致, 執行佇列內一個巨大的微任務跑很久
     // const tbody = document.querySelector('tbody');
@@ -50,6 +134,7 @@
             setTimeout(createRows, 0)
         }
     }, 0);
+
 </script>
 </body>
 </html>
