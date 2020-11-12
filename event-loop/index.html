@@ -5,9 +5,9 @@
     <title>Event loops</title>
 </head>
 <body>
-<table>
-    <tbody></tbody>
-</table>
+<!--<table>-->
+<!--    <tbody></tbody>-->
+<!--</table>-->
 <div id="parent">
     Parent
     <button id="child">Child</button>
@@ -41,7 +41,7 @@
         }, 0);
     }
 
-    b();
+    // b();
 
     /** Event 冒泡 case **/
     const parent = document.querySelector('#parent');
@@ -71,7 +71,9 @@
         // 會進入 task queue 等候全部 Micro task 執行完後,
         // 下次重新 render 前所執行的操作, 而重新 render 也是作為 Macro task 的一個步驟來存在的,
         // 所以該步驟晚於 Micro task  的執行, 姑且算為 Macro task
+        // requestIdleCallback 是撿瀏覽器空閒時間來執行任務, 也是重新 render 前會執行, 所以也算 Macro task
         requestAnimationFrame(() => console.log('animationFrame'));
+        // window.requestIdleCallback(() => console.log('requestIdleCallback'));
 
         // setAttribute, 屬於修改了 dom 的屬性, 這會導致重新 render
         parent.setAttribute('data-random', Math.random());
@@ -90,6 +92,15 @@
     parent.addEventListener('click', isClick);
     child.addEventListener('click', isClick);
 
+    // 如果使用直接 .click() 的方式
+    // 與手動觸發 click 的執行順序不一樣, 並不是通過點擊 dom 實現的觸發事件
+    // 而是類似 dispatchEvent 這樣的方式, 併不能算是一個有效的互動, 可以算為為同步執行的 function
+
+    // 在執行了一次 isClick 註冊了 Micro task & Macro task 以後,
+    // 實際上在 call stack 的 click() 這個 function 被判定沒有執行完,
+    // 所以會直接再進入事件冒泡觸發的 isClick, 都做完才會輪到 task queue 等候的 Micro task 執行
+    child.click();
+
     /** Event table case **/
     // 執行佇列 use serTimeout handle large table DOM create case
     // 並未拆分一次執行, 創建 100000 個 DOM 將導致, 執行佇列內一個巨大的微任務跑很久
@@ -107,33 +118,33 @@
     // }
 
     // 拆分成 100 次微任務, 釋放執行佇列跑的時間, 每次做完瀏覽器都可以跑一次 render
-    const rowCount = 100000;
-    const divide = 100;
-    const chunkSize = rowCount / divide;
-    let iteration = 0;
-
-    console.log(chunkSize * iteration);
-
-    const tbody = document.getElementsByTagName('tbody')[0];
-    setTimeout(function createRows() {
-        const base = chunkSize * iteration;
-
-        for(let i=0; i<chunkSize; i++) { // 拆成一行 6 格
-            const tr = document.createElement('tr');
-
-            for(let t=0; t<6; t++) {
-                const td = document.createElement('td');
-                td.appendChild(document.createTextNode((i + base) + ',' + t + ',' + iteration));
-                tr.appendChild(td);
-            }
-            tbody.appendChild(tr);
-        }
-        iteration ++;
-
-        if (iteration < divide) {
-            setTimeout(createRows, 0)
-        }
-    }, 0);
+    // const rowCount = 100000;
+    // const divide = 100;
+    // const chunkSize = rowCount / divide;
+    // let iteration = 0;
+    //
+    // console.log(chunkSize * iteration);
+    //
+    // const tbody = document.getElementsByTagName('tbody')[0];
+    // setTimeout(function createRows() {
+    //     const base = chunkSize * iteration;
+    //
+    //     for(let i=0; i<chunkSize; i++) { // 拆成一行 6 格
+    //         const tr = document.createElement('tr');
+    //
+    //         for(let t=0; t<6; t++) {
+    //             const td = document.createElement('td');
+    //             td.appendChild(document.createTextNode((i + base) + ',' + t + ',' + iteration));
+    //             tr.appendChild(td);
+    //         }
+    //         tbody.appendChild(tr);
+    //     }
+    //     iteration ++;
+    //
+    //     if (iteration < divide) {
+    //         setTimeout(createRows, 0)
+    //     }
+    // }, 0);
 
 </script>
 </body>
