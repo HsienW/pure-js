@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>test</title>
+</head>
+<body>
+<script>
+
+    const MainStateFactory = (function () {
+        const State = function () {
+            this.test = '拿到';
+        };
+
+        State.prototype.clickHandler1 = function () {
+            throw new Error('子類別要覆蓋此方法');
+        };
+
+        State.prototype.clickHandler2 = function () {
+            throw new Error('子類別要覆蓋此方法');
+        };
+
+        return function (args) {
+            const Factory = function () {};
+
+            Factory.prototype = new State();
+
+            for (let i in args) {
+                Factory.prototype[i] = args[i];
+            }
+            return new Factory;
+        }
+    })();
+
+    const SignState = MainStateFactory({
+        clickHandler1: function () {
+            console.log('掃描中，點擊無效');
+            console.log(this.test);
+        },
+        clickHandler2: function () {
+            console.log('檔案正在掃描中，無法刪除');
+        }
+    });
+
+    console.log(SignState.clickHandler1());
+
+</script>
+</body>
+</html>
