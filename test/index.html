@@ -3,46 +3,180 @@
 <head>
     <meta charset="utf-8">
     <title>test</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #boxA,
+        #boxB {
+            display: inline-block;
+            height: 50px;
+            width: 50px;
+            transform: translateX(0);
+        }
+
+        #boxA {
+            background-color: #ff0000;
+        }
+
+        #boxB {
+            background-color: #0000ff;
+        }
+        #boxC {
+            height: 50px;
+            width: 50px;
+            background-color: yellow;
+        }
+    </style>
 </head>
 <body>
+<div class='container'>
+    <span id='boxA'></span>
+    <span id='boxB'></span>
+    <span id='boxC'></span>
+</div>
 <script>
 
-    const MainStateFactory = (function () {
-        const State = function () {
-            this.test = '拿到';
-        };
+    // const MainStateFactory = (function () {
+    //     const State = function () {
+    //         this.test = '拿到';
+    //     };
+    //
+    //     State.prototype.clickHandler1 = function () {
+    //         throw new Error('子類別要覆蓋此方法');
+    //     };
+    //
+    //     State.prototype.clickHandler2 = function () {
+    //         throw new Error('子類別要覆蓋此方法');
+    //     };
+    //
+    //     return function (args) {
+    //         const Factory = function () {};
+    //
+    //         Factory.prototype = new State();
+    //
+    //         for (let i in args) {
+    //             Factory.prototype[i] = args[i];
+    //         }
+    //         return new Factory;
+    //     }
+    // })();
+    //
+    // const SignState = MainStateFactory({
+    //     clickHandler1: function () {
+    //         console.log('掃描中，點擊無效');
+    //         console.log(this.test);
+    //     },
+    //     clickHandler2: function () {
+    //         console.log('檔案正在掃描中，無法刪除');
+    //     }
+    // });
+    //
+    // console.log(SignState.clickHandler1());
 
-        State.prototype.clickHandler1 = function () {
-            throw new Error('子類別要覆蓋此方法');
-        };
+    //     let snakeSpeed = 1;
+    //     let lastRenderTime = 2;
+    //
+    // const doAnimationAction = function (currentTime) {
+    //     console.log('2222222222222222222222');
+    //     // window.requestAnimationFrame(operations.doAnimation);
+    //     // activation = null;
+    //     // const secondRender = (currentTime - lastRenderTime) / 500;
+    //     // if (secondRender < 1 / snakeSpeed) {
+    //     //     return;
+    //     // }
+    //
+    //     // lastRenderTime = currentTime;
+    //     isStart();
+    // }
+    //
+    // const isStart = function () {
+    //     console.log('11111111111111111111111');
+    //     window.requestAnimationFrame(doAnimationAction);
+    // }
+    //
+    // const start = function () {
+    //     isStart();
+    // }
+    //
+    // start();
 
-        State.prototype.clickHandler2 = function () {
-            throw new Error('子類別要覆蓋此方法');
-        };
+    // const mainAnimation = (function () {
+    //     // let activation = null;
+    //     let snakeSpeed = 1;
+    //     let lastRenderTime = 2;
+    //     const operations = {};
+    //
+    //     operations.doAnimation = function (currentTime) {
+    //         console.log('================================');
+    //         // window.requestAnimationFrame(operations.doAnimation);
+    //         // activation = null;
+    //         const secondRender = (currentTime - lastRenderTime) / 500;
+    //         if (secondRender < 1 / snakeSpeed) {
+    //             return;
+    //         }
+    //
+    //         lastRenderTime = currentTime;
+    //         operations.isStart();
+    //     }
+    //
+    //     operations.isStart = function () {
+    //         console.log('-------------------------------');
+    //         window.requestAnimationFrame(operations.doAnimation);
+    //     }
+    //
+    //     const doAnimationAction = function (action) {
+    //         return operations[action].apply(this);
+    //     }
+    //
+    //     return {
+    //         doAnimationAction: doAnimationAction
+    //     }
+    //
+    // })()
 
-        return function (args) {
-            const Factory = function () {};
 
-            Factory.prototype = new State();
+    // mainAnimation.doAnimationAction('isStart');
 
-            for (let i in args) {
-                Factory.prototype[i] = args[i];
-            }
-            return new Factory;
-        }
-    })();
 
-    const SignState = MainStateFactory({
-        clickHandler1: function () {
-            console.log('掃描中，點擊無效');
-            console.log(this.test);
-        },
-        clickHandler2: function () {
-            console.log('檔案正在掃描中，無法刪除');
-        }
-    });
+    const boxA = document.getElementById('boxA'); // DEMO
+    const boxB = document.getElementById('boxB'); // DEMO
 
-    console.log(SignState.clickHandler1());
+    // x軸
+    let xA = 0; // DEMO
+    let xB = 0; // DEMO
+
+    // 每秒要跑的長度
+    const speedA = 80; // [px/s]
+    const speedB = 160; // [px/s]
+
+    let then = 0;
+
+    const animate = function (now) {
+        window.requestAnimationFrame(animate);
+
+        const delta = (now - then) / 1000;
+
+        console.log(then);
+        console.log('--------------');
+        console.log(now);
+        console.log('--------------');
+        console.log(delta);
+        console.log('--------------');
+        // A
+        const a = speedA * delta;
+        boxA.style.transform = `translateX(${xA += a}px)`; // DEMO
+
+        // B
+        const b = speedB * delta;
+        boxB.style.transform = `translateX(${xB += b}px)`; // DEMO
+
+        then = now
+    }
+
+    window.requestAnimationFrame(animate);
 
 </script>
 </body>
