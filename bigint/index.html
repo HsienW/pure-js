@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Bigint</title>
+</head>
+<body>
+<script>
+
+    /** 原生 js 執行大數相加 **/
+    // 問題: js 內建的 number (IEEE754) 精準範圍在 -(2^53 -1) 到 2^53-1 之間, 超過就算不准
+    // 解法: 可轉成 string 然後用直式加法
+    // 2^53 等於 9007199254740991
+
+    let a = 9007199254740991;
+    let b = 900719925474099100;
+
+    console.log(a); // 9007199254740991
+    console.log(b); // 900719925474099100
+    console.log(a + b); // 909727124728840100, 這裡出錯了
+
+    // 兩數相加前, 先轉成 string 並補足位數, 不夠的部分補 0
+    function change(a, b) {
+        let stringA = a.toString();
+        let stringB = b.toString();
+        // 取兩數中最大的那個長度
+        let maxLength = Math.max(stringA.length, stringB.length);
+        // 用 0 從前面開始補齊長度
+        // padStart 會將用給定用於填充的字串, 以重複的方式, 插入到目標字串的起頭(左側), 直到目標字串到達指定長度。
+        stringA = stringA.padStart(maxLength, 0); // '009007199254740991'
+        stringB = stringB.padStart(maxLength, 0); // '900719925474099100'
+
+        console.log(stringA); // '9007199254740991'
+        console.log(stringB); // '900719925474099100'
+
+        add(stringA, stringB)
+    }
+
+    function add(a, b, maxLength) {
+        let ten = 0; // 紀錄當前數字的變數
+        let carry = 0;   // 記錄當前進位 value 的變數
+        let summary = ''; // 進位加總後的當前 value 變數
+
+        // 用直式加法來看, 從十位數開始所以起始值是 maxLength - 1, 依序遞減往前推
+        for (let i = maxLength - 1; i >= 0; i--) {
+
+            // 把 a b 相同的 index 位數, 先轉成數值
+            // 再把對應加總 a b 相同的 index 位數, 之後再加當有被後一位進位的 value
+            ten = parseInt(a[i]) + parseInt(b[i]) + carry;
+
+            // 檢查 carry 是否加總後, 又需要進一位, 是的話就塞給 carry
+            carry = Math.floor(ten / 10);
+            // 把進位後的餘數跟當前的 summary 做最後加總
+            summary = ten % 10 + summary;
+        }
+
+        // 如果最後的 carry 還有餘數的話, 就在 summary 前面加上 1
+        if (carry === 1) {
+            summary = "1" + summary;
+        }
+        console.log(summary) // '900719925474099100'
+    }
+
+    change(a, b);
+
+</script>
+</body>
+</html>
