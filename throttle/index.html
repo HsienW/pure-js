@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Throttle</title>
+    <style>
+        img {
+            display: block;
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/repeat.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/prev.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/play.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/pause.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/next.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/shuffle.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/repeat.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/prev.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/play.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/pause.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/next.svg"/>
+<img src="https://music-player-demo-assets.s3.amazonaws.com/icon/shuffle.svg"/>
+<script>
+    const throttle = function (callBack, delay) {
+        console.log('有進來');
+        let timer = null;
+
+        return function () {
+            let self = this;
+            let args = Array.prototype.shift.call(arguments);
+
+            console.log('進入節流');
+            if (timer !== null) {
+                return
+            }
+
+            timer = setTimeout(function () {
+                console.log('之前沒有存在了, 記錄下等時間到之後執行');
+                callBack.call(self, args);
+                timer = null;
+            }, delay);
+        }
+    }
+
+    const handleScroll = function () {
+        console.log('呼叫滾動');
+        console.log(window.scrollY);
+    }
+
+    window.addEventListener('scroll', throttle(handleScroll, 500));
+</script>
+</body>
+</html>
