@@ -24,7 +24,9 @@
 
     // 設定在什麼情況下觸發 callback 函式
     const options = {
+        // rootMargin 是有沒有要擴大 root 元件的 viewpoint 範圍
         rootMargin: '0px',
+        // threshold 是要加載的元素是要以往下滾動, 碰到哪邊當基準, 0 為碰到元素的頭, 1 為元素的底, 0.5 就等於中間
         threshold: 0
     };
 
