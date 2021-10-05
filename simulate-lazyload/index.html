@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Lazyload</title>
+    <style>
+        img {
+            display: block;
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/repeat.svg"/>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/prev.svg"/>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/play.svg"/>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/pause.svg"/>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/next.svg"/>
+<img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/shuffle.svg"/>
+<script>
+    const images = document.querySelectorAll('[data-src]');
+
+    // 設定在什麼情況下觸發 callback 函式
+    const options = {
+        rootMargin: '0px',
+        threshold: 0
+    };
+
+    // 載入圖片的函式
+    const loadImage = (image) => {
+        //  取得元素上 data-src 屬性中的圖片位址
+        const src = image.getAttribute('data-src');
+        //  取得元素上不存在 data-src 就直接離開
+        if (!src) {
+            return;
+        }
+        // 設定圖片的 src 並放入圖片位址讓瀏覽器載入
+        image.src = src;
+    }
+
+    // callback 函式
+    const callback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                //  只在目標元素進入 viewport 時執行加載工作
+                loadImage(entry.target);
+                //  執行加載就通知 observer 不用再監聽這個 entry 了
+                observer.unobserve(entry.target);
+            }
+        })
+    }
+
+    // 創建一個 observer
+    let imageObserver = new IntersectionObserver(callback, options);
+
+    // 幫所有圖片加上觀察
+    images.forEach((image) => {
+        imageObserver.observe(image)
+    });
+</script>
+</body>
+</html>
