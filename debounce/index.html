@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Debounce</title>
+</head>
+<body>
+<script>
+
+    const debounce = function (callBack, delay) {
+        console.log('有進來');
+        let timer = null;
+
+        return function () {
+            let self = this;
+            let args = Array.prototype.shift.call(arguments);
+
+            console.log('進入防抖');
+            if (timer !== null) {
+                console.log('發現之前有存在了, 清除掉');
+                clearTimeout(timer);
+                timer = null;
+            }
+
+            timer = setTimeout(function () {
+                console.log('之前沒有存在了, 記錄下等時間到之後執行');
+                callBack.call(self, args);
+            }, delay);
+        }
+    }
+
+    const testFunction = function (test) {
+        console.log(test)
+        console.log('我變換視窗大小了')
+    }
+
+    window.onresize = debounce(testFunction, 5000)('hello~');
+    // window.onresize = testFunction;
+
+</script>
+</body>
+</html>
