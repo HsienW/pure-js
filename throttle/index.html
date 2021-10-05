@@ -26,6 +26,7 @@
 <img src="https://music-player-demo-assets.s3.amazonaws.com/icon/next.svg"/>
 <img src="https://music-player-demo-assets.s3.amazonaws.com/icon/shuffle.svg"/>
 <script>
+    // setTimeout 作法, 但是 setTimeout 不能因為會加入執行佇列中, 所以不建議使用
     const throttle = function (callBack, delay) {
         console.log('有進來');
         let timer = null;
@@ -47,12 +48,30 @@
         }
     }
 
+    function useRafThrottle(callback, key) {
+        let throttleList = {};
+
+        if (throttleList[key]) {
+            return false;
+        }
+
+        throttleList[key] = true;
+
+        window.requestAnimationFrame((time) => {
+            throttleList[key] = false;
+            callback(time);
+        })
+        return true;
+    }
+
     const handleScroll = function () {
         console.log('呼叫滾動');
         console.log(window.scrollY);
     }
 
-    window.addEventListener('scroll', throttle(handleScroll, 500));
+    window.addEventListener('scroll', () => {
+        useRafThrottle(handleScroll, 'test');
+    });
 </script>
 </body>
 </html>
