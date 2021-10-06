@@ -7,14 +7,22 @@
 <body>
 <script>
 
+    // 固定參數長度的 case
     const add = function (a, b, c) {
         return a + b + c;
     }
 
+    // 不定參數長度的 case
     const dynamicAdd = function () {
-        return [...arguments].reduce((prev, curr) => {
-            return prev + curr
-        }, 0)
+        // let count;
+        // return function () {
+        //     for (let i = 0; i > arguments.length; i++) {
+        //         count = arguments[i]
+        //     }
+        // }
+        // return [...arguments].reduce((prev, curr) => {
+        //     return prev + curr
+        // }, 0)
     }
 
     const createCurry = function (func) {
@@ -24,7 +32,7 @@
         const initArgsLength = func.length;
 
         // 回傳 function 已供下一次呼叫使用
-        function isCurried () {
+        function isCurried() {
             //  currentArgs 紀錄當前該次呼叫帶有的全部參數
             const currentArgs = Array.prototype.slice.call(arguments);
             //  combineArgs 合併初始跟當前的參數, 因為表示使用過了
@@ -36,11 +44,12 @@
                 // 如果参数够了，就执行原函数
                 return func.apply(this, combineArgs);
 
-            // 不是的話就繼續柯里化
+                // 不是的話就繼續柯里化
             } else {
                 return createCurry.apply(null, [func, ...combineArgs]);
             }
         }
+
         return isCurried;
     }
 
