@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Curry</title>
+</head>
+<body>
+<script>
+
+    const add = function (a, b, c) {
+        return a + b + c;
+    }
+
+    const dynamicAdd = function () {
+        return [...arguments].reduce((prev, curr) => {
+            return prev + curr
+        }, 0)
+    }
+
+    const createCurry = function (func) {
+        // initArgs 紀錄全部得初始參數
+        const initArgs = Array.prototype.slice.call(arguments, 1);
+        // initArgsLength 紀錄初始參數的長度
+        const initArgsLength = func.length;
+
+        // 回傳 function 已供下一次呼叫使用
+        function isCurried () {
+            //  currentArgs 紀錄當前該次呼叫帶有的全部參數
+            const currentArgs = Array.prototype.slice.call(arguments);
+            //  combineArgs 合併初始跟當前的參數, 因為表示使用過了
+            // 接著傳給 func 往下執行
+            const combineArgs = [...initArgs, ...currentArgs];
+
+            // 檢查 combine 後參數總量是不是跟追上初始化的總量了, 是的話就執行 func
+            if (combineArgs.length >= initArgsLength) {
+                // 如果参数够了，就执行原函数
+                return func.apply(this, combineArgs);
+
+            // 不是的話就繼續柯里化
+            } else {
+                return createCurry.apply(null, [func, ...combineArgs]);
+            }
+        }
+        return isCurried;
+    }
+
+    const test = createCurry(add);
+
+    alert(test(1, 2)(3));
+
+</script>
+</body>
+</html>
