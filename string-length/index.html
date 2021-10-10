@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>String Length</title>
+</head>
+<body>
+<script>
+
+    // 給定一個 String 請找出其中不含有重複字的最長子串的長度
+
+    const getStringLength = function (string) {
+        let resultLength = 0;
+        let passNoRepeat = '';
+        let stringArray = string.split('');
+
+        for (let i = 0; i < stringArray.length; i++) {
+            let pass = passNoRepeat.indexOf(stringArray[i]);
+
+            if (pass === -1) {
+                passNoRepeat = passNoRepeat + stringArray[i];
+                resultLength = passNoRepeat.length > resultLength ? passNoRepeat.length : resultLength;
+            }
+        }
+
+        return resultLength;
+    }
+
+    console.log(getStringLength('redeeewsw'));
+
+</script>
+</body>
+</html>
