@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Two Sum</title>
+</head>
+<body>
+<script>
+
+    const array = [2, 7, 11, 15];
+
+    const towSum = function (array, target) {
+        const map = {};
+
+        for (let i = 0; i < array.length; i++) {
+            let value = array[i];
+
+            if (map[target - value] >= 0) {
+                return [map[target - value], i]
+            } else {
+                map[value] = i;
+            }
+        }
+    }
+
+    console.log(towSum(array, 26));
+
+</script>
+</body>
+</html>
