@@ -20,46 +20,65 @@
 <img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/next.svg"/>
 <img data-src="https://music-player-demo-assets.s3.amazonaws.com/icon/shuffle.svg"/>
 <script>
-    const images = document.querySelectorAll('[data-src]');
+    // const images = document.querySelectorAll('[data-src]');
+    //
+    // // 設定在什麼情況下觸發 callback 函式
+    // const options = {
+    //     // rootMargin 是有沒有要擴大 root 元件的 viewpoint 範圍
+    //     rootMargin: '0px',
+    //     // threshold 是要加載的元素是要以往下滾動, 碰到哪邊當基準, 0 為碰到元素的頭, 1 為元素的底, 0.5 就等於中間
+    //     threshold: 0
+    // };
+    //
+    // // 載入圖片的函式
+    // const loadImage = (image) => {
+    //     //  取得元素上 data-src 屬性中的圖片位址
+    //     const src = image.getAttribute('data-src');
+    //     //  取得元素上不存在 data-src 就直接離開
+    //     if (!src) {
+    //         return;
+    //     }
+    //     // 設定圖片的 src 並放入圖片位址讓瀏覽器載入
+    //     image.src = src;
+    // }
+    //
+    // // callback 函式
+    // const callback = (entries, observer) => {
+    //     entries.forEach(entry => {
+    //         if (entry.isIntersecting) {
+    //             //  只在目標元素進入 viewport 時執行加載工作
+    //             loadImage(entry.target);
+    //             //  執行加載就通知 observer 不用再監聽這個 entry 了
+    //             observer.unobserve(entry.target);
+    //         }
+    //     })
+    // }
+    //
+    // // 創建一個 observer
+    // let imageObserver = new IntersectionObserver(callback, options);
+    //
+    // // 幫所有圖片加上觀察
+    // images.forEach((image) => {
+    //     imageObserver.observe(image)
+    // });
 
-    // 設定在什麼情況下觸發 callback 函式
-    const options = {
-        // rootMargin 是有沒有要擴大 root 元件的 viewpoint 範圍
-        rootMargin: '0px',
-        // threshold 是要加載的元素是要以往下滾動, 碰到哪邊當基準, 0 為碰到元素的頭, 1 為元素的底, 0.5 就等於中間
-        threshold: 0
-    };
 
-    // 載入圖片的函式
-    const loadImage = (image) => {
-        //  取得元素上 data-src 屬性中的圖片位址
-        const src = image.getAttribute('data-src');
-        //  取得元素上不存在 data-src 就直接離開
-        if (!src) {
-            return;
-        }
-        // 設定圖片的 src 並放入圖片位址讓瀏覽器載入
-        image.src = src;
-    }
-
-    // callback 函式
-    const callback = (entries, observer) => {
-        entries.forEach(entry => {
+    const images = document.querySelectorAll('img');
+    const callBack = function (entries) {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                //  只在目標元素進入 viewport 時執行加載工作
-                loadImage(entry.target);
-                //  執行加載就通知 observer 不用再監聽這個 entry 了
-                observer.unobserve(entry.target);
+                const image = entry.target;
+                const src = image.getAttribute('data-src');
+                image.setAttribute('src', src);
+                observable.unobserve(image);
             }
         })
     }
 
-    // 創建一個 observer
-    let imageObserver = new IntersectionObserver(callback, options);
+    const observable = new IntersectionObserver(callBack);
 
-    // 幫所有圖片加上觀察
-    images.forEach((image) => {
-        imageObserver.observe(image)
+    images.forEach((img) => {
+        observable.observe(img);
     });
 </script>
 </body>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Get Height price</title>
+</head>
+<body>
+<script>
+    const minSupply = 2;
+    const maxCustom = 7;
+    const customPrice = [11, 15, 98, 9, 101, 57, 33];
+    const companyPrice = 36;
+
+    const heightPrice = function (supply, custom, customPrice, companyPrice) {
+        let result = [];
+        let passPrice = customPrice.filter((price) => price >= companyPrice);
+        let sortPrice = passPrice.sort((a, b) => b - a);
+
+        if (supply < custom) {
+            result = sortPrice.slice(0, custom - supply);
+            return result;
+        }
+
+        for (let i = 0; i < sortPrice.length; i++) {
+            result.push(sortPrice[i]);
+        }
+
+        return result;
+    }
+
+    console.log(heightPrice(minSupply, maxCustom, customPrice, companyPrice));
+
+</script>
+</body>
+</html>
