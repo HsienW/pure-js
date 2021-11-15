@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Instanceof</title>
+</head>
+<body>
+<script>
+
+    // Instanceof 用來檢查某個 obj 是否為某個 constructor 所 new 出來的
+    // 思路: 檢查物件的 constructor.prototype 是否存在於另一個物件的原型鏈 (Prototype Chain) 上
+    // 沿著某物件.__proto__ 屬性一路往上找直到最上層的 Object.prototype
+    // 可以使用 Object.getPrototypeOf() 回傳指定物件的原型, 換句話說, 就是取得該物件的 [[Prototype]] 屬性的值
+
+    function fakeInstanceOf(objA, objB) {
+        let proto = Object.getPrototypeOf(objA);
+
+        while (proto !== null) {
+            if (proto === objB.prototype) {
+                return true;
+            }
+            proto = Object.getPrototypeOf(proto);
+        }
+        return false;
+    }
+
+    const Person = function (name) {
+        this.name = name;
+    }
+
+    const Dog = function (name) {
+        this.name = name;
+    }
+
+    const a = new Person('AAA');
+
+    console.log(fakeInstanceOf(a, Dog));
+
+</script>
+</body>
+</html>
