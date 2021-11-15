@@ -48,6 +48,54 @@
         }
     }
 
+    // demo test
+    const demo = function (callback, delay) {
+        let timer = null;
+
+        return function () {
+            let self = this;
+            let args = [...arguments];
+
+            if (timer !== null) return;
+
+            timer = setTimeout(function () {
+                callback.call(self, args);
+                timer = null;
+            }, delay)
+        }
+    }
+
+    const demo2 = function (callback, delay) {
+        let timer = null;
+
+        return function () {
+            let self = this;
+            let argus = [...arguments];
+
+            if (timer !== null) {
+                clearTimeout(timer);
+                timer = null;
+                return;
+            }
+
+            timer = setTimeout(function () {
+                callback.call(self, argus);
+            }, delay)
+        }
+    }
+
+    function rafThrottle(func) {
+        let lock = false;
+        return function (...args) {
+            if (lock) return;
+            lock = true;
+            window.requestAnimationFrame(() => {
+                func.apply(this, args);
+                lock = false;
+            });
+        };
+    }
+
     function useRafThrottle(callback, key) {
         let throttleList = {};
 
@@ -65,13 +113,11 @@
     }
 
     const handleScroll = function () {
-        console.log('呼叫滾動');
+        console.log('滾動');
         console.log(window.scrollY);
     }
 
-    window.addEventListener('scroll', () => {
-        useRafThrottle(handleScroll, 'test');
-    });
+    window.addEventListener('resize', demo2(handleScroll, 500));
 </script>
 </body>
 </html>
