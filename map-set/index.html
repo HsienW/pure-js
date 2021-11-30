@@ -14,14 +14,14 @@
     const map1 = new Map();
     map1.set('name1', 'Andy');
     map1.set('name2', 'Billy');
-    console.log(map1); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
+    console.log(map1); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
 
     // Init setting value
     const map2 = new Map([
         ['name', 'Andy'],
         ['name2', 'Billy']
     ]);
-    console.log(map2); // Map(2) {"name" => "Andy", "name2" => "Billy"}
+    console.log(map2); // Map(2) {"name" => "Andy", "name2" => "Billy"}
 
     // Object change to Map
     const object = {
@@ -29,7 +29,7 @@
         name2: 'Billy'
     }
     const map3 = new Map(Object.entries(object));
-    console.log(map3); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
+    console.log(map3); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
 
     // Map change to Object
     const obj = Object.fromEntries(map3);
@@ -60,11 +60,11 @@
 
     // delete: 通過 key 刪除某個 item
     map4.delete('name2');
-    console.log(map4) // Map(1) {"name" => "Andy"}
+    console.log(map4) // Map(1) {"name" => "Andy"}
 
     // clear: 清空整個 Map
     map4.clear();
-    console.log(map4); // Map(0) {}
+    console.log(map4); // Map(0) {}
 
     const map5 = new Map([
         ['name', 'Andy'],
@@ -93,13 +93,13 @@
         [1, 'Billy'],
         [true, 'Killy'],
     ]);
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
 
     map6.set('1', 'Change');
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
 
     map6.set('2', 'Change');
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
 
 
     // Map Object 當 key 的地雷
@@ -108,16 +108,39 @@
     map7.set({}, 'Billy')
 
     // 每 set 一個 {} 其實相當於 new Object
-    console.log(map7); // Map(2) {{…} => "Andy", {…} => "Billy"}
+    console.log(map7); // Map(2) {{…} => "Andy", {…} => "Billy"}
 
     const obj2 = {}
     const map8 = new Map();
 
-    map8.set(obj2, 'Andy')
-    map8.set(obj2, 'Billy')
+    map8.set(obj2, 'Andy');
+    map8.set(obj2, 'Billy');
 
     // obj2 對 Mpa 來說相當於同一個 key 所以 value 產生後蓋前的問題
-    console.log(map8); // Map(1) {{…} => "Billy"}
+    console.log(map8); // Map(1) {{…} => "Billy"}
+
+    const map9 = new Map();
+
+    map9.set('key-1', 'Andy');
+    map9.set('key-2', 'Billy');
+    map9.set('key-3', 'Emma');
+
+    console.log(map9)
+
+    const get = function (key) {
+        let value = map9.get(key);
+
+        if (typeof value === undefined) {
+            return -1;
+        }
+        // 先把 map 原先裡的那個砍掉, 移除原本的順序
+        map9.delete(key);
+        map9.set(key, value);
+        return value;
+    };
+
+    get('key-2');
+    console.log(map9)
 
     // // Map
     // const testObj = {
