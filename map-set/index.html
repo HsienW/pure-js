@@ -7,117 +7,117 @@
 <body>
 <script>
 
-    // Initial
-    const map = new Map();
-
-    // Use set()
-    const map1 = new Map();
-    map1.set('name1', 'Andy');
-    map1.set('name2', 'Billy');
-    console.log(map1); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
-
-    // Init setting value
-    const map2 = new Map([
-        ['name', 'Andy'],
-        ['name2', 'Billy']
-    ]);
-    console.log(map2); // Map(2) {"name" => "Andy", "name2" => "Billy"}
-
-    // Object change to Map
-    const object = {
-        name1: 'Andy',
-        name2: 'Billy'
-    }
-    const map3 = new Map(Object.entries(object));
-    console.log(map3); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
-
-    // Map change to Object
-    const obj = Object.fromEntries(map3);
-    console.log(obj); // {name1: "Andy", name2: "Billy"}
-
-
-    // Map 有的屬性操作
-    const map4 = new Map([
-        ['name', 'Andy'],
-        ['name2', 'Billy']
-    ]);
-
-    // keys: 取得 Map 當前全部的 key
-    console.log(map4.keys()); // MapIterator {"name", "name2"}
-
-    // values: 取得 Map 當前全部的 key
-    console.log(map4.values()); // MapIterator {"Andy", "Billy"}
-
-    // has: 用來檢查是否有個 key 存在
-    console.log(map4.has('name'));// false
-    console.log(map4.has('name123')); // true
-
-    // get: 通過 key 取得 item value
-    console.log(map4.get('name')); // "Andy"
-
-    // size: 取得當下存在 Map 中有多少 item
-    console.log(map4.size); // 2
-
-    // delete: 通過 key 刪除某個 item
-    map4.delete('name2');
-    console.log(map4) // Map(1) {"name" => "Andy"}
-
-    // clear: 清空整個 Map
-    map4.clear();
-    console.log(map4); // Map(0) {}
-
-    const map5 = new Map([
-        ['name', 'Andy'],
-        ['name2', 'Billy'],
-        ['name3', 'Billy'],
-        ['name4', 'Killy']
-    ]);
-
-    // 第一個參數是 value, 第二個是 key
-    map5.forEach((value, key) => {
-        console.log(`${key}: ${value}`)
-    })
-
-    for (const [key, value] of map5) {
-        console.log(`${key}: ${value}`)
-    }
-    // 兩個都會 log 出一樣的結過
-    // name: Andy
-    // name2: Billy
-    // name3: Billy
-    // name4: Killy
-
-    // Map 設定不同 type 當 key
-    const map6 = new Map([
-        ['1', 'Andy'],
-        [1, 'Billy'],
-        [true, 'Killy'],
-    ]);
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
-
-    map6.set('1', 'Change');
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
-
-    map6.set('2', 'Change');
-    console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
-
-
-    // Map Object 當 key 的地雷
-    const map7 = new Map();
-    map7.set({}, 'Andy')
-    map7.set({}, 'Billy')
-
-    // 每 set 一個 {} 其實相當於 new Object
-    console.log(map7); // Map(2) {{…} => "Andy", {…} => "Billy"}
-
-    const obj2 = {}
-    const map8 = new Map();
-
-    map8.set(obj2, 'Andy');
-    map8.set(obj2, 'Billy');
-
-    // obj2 對 Mpa 來說相當於同一個 key 所以 value 產生後蓋前的問題
-    console.log(map8); // Map(1) {{…} => "Billy"}
+    // // Initial
+    // const map = new Map();
+    //
+    // // Use set()
+    // const map1 = new Map();
+    // map1.set('name1', 'Andy');
+    // map1.set('name2', 'Billy');
+    // console.log(map1); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
+    //
+    // // Init setting value
+    // const map2 = new Map([
+    //     ['name', 'Andy'],
+    //     ['name2', 'Billy']
+    // ]);
+    // console.log(map2); // Map(2) {"name" => "Andy", "name2" => "Billy"}
+    //
+    // // Object change to Map
+    // const object = {
+    //     name1: 'Andy',
+    //     name2: 'Billy'
+    // }
+    // const map3 = new Map(Object.entries(object));
+    // console.log(map3); // Map(2) {"name1" => "Andy", "name2" => "Billy"}
+    //
+    // // Map change to Object
+    // const obj = Object.fromEntries(map3);
+    // console.log(obj); // {name1: "Andy", name2: "Billy"}
+    //
+    //
+    // // Map 有的屬性操作
+    // const map4 = new Map([
+    //     ['name', 'Andy'],
+    //     ['name2', 'Billy']
+    // ]);
+    //
+    // // keys: 取得 Map 當前全部的 key
+    // console.log(map4.keys()); // MapIterator {"name", "name2"}
+    //
+    // // values: 取得 Map 當前全部的 key
+    // console.log(map4.values()); // MapIterator {"Andy", "Billy"}
+    //
+    // // has: 用來檢查是否有個 key 存在
+    // console.log(map4.has('name'));// false
+    // console.log(map4.has('name123')); // true
+    //
+    // // get: 通過 key 取得 item value
+    // console.log(map4.get('name')); // "Andy"
+    //
+    // // size: 取得當下存在 Map 中有多少 item
+    // console.log(map4.size); // 2
+    //
+    // // delete: 通過 key 刪除某個 item
+    // map4.delete('name2');
+    // console.log(map4) // Map(1) {"name" => "Andy"}
+    //
+    // // clear: 清空整個 Map
+    // map4.clear();
+    // console.log(map4); // Map(0) {}
+    //
+    // const map5 = new Map([
+    //     ['name', 'Andy'],
+    //     ['name2', 'Billy'],
+    //     ['name3', 'Billy'],
+    //     ['name4', 'Killy']
+    // ]);
+    //
+    // // 第一個參數是 value, 第二個是 key
+    // map5.forEach((value, key) => {
+    //     console.log(`${key}: ${value}`)
+    // })
+    //
+    // for (const [key, value] of map5) {
+    //     console.log(`${key}: ${value}`)
+    // }
+    // // 兩個都會 log 出一樣的結過
+    // // name: Andy
+    // // name2: Billy
+    // // name3: Billy
+    // // name4: Killy
+    //
+    // // Map 設定不同 type 當 key
+    // const map6 = new Map([
+    //     ['1', 'Andy'],
+    //     [1, 'Billy'],
+    //     [true, 'Killy'],
+    // ]);
+    // console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    //
+    // map6.set('1', 'Change');
+    // console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    //
+    // map6.set('2', 'Change');
+    // console.log(map6); // Map(3) {"1" => "Andy", 1 => "Billy", true => "Killy"}
+    //
+    //
+    // // Map Object 當 key 的地雷
+    // const map7 = new Map();
+    // map7.set({}, 'Andy')
+    // map7.set({}, 'Billy')
+    //
+    // // 每 set 一個 {} 其實相當於 new Object
+    // console.log(map7); // Map(2) {{…} => "Andy", {…} => "Billy"}
+    //
+    // const obj2 = {}
+    // const map8 = new Map();
+    //
+    // map8.set(obj2, 'Andy');
+    // map8.set(obj2, 'Billy');
+    //
+    // // obj2 對 Mpa 來說相當於同一個 key 所以 value 產生後蓋前的問題
+    // console.log(map8); // Map(1) {{…} => "Billy"}
 
     const map9 = new Map();
 
@@ -139,10 +139,21 @@
         return value;
     };
 
+    const test = function (keys) {
+        while (this.map9.size > 3) {
+            this.map9.delete(keys.next().value);
+        }
+    };
+
     get('key-2');
     console.log(map9)
+    console.log(map9.keys())
+    const keys = map9.keys();
+    console.log(keys.next().value)
+    console.log(keys.next().value)
+    console.log(keys.next().value)
+    console.log(keys.next().value)
 
-    // // Map
     // const testObj = {
     //     123: '123'
     // };
