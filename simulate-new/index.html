@@ -7,64 +7,70 @@
 <body>
 <script>
 
-    const Person = function (name) {
-        this.name = name;
-        return ['123'];
+    // const Person = function (name) {
+    //     this.name = name;
+    //     return ['123'];
+    //
+    //     // 若建構函式 return 非物件時, 會 new 出來該 Object value
+    //     // Null
+    //     // Undefined
+    //     // Number
+    //     // String
+    //     // Boolean
+    //     // Symbol
+    //
+    //     // 若建構函式 return 物件型時, 會直接返回這些東西
+    //     // Object
+    //     // Function
+    //     // Array
+    //     // Date
+    //     // RegExp
+    //     // Error
+    // }
 
-        // 若建構函式 return 非物件時, 會 new 出來該 Object value
-        // Null
-        // Undefined
-        // Number
-        // String
-        // Boolean
-        // Symbol
+    // Person.prototype.sayYourName = function () {
+    //     console.log('I am ' + this.name);
+    // }
+    //
+    // function objectFactory(constructor, ...arguments) {
+    //     // Step1 先判斷 constructor 是否為正常的 function
+    //     if (typeof constructor !== 'function') {
+    //         throw 'objectFactory function the first param must be a function';
+    //     }
+    //
+    //     // Step2 建立一個全新的空 Object
+    //     let newObj = {};
+    //
+    //     // Step3 把新 obj 的原型鍊(__proto__) 指向 Person 的 prototype 去對應建構式物件, 並拿到原型的屬性
+    //     newObj.__proto__ = constructor.prototype;
+    //
+    //     // Step4 用 apply 修改 Constructor (Person 函式)的 this 指向新 obj 物件, 並帶入其他引數
+    //     let constructorResult = constructor.apply(newObj, arguments);
+    //
+    //     // Step5 判斷用 constructor.apply 產生出來的 newObj 的類型, 是否為 object or function
+    //     let isObject = typeof constructorResult === 'object' && constructorResult !== null;
+    //     let isFunction = typeof constructorResult === 'function';
+    //
+    //     // Step6 若判斷為是, 就直接 return constructorResult, 因為 new 處理物件型時, 也是這樣回傳
+    //     if (isObject || isFunction) {
+    //         return constructorResult;
+    //     }
+    //     // Step7 若判斷為否, 就 return 新產生的 newObj
+    //     return newObj;
+    // }
+    //
+    // const personA = objectFactory(Person, 'Andy');
+    // const personB = new Person('Andy');
+    //
+    // console.log(personA);
+    // console.log(personB);
 
-        // 若建構函式 return 物件型時, 會直接返回這些東西
-        // Object
-        // Function
-        // Array
-        // Date
-        // RegExp
-        // Error
+    const fakeNew = function (constructor, ...argument) {
+        let obj = {};
+        obj.__proto__ = constructor.prototype;
+        let result = constructor.apply(obj, argument);
+        return (result instanceof Object) ? result : obj;
     }
-
-    Person.prototype.sayYourName = function () {
-        console.log('I am ' + this.name);
-    }
-
-    function objectFactory(constructor, ...arguments) {
-        // Step1 先判斷 constructor 是否為正常的 function
-        if (typeof constructor !== 'function') {
-            throw 'objectFactory function the first param must be a function';
-        }
-
-        // Step2 建立一個全新的空 Object
-        let newObj = {};
-
-        // Step3 把新 obj 的原型鍊(__proto__) 指向 Person 的 prototype 去對應建構式物件, 並拿到原型的屬性
-        newObj.__proto__ = constructor.prototype;
-
-        // Step4 用 apply 修改 Constructor (Person 函式)的 this 指向新 obj 物件, 並帶入其他引數
-        let constructorResult = constructor.apply(newObj, arguments);
-
-        // Step5 判斷用 constructor.apply 產生出來的 newObj 的類型, 是否為 object or function
-        let isObject = typeof constructorResult === 'object' && constructorResult !== null;
-        let isFunction = typeof constructorResult === 'function';
-
-        // Step6 若判斷為是, 就直接 return constructorResult, 因為 new 處理物件型時, 也是這樣回傳
-        if (isObject || isFunction) {
-            return constructorResult;
-        }
-        // Step7 若判斷為否, 就 return 新產生的 newObj
-        return newObj;
-    }
-
-    const personA = objectFactory(Person, 'Andy');
-    const personB = new Person('Andy');
-
-    console.log(personA);
-    console.log(personB);
-
 
     // simple case
     // const fakeNew = function (constructor, ...argument) {
@@ -76,13 +82,13 @@
     //     return newPbj;
     // }
     //
-    // const Person = function (name) {
-    //     this.name = name;
-    // }
+    const Person = function (name) {
+        this.name = name;
+    }
     //
-    // const aaa = fakeNew(Person, 'hello');
+    const aaa = fakeNew(Person, 'hello');
     //
-    // console.log(aaa);
+    console.log(aaa);
 
 </script>
 </body>
