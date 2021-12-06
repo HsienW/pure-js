@@ -20,7 +20,7 @@
     Function.prototype.customCall = function (object) {
         // 判斷是否為 null or undefined, 同時考慮傳遞引數不是 Object 情況
         // 若不是 Object, 重新 create new Object, this 指向 new Object
-        // 若是 ull or undefined, this 指向 window
+        // 若是 null or undefined, this 指向 window
         object = object ? new Object(object) : window;
 
         // 拿取要修改 this 的 object 之外的其他引數, 所以例子是 'girl', 18
@@ -36,41 +36,65 @@
         delete object.thisFunction;
     }
 
-    test.call('test', 'girl', 18); // test, 'girl', 18
-    test.customCall('test', 'girl', 18); // test, 'girl', 18
-
-    test.call(girl, 'girl', 18); // girl, 'girl', 18
-    test.customCall(girl, 'girl', 18); // girl, 'girl', 18
-
-
-    Function.prototype.customApply = function (object, argumentArray) {
-        // 判斷是否為 null or undefined, 同時考慮傳遞引數不是 Object 情況
-        // 若不是 Object, 重新 create new Object, this 指向 new Object
-        // 若是 ull or undefined, this 指向 window
-        object = object ? new Object(object) : window;
-
-        // 對 object 先新增新屬性 thisFunction, 用來暫存原本的 this 這裡指向 test function
-        object.thisFunction = this;
-
-        if (!argumentArray) {
-            // 若是 argumentArray 為 false, 表示沒傳引數
-            object.thisFunction();
-        } else {
-            // 執行暫存的 thisFunction (test function), 並解構其餘的引數, 之後再傳入給 thisFunction
-            object.thisFunction(...argumentArray);
-        }
-
-        // 移除暫存的 thisFunction 屬性, 不然每 call 都會增加一個屬性
-        delete object.thisFunction;
+    Function.prototype.fakeCall = function (target, ...args) {
+        target = (target instanceof Object) ? new Object(target) : window;
+        target.selfFunc = this;
+        target.selfFunc(...args);
+        target.selfFunc = undefined;
     }
 
-    test.apply('test', ['girl', 18]); // test, 'girl', 18
-    test.customApply('test', ['girl', 18]); // test, 'girl', 18
-    test.customApply('test', []); // test, undefined, undefined
+    // test.call('test', 'girl', 18); // test, 'girl', 18
+    // test.customCall('test', 'girl', 18); // test, 'girl', 18
 
-    test.apply(girl, ['girl', 18]); // girl, 'girl', 18
-    test.customApply(girl, ['girl', 18]); // girl, 'girl', 18
-    test.customApply(girl, []); // girl, undefined, undefined
+    // test.call(girl, 'girl', 18); // girl, 'girl', 18
+    // console.log('============');
+    // test.customCall(girl, 'girl', 18); // girl, 'girl', 18
+    // console.log('============');
+    // test.fakeCall(girl, 'girl', 18); // girl, 'girl', 18
+
+    Function.prototype.fakeApply = function (target, argument) {
+        // target = (target instanceof Object) ? new Object(target) : window;
+        target = (target instanceof Object) ? new Object(target) : window;
+        target.selfApplyFunc = this;
+        if (!argument) {
+            target.selfApplyFunc();
+        } else {
+            target.selfApplyFunc(...argument);
+        }
+        target.selfApplyFunc = undefined;
+    };
+
+    test.apply(girl, ['girl', 18]); // test, 'girl', 18
+    test.fakeApply(girl, ['girl', 18]); // test, 'girl', 18
+
+    // Function.prototype.customApply = function (object, argumentArray) {
+    //     // 判斷是否為 null or undefined, 同時考慮傳遞引數不是 Object 情況
+    //     // 若不是 Object, 重新 create new Object, this 指向 new Object
+    //     // 若是 ull or undefined, this 指向 window
+    //     object = object ? new Object(object) : window;
+    //
+    //     // 對 object 先新增新屬性 thisFunction, 用來暫存原本的 this 這裡指向 test function
+    //     object.thisFunction = this;
+    //
+    //     if (!argumentArray) {
+    //         // 若是 argumentArray 為 false, 表示沒傳引數
+    //         object.thisFunction();
+    //     } else {
+    //         // 執行暫存的 thisFunction (test function), 並解構其餘的引數, 之後再傳入給 thisFunction
+    //         object.thisFunction(...argumentArray);
+    //     }
+    //
+    //     // 移除暫存的 thisFunction 屬性, 不然每 call 都會增加一個屬性
+    //     delete object.thisFunction;
+    // }
+    //
+    // test.apply('test', ['girl', 18]); // test, 'girl', 18
+    // test.customApply('test', ['girl', 18]); // test, 'girl', 18
+    // test.customApply('test', []); // test, undefined, undefined
+    //
+    // test.apply(girl, ['girl', 18]); // girl, 'girl', 18
+    // test.customApply(girl, ['girl', 18]); // girl, 'girl', 18
+    // test.customApply(girl, []); // girl, undefined, undefined
 
 </script>
 </body>
