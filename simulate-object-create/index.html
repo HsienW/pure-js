@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Simulate Object Create</title>
+</head>
+<body>
+<script>
+
+    // 思路: 定義一個空的構造函數, 然後將傳入的對像作為原型指定構造函數的原型對象
+    // 通過 new 運算符創建一個空對象再返回
+
+    Object.prototype.fakeCreate = function (target) {
+        let Constructor = function () {};
+        Constructor.prototype = target;
+        return new Constructor();
+    }
+
+    const user = {
+        name: 'Hello',
+        sayHi() {
+            console.log(this.name, this.age);
+        }
+    };
+
+    const test = Object.fakeCreate(user);
+
+    // test.name = 'test';
+    test.age = 18;
+
+    test.sayHi() // "test" 18
+
+</script>
+</body>
+</html>
