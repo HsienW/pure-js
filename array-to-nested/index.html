@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Array To Nested</title>
+</head>
+<body>
+<script>
+    // 扁平的數據結構, 轉成樹
+    // let array = [
+    //     {id: 1, name: '部門1', key: 0},
+    //     {id: 2, name: '部門2', key: 1},
+    //     {id: 3, name: '部門3', key: 1},
+    //     {id: 4, name: '部門4', key: 3},
+    //     {id: 5, name: '部門5', key: 4},
+    // ];
+    // 要轉換輸出成
+    // [
+    //     {
+    //         "id": 1,
+    //         "name": "部門1",
+    //         "key": 0,
+    //         "children": [
+    //             {
+    //                 "id": 2,
+    //                 "name": "部門2",
+    //                 "key": 1,
+    //                 "children": []
+    //             },
+    //             {
+    //                 "id": 3,
+    //                 "name": "部門3",
+    //                 "key": 1,
+    //                 "children": [
+    //                     // 结果 ,,,
+    //                 ]
+    //             }
+    //         ]
+    //     }
+    // ]
+
+
+    const array = [
+        {id: 1, name: '部門1', key: 0},
+        {id: 2, name: '部門2', key: 1},
+        {id: 3, name: '部門3', key: 1},
+        {id: 4, name: '部門4', key: 3},
+        {id: 5, name: '部門5', key: 4},
+    ];
+
+    const arrayToNested = function (data) {
+        const result = [];
+        const map = {};  // 透過一個物件存放當前紀錄
+
+        for (const item of data) {
+            const id = item.id;
+            const key = item.key;
+
+            // 如果紀錄的物件中沒有這個 id, 就先對這個 id 添加朝狀的 children base
+            if (!map[id]) {
+                map[id] = {
+                    children: [],
+                }
+            }
+
+            map[id] = {
+                ...item,
+                children: map[id]['children']
+            }
+
+            const treeItem = map[id];
+
+            if (key === 0) {
+                result.push(treeItem);
+            } else {
+                if (!map[key]) {
+                    map[key] = {
+                        children: [],
+                    }
+                }
+                map[key].children.push(treeItem)
+            }
+
+        }
+        return result;
+    }
+
+</script>
+</body>
+</html>
