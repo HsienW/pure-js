@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Loop Binary Tree</title>
+</head>
+<body>
+<script>
+    const tree = {
+        value: "-",
+        left: {
+            value: '+',
+            left: {
+                value: 'a',
+            },
+            right: {
+                value: '*',
+                left: {
+                    value: 'b',
+                },
+                right: {
+                    value: 'c',
+                }
+            }
+        },
+        right: {
+            value: '/',
+            left: {
+                value: 'd',
+            },
+            right: {
+                value: 'e',
+            }
+        }
+    };
+
+    const numberTree = {
+        value: 5,
+        left: {
+            value: 2,
+            left: {
+                value: 1,
+            },
+            right: {
+                value: 4,
+                left: {
+                    value: 3,
+                }
+            }
+        },
+        right: {
+            value: 6,
+            right: {
+                value: 7,
+            }
+        }
+    };
+
+    /**
+     * @param {string} array
+     * @return {number}
+     */
+
+        // 深度遍歷也可稱為深度優先遍歷（Depth-First Search，DFS），因為它總是優先往深處訪問
+    let result = [];
+    let dfs = function (node) {
+        if (node) {
+            result.push(node.value);
+            dfs(node.left);
+            dfs(node.right);
+        }
+    }
+    //
+    // dfs(tree);
+    // console.log(result);
+
+    // 如何把二叉樹所有的節點中的值加一？
+
+    const addTree = function (root) {
+        if (!root) return;
+        root.value = root.value + 1;
+        addTree(root.left);
+        addTree(root.right);
+
+        return root;
+    }
+
+    console.log(addTree(numberTree));
+
+    // 如何判斷兩棵二叉樹是否完全相同？
+
+
+    // Level Order Traversal case
+    // 給你一個二叉樹，請你返回其按 層序遍歷得到的節點值。（即逐層地，從左到右訪問所有節點）。
+    // 二叉樹：[3, 9, 20, null, null, 15, 7]
+    // 輸出: [
+    //     [3],
+    //     [9,20],
+    //     [15,7]
+    // ]
+
+    // 思路:
+    // 廣度優先搜索：有一個隊列，維護當前深度變量
+    // 按照題目的要求只需要保證入隊列的時候左子節點在右子節點前面
+
+    const binaryTree = [3, 9, 20, null, null, 15, 7];
+
+    const levelOrder = function (root) {
+        if (!root) {
+            return [];
+        }
+
+        const queue = [[root, 0]];
+        const result = [];
+
+        while (queue.length) {
+            let [node, level] = queue.shift();
+            if (!result[level]) {
+                result.push([node.value]);
+            } else {
+                result[level].push([node.value]);
+            }
+            if (node.left) {
+                queue.push([node.left, level + 1]);
+            }
+            if (node.right) {
+                queue.push([node.right, level + 1]);
+            }
+        }
+        return result;
+    };
+
+    console.log(levelOrder(binaryTree));
+
+</script>
+</body>
+</html>
