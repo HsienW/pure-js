@@ -76,11 +76,28 @@
     }
 
     const testA = haveArgument.bind(girl, '0912');
-    const testB = haveArgument.customBind(boy, '0988');
+    // const testB = haveArgument.customBind(boy, '0988');
     testA(18, 'I am girl');
-    testB(20, 'I am boy');
+    // testB(20, 'I am boy');
 
-    const testC = new testB(36, 'I am women');
+    // const testC = new testB(36, 'I am women');
+
+    // 1. 改變 THIS 指向
+    // 2. 獲取參數
+    // 3. 回傳一個函數
+
+    Function.prototype.fakeBind = function (context) {
+        let self = this;
+        let initArgu = [...arguments];
+
+        return function () {
+            let currentArgu = [...arguments]
+            self.apply(context, [...initArgu, ...currentArgu]);
+        }
+    }
+
+    const testD = haveArgument.fakeBind(boy, '0955');
+    testD(50, 'I am boy');
 
 </script>
 </body>

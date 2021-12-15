@@ -50,6 +50,34 @@
         },
         right: {
             value: 6,
+            left: {
+                value: 5,
+            },
+            right: {
+                value: 7,
+            }
+        }
+    };
+
+    const numberTreeTwo = {
+        value: 5,
+        left: {
+            value: 2,
+            left: {
+                value: 1,
+            },
+            right: {
+                value: 4,
+                left: {
+                    value: 3,
+                }
+            }
+        },
+        right: {
+            value: 6,
+            left: {
+                value: 5,
+            },
             right: {
                 value: 7,
             }
@@ -85,9 +113,20 @@
         return root;
     }
 
-    console.log(addTree(numberTree));
+    // console.log(addTree(numberTree));
 
     // 如何判斷兩棵二叉樹是否完全相同？
+
+    const checkTwoTree = function (oneRoot, twoRoot) {
+        if (oneRoot === null && twoRoot === null) return true;
+        if (oneRoot === null || twoRoot === null) return false;
+        if (oneRoot.value !== twoRoot.value) return false;
+        // if (!oneRoot || !twoRoot) return false;
+
+        return checkTwoTree(oneRoot.left, twoRoot.left) && checkTwoTree(oneRoot.right, twoRoot.right);
+    }
+
+    console.log(checkTwoTree(numberTree, numberTreeTwo));
 
 
     // Level Order Traversal case

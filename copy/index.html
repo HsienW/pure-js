@@ -21,8 +21,8 @@
 
     userAObj.name = 'Billy';
 
-    console.log(userAObj.name); // Billy
-    console.log(userBObj.name); // Billy
+    // console.log(userAObj.name); // Billy
+    // console.log(userBObj.name); // Billy
 
     let assignUserAObj = {
         name: 'Andy'
@@ -41,8 +41,8 @@
 
     operatorUserAObj.name = 'Billy';
 
-    console.log(operatorUserAObj.name); // Billy
-    console.log(operatorUserBObj.name); // Andy
+    // console.log(operatorUserAObj.name); // Billy
+    // console.log(operatorUserBObj.name); // Andy
 
     let stringifyUserAObj = {
         name: 'Andy',
@@ -107,10 +107,56 @@
     newStudentObj.name = 'Billy';
     newStudentObj.examData.handleExamined();
 
-    console.log(studentObj.name); // Andy
-    console.log(studentObj.examData.examined); // false
-    console.log(newStudentObj.name); // Billy
-    console.log(newStudentObj.examData.examined); // true
+    // console.log(studentObj.name); // Andy
+    // console.log(studentObj.examData.examined); // false
+    // console.log(newStudentObj.name); // Billy
+    // console.log(newStudentObj.examData.examined); // true
+
+
+    let testObj = {
+        name: 'Hello',
+        age: 20,
+        examData: {
+            pass: false,
+            points: 100,
+            remarks: undefined,
+            // examTime: new Date(),
+            // handleExamined: function () {
+            //     this.pass = true;
+            // }
+        }
+    };
+
+    const deepCopy = function (obj, newObjMap = new WeakMap()) {
+        if (obj === null || typeof obj !== 'object') {
+            return obj;
+        }
+
+        if (obj instanceof Date || obj instanceof RegExp) {
+            return obj.constructor(obj);
+        }
+
+        if (newObjMap.has(obj)) {
+            return newObjMap.get(obj);
+        }
+
+        const newCopy = new obj.constructor();
+
+        newObjMap.set(obj, newCopy);
+
+        [...Object.getOwnPropertyNames(obj)].forEach((key) => {
+            newCopy[key] = deepCopy(obj[key], newObjMap)
+        })
+        return newCopy;
+    }
+
+    const testChange = deepCopy(testObj);
+
+    testChange.name = 'change';
+    console.log(testObj);
+    console.log(testChange);
+
+
 </script>
 </body>
 </html>
