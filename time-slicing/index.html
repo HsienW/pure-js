@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Time Slicing</title>
+</head>
+<body>
+<ul id="target"></ul>
+<script>
+
+    // 在 JS 的 Event Loop 中，當 JS 引擎所管理的執行棧中的事件以及所有微任務事件全部執行完後，才會觸發渲染線程對頁面進行渲染
+    // 第一個 console.log 的觸發時間是在頁面進行渲染之前，此時得到的間隔時間為 JS 運行所需要的時間
+    // 第二個 console.log 是放到 setTimeout 中的，它的觸發時間是在渲染完成，在下一次 Event Loop 中執行的
+
+    // 測試舊有 setTimeout 例子
+    // let now = Date.now();
+    // // const total = 100000;
+    // let ul = document.getElementById('target');
+    //
+    // for (let i = 0; i < 100000; i++) {
+    //     let li = document.createElement('li');
+    //     li.innerText = ~~(Math.random() * 100000)
+    //     ul.appendChild(li);
+    // }
+    //
+    // console.log('Js run：', Date.now() - now);
+    //
+    // setTimeout(() => {
+    //     console.log('total run：', Date.now() - now);
+    // }, 0)
+
+    // 1. 基本的時間分片概念
+    let ul = document.getElementById('target');
+    // 10萬條 data
+    let total = 100000;
+    // 拆分一次 20 筆
+    let once = 20;
+    // 總數
+    let page = total / once;
+    // 每筆 data 的 index
+    let index = 0;
+
+    function loop(curTotal, curIndex) {
+
+        console.log(curTotal, curIndex);
+
+        if (curTotal <= 0) {
+            return false;
+        }
+        // 計算每頁多少筆 data, Math.min 是因為最後 curTotal data 可能會少於 once (20筆)
+        let pageCount = Math.min(curTotal, once);
+
+        // 範例核心透過 setTimeout 去簡單的呈現 render
+        setTimeout(() => {
+            for (let i = 0; i < pageCount; i++) {
+                let li = document.createElement('li');
+                li.innerText = curIndex + i + ' : ' + ~~(Math.random() * total);
+                ul.appendChild(li);
+            }
+            loop(curTotal - pageCount, curIndex + pageCount);
+        }, 0);
+    }
+
+    loop(total, index);
+
+
+</script>
+</body>
+</html>
