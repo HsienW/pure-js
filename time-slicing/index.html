@@ -30,6 +30,73 @@
     // }, 0)
 
     // 1. 基本的時間分片概念
+    // let ul = document.getElementById('target');
+    // // 10萬條 data
+    // let total = 100000;
+    // // 拆分一次 20 筆
+    // let once = 20;
+    // // 總數
+    // let page = total / once;
+    // // 每筆 data 的 index
+    // let index = 0;
+    //
+    // function loop(curTotal, curIndex) {
+    //
+    //     console.log(curTotal, curIndex);
+    //
+    //     if (curTotal <= 0) {
+    //         return false;
+    //     }
+    //     // 計算每頁多少筆 data, Math.min 是因為最後 curTotal data 可能會少於 once (20筆)
+    //     let pageCount = Math.min(curTotal, once);
+    //
+    //     // 範例核心透過 setTimeout 去簡單的呈現 render
+    //     setTimeout(() => {
+    //         for (let i = 0; i < pageCount; i++) {
+    //             let li = document.createElement('li');
+    //             li.innerText = curIndex + i + ' : ' + ~~(Math.random() * total);
+    //             ul.appendChild(li);
+    //         }
+    //         loop(curTotal - pageCount, curIndex + pageCount);
+    //     }, 0);
+    // }
+    //
+    // loop(total, index);
+
+    // // 2. 使用 requestAnimationFrame
+    //
+    // let ul = document.getElementById('target');
+    // // 10萬條 data
+    // let total = 100000;
+    // // 拆分一次 20 筆
+    // let once = 20;
+    // // 總數
+    // let page = total / once;
+    // // 每筆 data 的 index
+    // let index = 0;
+    //
+    // function loop(curTotal, curIndex) {
+    //
+    //     if (curTotal <= 0) {
+    //         return false;
+    //     }
+    //
+    //     // 計算每頁多少筆 data, Math.min 是因為最後 curTotal data 可能會少於 once (20筆)
+    //     let pageCount = Math.min(curTotal, once);
+    //     window.requestAnimationFrame(function () {
+    //         for (let i = 0; i < pageCount; i++) {
+    //             let li = document.createElement('li');
+    //             li.innerText = curIndex + i + ' : ' + ~~(Math.random() * total)
+    //             ul.appendChild(li)
+    //         }
+    //         loop(curTotal - pageCount, curIndex + pageCount)
+    //     })
+    // }
+    //
+    // loop(total, index);
+
+    // 3 使用 DocumentFragment + requestAnimationFrame
+
     let ul = document.getElementById('target');
     // 10萬條 data
     let total = 100000;
@@ -42,23 +109,27 @@
 
     function loop(curTotal, curIndex) {
 
-        console.log(curTotal, curIndex);
-
         if (curTotal <= 0) {
             return false;
         }
+
         // 計算每頁多少筆 data, Math.min 是因為最後 curTotal data 可能會少於 once (20筆)
         let pageCount = Math.min(curTotal, once);
+        window.requestAnimationFrame(function(){
 
-        // 範例核心透過 setTimeout 去簡單的呈現 render
-        setTimeout(() => {
-            for (let i = 0; i < pageCount; i++) {
+            // DocumentFragment，文檔片段接口，表示一個沒有父級文件的最小文檔對象。它被作為一個輕量版的Document使用
+            // 用於存儲已排好版的或尚未打理好格式的XML片段。最大的區別是因為 DocumentFragment 不是真實 DOM 樹的一部分
+            // 它的變化不會觸發DOM樹的（重新渲染) ，且不會導致性能等問題
+            let fragment = document.createDocumentFragment();
+
+            for(let i = 0; i < pageCount; i++){
                 let li = document.createElement('li');
-                li.innerText = curIndex + i + ' : ' + ~~(Math.random() * total);
-                ul.appendChild(li);
+                li.innerText = curIndex + i + ' : ' + ~~(Math.random() * total)
+                fragment.appendChild(li)
             }
-            loop(curTotal - pageCount, curIndex + pageCount);
-        }, 0);
+            ul.appendChild(fragment)
+            loop(curTotal - pageCount,curIndex + pageCount)
+        })
     }
 
     loop(total, index);
