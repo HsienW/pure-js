@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Promise Async</title>
+</head>
+<body>
+<script>
+    const pass = false;
+
+    // const test = new Promise((resolve, reject) => {
+    //     if (pass) {
+    //         console.log('resolve~');
+    //         resolve('我是成功得回傳');
+    //     } else {
+    //         console.log('reject~');
+    //         reject('我是失敗得回傳');
+    //     }
+    // });
+    //
+    // test
+    //     .then((data) => {
+    //         console.log('then');
+    //         console.log(data);
+    //     }).catch((error) => {
+    //         console.log('catch');
+    //         console.log(error);
+    //     })
+
+    const fakeRequest = function () {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('回傳');
+            }, 5000);
+        });
+    }
+
+    const fakeRequest2 = function () {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('回傳2');
+            }, 3000);
+        });
+    }
+
+    const getRequest = async function () {
+        /* async await 要做錯誤捕捉必須使用 try catch*/
+        // 1. try 有多個 await, 會等待全部的 await 執行完才往下走, 例子中 console.log 會等待 success & success2 回應才印出
+        // 2. 如果 try 有多個 await, 其中一個 await 發生 error 都將直接走進 catch
+        try {
+            const success = await fakeRequest();
+            const success2 = await fakeRequest2();
+            console.log(`${success} success`);
+            console.log(`${success2} success`);
+        } catch (error) {
+            console.log(`${error} error`);
+        }
+    }
+
+    getRequest();
+</script>
+</body>
+</html>
