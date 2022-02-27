@@ -45,8 +45,9 @@
 
     const getRequest = async function () {
         /* async await 要做錯誤捕捉必須使用 try catch*/
-        // 1. try 有多個 await, 會等待全部的 await 執行完才往下走, 例子中 console.log 會等待 success & success2 回應才印出
-        // 2. 如果 try 有多個 await, 其中一個 await 發生 error 都將直接走進 catch
+        // 1. await 後面需要接一個是回傳 Promise 的函數, 因為 async/await 其實也是 Promise 封裝的而已
+        // 2. try 有多個 await, 會等待全部的 await 執行完才往下走, 例子中 console.log 會等待 success & success2 回應才印出
+        // 3. 如果 try 有多個 await, 其中一個 await 發生 error 都將直接走進 catch
         try {
             const success = await fakeRequest();
             const success2 = await fakeRequest2();
