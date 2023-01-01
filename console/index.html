@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Console</title>
+</head>
+<body>
+<script>
+    // 查看 console 打印順序
+
+    // 1. 宏任務: 在同步任務跟微任務結束後才會檢查執行的列隊
+    // setTimeout（延迟调用）
+    // setInterval（间歇调用）
+    // setImmediate（Node 的立即调用）
+    // requestAnimationFrame（高频的 RAF）
+    // I/O（I/O 操作）
+    // UI rendering（UI 渲染）
+    // 包裹在一个 script 标签中的 js 代码也是一个 Macrotasks
+
+    // 2. 微任務: 同步任務結束後會檢查執行的列隊, 直到微任務都結束, 在執行宏任務 (結束可能會觸發一次渲染)
+    // process.nextTick(Node 中 定義出一個動作，並且讓這個動作在下一個事件輪詢的時間點上執行)
+    // Promises
+    //   - 遇到 promise 立刻執行 (這歸類成同步任務)
+    //   - promise.then & .catch 是微任務
+    // Object.observe(原生觀察者實現，已廢棄)
+    // MutationObserver(監聽 DOM change) 只有在 nextTick 空了才處理其它 microtask
+
+    // 3.同步任務: 遇到會立刻執行
+
+    // part1
+    console.log('script start');
+
+    async function async1() {
+        await async2();
+        console.log('async1 end');
+    }
+
+    async function async2() {
+        console.log('async2 end');
+    }
+
+    async1();
+
+    window.setTimeout(function () {
+        console.log('setTimeout end')
+    }, 0)
+
+    const promise1 = new Promise(function (resolve, reject) {
+        console.log('Promise build');
+        resolve();
+    })
+
+    promise1.then(function () {
+        console.log('promise1 end');
+    }).then(function () {
+        console.log('promise2 end');
+    })
+
+    console.log('script end');
+
+    // script start
+    // async2 end
+    // Promise build
+    // script end
+    // async1 end
+    // promise1 end
+    // promise2 end
+    // setTimeout end
+
+
+    // part2
+    console.log(1);
+
+    setTimeout(() => {
+        console.log(2);
+    }, 0);
+
+    process.nextTick(() => {
+        console.log(3);
+    });
+
+    new Promise((resolve) => {
+        console.log(4);
+        resolve();
+    }).then(() => {
+        console.log(5);
+    });
+
+    // 1
+    // 4
+    // 3
+    // 5
+    // 2
+
+    // part3
+    console.log(1);
+
+    setTimeout(() => {
+        console.log(2)
+    }, 0);
+
+    process.nextTick(() => {
+        console.log(3)
+    });
+
+    new Promise((resolve) => {
+        console.log(4);
+        resolve()
+    }).then(() => {
+        console.log(5);
+    });
+
+    setTimeout(() => {
+        console.log(6);
+    }, 0);
+
+    new Promise((resolve) => {
+        console.log(7);
+
+        setTimeout(() => {
+            console.log(8);
+            resolve();
+        }, 0);
+    }).then(() => {
+        console.log(9);
+
+        setTimeout(() => {
+            console.log(10);
+            new Promise((resolve) => {
+                console.log(11);
+                resolve();
+            }).then(() => {
+                console.log(12);
+            })
+        }, 0)
+    })
+
+    // 1
+    // 4
+    // 7
+    // 3
+    // 5
+    // 2
+    // 6
+    // 8
+    // 9
+    // 10
+    // 11
+    // 12
+
+
+    // part4
+    console.log("1")
+    setTimeout(function () {
+        console.log("2")
+        process.nextTick(function () {
+            console.log("3")
+        })
+        new Promise(function (resolve) {
+            console.log("4")
+            resolve()
+        }).then(function () {
+            console.log("5")
+        })
+    })
+
+    process.nextTick(function () {
+        console.log("6")
+    })
+
+    new Promise(function (resolve) {
+        console.log("7")
+        resolve()
+    }).then(function () {
+        console.log("8")
+    })
+
+    setTimeout(function () {
+        console.log("9")
+        process.nextTick(function () {
+            console.log("10")
+        })
+        new Promise(function (resolve) {
+            console.log("11")
+            resolve()
+        }).then(function () {
+            console.log("12")
+        })
+    })
+
+    // 1
+    // 7
+    // 6
+    // 8
+    // 2
+    // 4
+    // 3
+    // 5
+    // 9
+    // 11
+    // 10
+    // 12
+
+    // part5
+    setTimeout(()=>{
+        console.log("setTimeout1");
+        Promise.resolve().then(data => {
+            console.log(222);
+        });
+    },0);
+    setTimeout(()=>{
+        console.log("setTimeout2");
+    },0);
+    Promise.resolve().then(data=>{
+        console.log(111);
+    });
+
+    // 111
+    // setTimeout1
+    // 222
+    // setTimeout2
+
+
+    // part6
+    console.log('script start');
+
+    setTimeout(function () {
+        console.log('setTimeout---0');
+    }, 0);
+
+    setTimeout(function () {
+        console.log('setTimeout---200');
+        setTimeout(function () {
+            console.log('inner-setTimeout---0');
+        });
+        Promise.resolve().then(function () {
+            console.log('promise5');
+        });
+    }, 200);
+
+    Promise.resolve().then(function () {
+        console.log('promise1');
+    }).then(function () {
+        console.log('promise2');
+    });
+    Promise.resolve().then(function () {
+        console.log('promise3');
+    });
+    console.log('script end');
+
+    // start
+    // script end
+    // promise1
+    // promise3
+    // promise2
+    // setTimeout---0
+    // setTimeout---200
+    // promise5
+    // inner-setTimeout---0
+
+    // 同步任務執行完之後，首先檢查微任務隊列, 即 microtask隊列，發現此隊列不為空，
+    // 執行第一個promise的then回調，輸出 'promise1'，然後執行第二個promise的then回調，輸出'promise3'，
+    // 由於第一個promise的.then()的返回依然是promise，所以第二個.then()會放到microtask隊列繼續執行，輸出 'promise2';
+    // 也就是說多個 promise then 的執行會是同層先, 接下來的才是執行鏈式調用
+
+
+</script>
+</body>
+</html>
