@@ -156,6 +156,38 @@
     console.log(testObj);
     console.log(testChange);
 
+    const deepCopyTwo = function (obj, map = new Map()) {
+        if (typeof obj === 'object') {
+            let newObj = Array.isArray(obj) ? [] : {};
+
+            if (map.get(obj)) {
+                return obj;
+            }
+
+            map.set(obj, newObj);
+
+            for (let key in obj) {
+                newObj[key] = deepCopyTwo(obj[key], map);
+            }
+            return newObj;
+        }
+
+        return obj;
+    }
+
+    const target = {
+        field1: 1,
+        field2: undefined,
+        field3: {
+            child: 'child'
+        },
+        field4: [2, 4, 8]
+    };
+
+    target.target = target;
+
+    const testDeepTwo = deepCopyTwo(target);
+
 
 </script>
 </body>
