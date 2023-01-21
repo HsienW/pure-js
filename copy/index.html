@@ -221,15 +221,20 @@
             cloneObj = new obj.constructor();
         }
 
-        // // 防止循环引用
-        // if (map.get(obj)) {
-        //     return map.get(obj);
-        // }
-        // map.set(obj, cloneObj);
+        // 防止循环引用
+        if (map.get(obj)) {
+            return map.get(obj);
+        }
+        map.set(obj, cloneObj);
+
+        // clone Symbol
+        if (objType === normalTypeMap.symbolTag) {
+            return Symbol.prototype.valueOf.call(obj);
+        }
 
         // clone Set
         if (objType === objTypeMap.setTag) {
-            target.forEach(value => {
+            obj.forEach(value => {
                 cloneObj.add(deepCopyThree(value, map));
             });
             return cloneObj;
@@ -237,7 +242,7 @@
 
         // clone Map
         if (objType === objTypeMap.mapTag) {
-            target.forEach((value, key) => {
+            obj.forEach((value, key) => {
                 cloneObj.set(key, deepCopyThree(value, map));
             });
             return cloneObj;
@@ -277,6 +282,9 @@
         empty: null,
         map: myMap,
         set: mySet,
+        symbol: Object(Symbol(2)),
+        date: new Date(),
+        reg: /\d+/,
     };
 
     // 內存測試用例
@@ -290,10 +298,11 @@
     };
     targetDeep.targetDeep = targetDeep;
 
-    const testDeepThree = deepCopyThree(targetDeep);
-    console.log('=====');
+    const testDeepThree = deepCopyThree(targetThree);
+    console.log('sssss');
     console.log(testDeepThree);
 
+    // const testDeepfore = deepCopyThree(targetDeep);
 </script>
 </body>
 </html>
