@@ -5,6 +5,7 @@
     <title>Debounce</title>
 </head>
 <body>
+<input type="button" value="click">
 <script>
 
     const debounce = function (callBack, delay) {
@@ -34,8 +35,49 @@
         console.log('我變換視窗大小了')
     }
 
-    window.onresize = debounce(testFunction, 5000)('hello~');
+    // window.onresize = debounce(testFunction, 5000)('hello~');
     // window.onresize = testFunction;
+
+    const button = document.querySelector('input');
+
+    const test = function () {
+        console.log('123');
+    }
+
+    const debounceTwo = function (callback, delay) {
+        let timer;
+        return function () {
+            let self = this;
+            let args = arguments;
+
+            clearTimeout(timer);
+
+            timer = setTimeout(function () {
+                callback.apply(self, args);
+            }, delay)
+        }
+    }
+
+    button.addEventListener('click', debounceTwo(test, 1000));
+
+    const log = function () {
+        console.log('123');
+    }
+
+    const debounce1 = function (callback, delay) {
+        let timer;
+        return function () {
+            let self = this;
+            let args = arguments;
+
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                callback.apply(self, args)
+            }, delay)
+        }
+    }
+
+    // window.onresize = debdounceTwo(test, 1000)('hello~');
 
 </script>
 </body>
