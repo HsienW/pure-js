@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <title>Iframe</title>
+</head>
+<body>
+<input type='button' value='create iframe page' onclick='createIframe()'/>
+<input type='button' value='close iframe page' onclick='closeIframe()'/>
+<input type="button" value="斷開 iframe 變數的引用" onclick="shutIframe()"/>
+<div id='content' style='width:500px;height:300px;border:1px solid black'></div>
+<script>
+    // 內存問題
+    var arr = new Array();
+
+    const createIframe = function () {
+        const iframe = document.createElement('iframe');
+        iframe.src = 'iframe.html';
+        iframe.id = 'ifr';
+        document.getElementById('content').appendChild(iframe);
+        console.log('create iframe 完成');
+    }
+
+    const closeIframe = function () {
+        let iframe = document.getElementById('ifr');
+        iframe.src = 'about:blank';
+        iframe.contentWindow.document.write('');
+        iframe.contentWindow.document.clear();
+        iframe.contentWindow.close();
+        iframe.parentNode.removeChild(iframe);
+        iframe = null;
+    }
+
+    const shutIframe = function () {
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = null;
+        }
+        console.log('斷開成功');
+    }
+
+</script>
+</body>
+</html>
