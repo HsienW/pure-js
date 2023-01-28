@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Canvas</title>
+    <style>
+        body {
+            background-color: #FFFFFF;
+        }
+
+        #canvas {
+            border: 1px solid blue;
+            display: block;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+<div id="canvas-warp">
+    <canvas id="canvas">
+        你的瀏覽器居然不支持Canvas？ ！趕快換一個吧！ ！
+    </canvas>
+</div>
+<script>
+    window.onload = function () {
+        const canvas = document.getElementById("canvas");
+        canvas.width = 800;
+        canvas.height = 600;
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(0, 0, 800, 600);
+
+        //1. 使用`font`配置字體。
+        context.font = "50px serif";
+        //2. 使用`fillStyle`配置字颜色。
+        context.fillStyle = "#00AAAA";
+        //3. 使用`fillText()`顯示字體。
+        context.fillText("《CANVAS--Draw on the Web》", 50, 300);
+
+    };
+</script>
+</body>
+</html>
