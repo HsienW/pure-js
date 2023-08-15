@@ -6,24 +6,1319 @@
 </head>
 <body>
 <script>
-    // const testPromise = function (handler) {
-    //     let result = handler();
+
+    //    // console.log(Math.max(0, 0 + 0, -3));
     //
-    //     return new Promise((resolve, reject) => {
-    //         if (result) {
-    //             resolve('pass');
+    //    // var countSubstrings = function(s) {
+    //    //     const strLen = s.length;
+    //    //     let numOfPalindromicStr = 0;
+    //    //
+    //    //     for(let i = 0; i < strLen - 1; i++) {
+    //    //         let left = Math.floor(i/2);
+    //    //         let right = left + i % 2;
+    //    //
+    //    //         console.log(i);
+    //    //         console.log(left);
+    //    //         console.log(right);
+    //    //         console.log('//////////////////////////////');
+    //    //
+    //    //         while(left >= 0 && right < strLen && s[left] === s[right]){
+    //    //             console.log(']]]]]]]');
+    //    //             console.log(s[left]);
+    //    //             console.log(s[right]);
+    //    //             numOfPalindromicStr++;
+    //    //             left--;
+    //    //             right++;
+    //    //         }
+    //    //     }
+    //    //
+    //    //     console.log('wwwwwwwwwwwwwwwwwwwwww');
+    //    //     console.log(numOfPalindromicStr);
+    //    //
+    //    //     return numOfPalindromicStr;
+    //    // };
+    //    //
+    //    // countSubstrings("abba");
+    //
+    //    // var maxArea = function (height) {
+    //    //     let left = 0;
+    //    //     let right = height.length - 1;
+    //    //     let res = 0;
+    //    //
+    //    //     while(left < right) {
+    //    //         let count = 0;
+    //    //         let h = Math.min(height[left],  height[right]);
+    //    //         let w = right - left;
+    //    //         count = h * w;
+    //    //         res = Math.max(count, res);
+    //    //
+    //    //         if (height[left] < height[right]) {
+    //    //             left++;
+    //    //         } else {
+    //    //             right--;
+    //    //         }
+    //    //     }
+    //    //     return res;
+    //    // };
+    //    //
+    //    // maxArea([1,1]);
+    //
+    //
+    //    // function ListNode(val, next) {
+    //    //     this.val = (val === undefined ? 0 : val)
+    //    //     this.next = (next === undefined ? null : next)
+    //    // }
+    //    //
+    //    // var mergeTwoLists = function (list1, list2) {
+    //    //     const vHead = new ListNode(0, list1);
+    //    //     let cur1 = vHead;
+    //    //
+    //    //     while (cur1.next !== null) {
+    //    //
+    //    //         let cur2 = list2;
+    //    //
+    //    //         while (cur2 !== null && cur2.next !== null) {
+    //    //             if (cur2.val <= cur1.next.val) {
+    //    //                 cur1.next = cur2;
+    //    //                 cur2.next = cur1.next;
+    //    //             } else {
+    //    //                 cur2 = cur2.next;
+    //    //             }
+    //    //         }
+    //    //         cur1 = cur1.next;
+    //    //     }
+    //    //
+    //    //     return vHead.next;
+    //    // };
+    //    //
+    //    // mergeTwoLists([1,2,4], [1,3,4]);
+    //
+    //
+    //    // var mergeTwoLists = function(list1, list2) {
+    //    //     let vNode = new ListNode(0);
+    //    //     let cur = vNode;
+    //    //
+    //    //     while(list1 !== null && list2 !== null) {
+    //    //
+    //    //         if(list1.val <= list2.val) {
+    //    //             cur.next = list1;
+    //    //             list1 = list1.next;
+    //    //         } else {
+    //    //             cur.next = list2;
+    //    //             list2 = list2.next;
+    //    //         }
+    //    //
+    //    //         cur = cur.next;
+    //    //     }
+    //    //
+    //    //     if(list1 !== null) {
+    //    //         cur.next = list1;
+    //    //     } else if(list2 !== null) {
+    //    //         cur.next = list2;
+    //    //     }
+    //    //
+    //    //     return vNode.next;
+    //    // };
+    //
+    //
+    //    // var isPalindrome = function(x) {
+    //    //     let left = 0;
+    //    //     let right = x.length;
+    //    //     let data = x.toString();
+    //    //     let res = false;
+    //    //
+    //    //     console.log(data);
+    //    //
+    //    //     function get(i, j) {
+    //    //         if(i >= 0 && j < data.length && data[left] === data[right]) {
+    //    //             left = i;
+    //    //             right = j - i + 1;
+    //    //             res = true;
+    //    //         }
+    //    //         left++;
+    //    //         right--;
+    //    //     }
+    //    //
+    //    //     for(let i = 0; i < data.length; i++) {
+    //    //         get(i, i);
+    //    //         get(i, i + 1);
+    //    //     }
+    //    //
+    //    //     console.log(res);
+    //    //     return res;
+    //    // };
+    //    //
+    //    // isPalindrome(-121);
+    //
+    //    // var singleNumber = function(nums) {
+    //    //     if(nums.length === 0) {
+    //    //         return 0;
+    //    //     }
+    //    //
+    //    //     let map = {};
+    //    //     let len = nums.length;
+    //    //     let res = 0;
+    //    //
+    //    //     for(let i = 0; i < len; i++) {
+    //    //         if(map[nums[i]]) {
+    //    //             map[nums[i]]++;
+    //    //         } else {
+    //    //             map[nums[i]] = 1;
+    //    //         }
+    //    //     }
+    //    //
+    //    //     for(let key in map) {
+    //    //         if(map[key] === 1) {
+    //    //             res = Number(key);
+    //    //         }
+    //    //     }
+    //    //     return res;
+    //    // };
+    //    //
+    //    // singleNumber([4,1,2,1,2]);
+    //
+    //    // var longestCommonPrefix = function (strs) {
+    //    //     let res = strs[0];
+    //    //     let len = strs.length;
+    //    //
+    //    //     for (let i = 1; i < len; i++) {
+    //    //         if (strs[i].length === 0) {
+    //    //             res = '';
+    //    //             return;
+    //    //         }
+    //    //
+    //    //         let j = 0;
+    //    //
+    //    //         for (j < res.length && j < strs[i].length; j++) {
+    //    //             if (res[j] !== strs[i][j]) {
+    //    //                 break;
+    //    //             }
+    //    //         }
+    //    //
+    //    //         res = res.substr(0, j);
+    //    //
+    //    //         if (res === '') {
+    //    //             return res;
+    //    //         }
+    //    //     }
+    //    //
+    //    //     return res;
+    //    // };
+    //
+    //    // console.log(longestCommonPrefix(["abab", "aba", ""]));
+    //
+    //    // var merge = function (nums1, m, nums2, n) {
+    //    //     // nums1.splice(m, nums1.length - m, ...nums2);
+    //    //     // nums1.sort((a, b) => a-b);
+    //    //
+    //    //     // return nums1;
+    //    //
+    //    //     let cur = m + n - 1;
+    //    //     let i = m - 1;
+    //    //     let j = n - 1;
+    //    //
+    //    //     while (i >= 0 || j >= 0) {
+    //    //         if (i === -1) {
+    //    //             nums1[cur] = nums2[j]
+    //    //             j--;
+    //    //         } else if (j === -1) {
+    //    //             nums1[cur] = nums1[i]
+    //    //             i--;
+    //    //         } else if (nums1[i] >= nums2[j]) {
+    //    //             nums1[cur] = nums1[i]
+    //    //             i--;
+    //    //         } else {
+    //    //             nums1[cur] = nums2[j]
+    //    //             j--;
+    //    //         }
+    //    //         cur--;
+    //    //     }
+    //    //
+    //    //     while (j >= 0) {
+    //    //         nums1[cur] = nums1[j]
+    //    //         cur--;
+    //    //         j--;
+    //    //     }
+    //    //
+    //    //     console.log('//////');
+    //    //     console.log(nums1);
+    //    //
+    //    //     return nums1;
+    //    // }
+    //    //
+    //    // merge([0], 0, [1], 1);
+    //
+    //
+    //    // var multiply = function(num1, num2) {
+    //    //     let m = num1.length - 1;
+    //    //     let n = num2.length - 1;
+    //    //     let len = num1.length + num2.length;
+    //    //     let array = new Array(len - 1).fill(0);
+    //    //     let curry = 0;
+    //    //     let res = '';
+    //    //
+    //    //     for(let i = 0; i <= m ; i++) {
+    //    //         for(let j = 0; j <= n; j++) {
+    //    //             let a = parseInt(num1[m - i]);
+    //    //             let b = parseInt(num2[n - j]);
+    //    //             array[i + j] += a * b;
+    //    //         }
+    //    //     }
+    //    //
+    //    //     console.log(array);
+    //    //
+    //    //     for(let i = 0; i < array.length; i++) {
+    //    //         array[i] += parseInt(curry);
+    //    //         curry = array[i] / 10;
+    //    //         array[i] %= 10;
+    //    //     }
+    //    //
+    //    //     for(let i = array.length - 1; i >= 0; i--) {
+    //    //         // if(ans.length === 0 || res[i] === 0) {
+    //    //         //     continue;
+    //    //         // }
+    //    //         res+= array[i];
+    //    //     }
+    //    //
+    //    //     return res === '0' ? '0' : res;
+    //    // };
+    //    //
+    //    // console.log(multiply("9", "99"));
+    //    // var productExceptSelf = function(nums) {
+    //    //     if(nums.length === 0) {
+    //    //         return [];
+    //    //     }
+    //    //
+    //    //     let res = [];
+    //    //     let left = [];
+    //    //     let right = [];
+    //    //
+    //    //     left[0] = 1;
+    //    //     right[nums.length - 1] = 1;
+    //    //
+    //    //     for(let i = 1; i < nums.length; i++) {
+    //    //         left[i] = nums[i - 1] * left[i - 1];
+    //    //     }
+    //    //
+    //    //     console.log('llllllllllllllllllllll');
+    //    //     console.log(left);
+    //    //
+    //    //     for(let i = nums.length - 2; i >= 0; i--) {
+    //    //         right[i] = nums[i + 1] * right[i + 1];
+    //    //     }
+    //    //
+    //    //     console.log('rrrrrrrrrrrrrrrrrrr');
+    //    //     console.log(right);
+    //    //
+    //    //     for (let i = 0; i < nums.length; i++) {
+    //    //         res[i] = left[i] * right[i];
+    //    //     }
+    //    //
+    //    //     console.log('aaaaaaaaaaaaaaaaaaaa');
+    //    //     console.log(res);
+    //    //
+    //    //     return res;
+    //    // };
+    //    //
+    //    // productExceptSelf([1,2,3,4]);
+    //
+    //    // var productExceptSelf = function(nums) {
+    //    //     if(nums.length === 0) {
+    //    //         return [];
+    //    //     }
+    //    //
+    //    //     let res = [];
+    //    //     let lv = [];
+    //    //     let pass = [];
+    //    //
+    //    //     function dfs(data, pass) {
+    //    //         console.log('....');
+    //    //         console.log(data);
+    //    //         console.log(lv);
+    //    //         console.log(pass);
+    //    //         if(data.length === lv.length) {
+    //    //             console.log('中指中指中指');
+    //    //             console.log(lv);
+    //    //             console.log(pass);
+    //    //             return;
+    //    //         }
+    //    //
+    //    //         for(let i = 0; i < data.length; i++) {
+    //    //             console.log('ddddd');
+    //    //             console.log(pass);
+    //    //             if(pass[i]) {
+    //    //                 continue;
+    //    //             }
+    //    //
+    //    //             pass[i] = true;
+    //    //             lv.push(data[i]);
+    //    //
+    //    //             // count = count * pass[i];
+    //    //             dfs(data, pass);
+    //    //
+    //    //             pass[i] = false;
+    //    //             lv.pop();
+    //    //         }
+    //    //     }
+    //    //
+    //    //     dfs(nums, pass);
+    //    //
+    //    //     return res;
+    //    // };
+    //    //
+    //    // productExceptSelf([1,2,3,4]);
+    //
+    //    // var findKthLargest = function(nums, k) {
+    //    //     if(nums.length === 0) {
+    //    //         return 0;
+    //    //     }
+    //    //
+    //    //     let stack = [];
+    //    //     let len = nums.length;
+    //    //     let res = null;
+    //    //
+    //    //     for(let i = 0; i < len; i++) {
+    //    //         if(nums[i] >= stack[stack.length - 1]) {
+    //    //             stack.push(nums[i]);
+    //    //         }
+    //    //         // } else {
+    //    //         //     while(stack.length !==0 && nums[i] > stack[stack.length - 1]) {
+    //    //         //         stack.pop();
+    //    //         //         console.log(stack);
+    //    //         //         if(stack.length === k) {
+    //    //         //             res = stack[stack.length - 1];
+    //    //         //             return;
+    //    //         //         }
+    //    //         //     }
+    //    //         //     stack.push(nums[i]);
+    //    //         // }
+    //    //     }
+    //    //
+    //    //     return res[k - 1];
+    //    // };
+    //    //
+    //    // findKthLargest( [3,2,1,5,6,4], 2);
+    //
+    //    // var majorityElement = function (nums) {
+    //    //     let map = {};
+    //    //     let res = 0;
+    //    //     let index = 0;
+    //    //
+    //    //     for (let i = 0; i < nums.length; i++) {
+    //    //         if (!map[nums[i]]) {
+    //    //             map[nums[i]] = 0;
+    //    //         }
+    //    //         map[nums[i]]++
+    //    //     }
+    //    //
+    //    //     for (let key in map) {
+    //    //         if (map[key] > map[index]) {
+    //    //             res = key;
+    //    //         }
+    //    //         index = key
+    //    //     }
+    //    //
+    //    //     console.log(res)
+    //    //
+    //    //     return res;
+    //    // };
+    //    //
+    //    // majorityElement([3, 2, 3]);
+    //
+    //    // function ListNode(val, next) {
+    //    //     this.val = (val === undefined ? 0 : val)
+    //    //     this.next = (next === undefined ? null : next)
+    //    // }
+    //    //
+    //    // var addTwoNumbers = function (l1, l2) {
+    //    //     if (l1 === null || l2 === null) {
+    //    //         return [];
+    //    //     }
+    //    //
+    //    //     let vHaed = new ListNode(-1, l1);
+    //    //     let cur = vHaed;
+    //    //
+    //    //     while (l1 !== null && l2 !== null) {
+    //    //         let count = l1.val + l2.val;
+    //    //         let ten = Math.floor(count / 10);
+    //    //         let remain = count % 10;
+    //    //
+    //    //         l1.val = remain;
+    //    //         l1.next = l1.next + ten;
+    //    //         l1 = l1.next;
+    //    //         l2 = l2.next;
+    //    //         cur = cur.next;
+    //    //     }
+    //    //
+    //    //     if (l1 !== null) {
+    //    //         cur.next = l1;
+    //    //     }
+    //    //
+    //    //     if (l2 !== null) {
+    //    //         cur.next = l2;
+    //    //     }
+    //    //
+    //    //     return vHaed.next;
+    //    // };
+    //
+    //    // var maxProfit = function(prices) {
+    //    //     if(prices.length === 0) {
+    //    //         return 0;
+    //    //     }
+    //    //
+    //    //     let len = prices.length;
+    //    //     // let dp = new Array(len).fill(0).map(() => new Array(len).fill(0));
+    //    //     const dp = new Array(len).fill([0, 0]);
+    //    //
+    //    //     console.log('===========');
+    //    //     console.log(dp);
+    //    //
+    //    //     dp[0] = [-prices[0], 0];
+    //    //
+    //    //     for(let i = 1; i < len; i++) {
+    //    //         dp[i] = [
+    //    //             Math.max(dp[i - 1][0], -prices[i]),
+    //    //             Math.max(dp[i - 1][1], prices[i] + dp[i - 1][0])
+    //    //         ]
+    //    //     }
+    //    //
+    //    //     return dp[len - 1][1];
+    //    // };
+    //    //
+    //    // maxProfit([7,1,5,3,6,4]);
+    //
+    //    // var getMax = function(data, left, right) {
+    //    //     if(left === right) {
+    //    //         return data[left];
+    //    //     }
+    //    //
+    //    //     let len = data.length;
+    //    //     let dp = new Array(len).fill(0);
+    //    //
+    //    //     dp[left] = data[left];
+    //    //     dp[left + 1] = Math.max(data[left], data[left + 1]);
+    //    //
+    //    //     for(let i = left + 2; i <= right; i++) {
+    //    //         dp[i] = Math.max(dp[i - 2] + data[i], dp[i - 1]);
+    //    //     }
+    //    //
+    //    //     console.log('eeeeeeeeeeeeee');
+    //    //     console.log(dp);
+    //    //
+    //    //     return dp[right];
+    //    // };
+    //    //
+    //    // var rob = function(nums) {
+    //    //     if(nums.length === 0) {
+    //    //         return 0;
+    //    //     }
+    //    //
+    //    //     if(nums.length === 1) {
+    //    //         return nums[0];
+    //    //     }
+    //    //
+    //    //     let len = nums.length;
+    //    //
+    //    //     let left = getMax(nums, 0, len - 2);
+    //    //     let right = getMax(nums, 1, len - 1);
+    //    //
+    //    //     return Math.max(left, right);
+    //    //
+    //    // };
+    //    //
+    //    // rob([2,3,2]);
+    //
+    //    // var rob = function(nums) {
+    //    //     if(nums.length === 0) {
+    //    //         return 0;
+    //    //     }
+    //    //
+    //    //     let len = nums.length;
+    //    //     let dp = new Array(len).fill(0);
+    //    //
+    //    //     dp[0] = nums[0];
+    //    //     dp[1] = Math.max(nums[0], nums[1]);
+    //    //
+    //    //     for(let i = 2; i < len; i++) {
+    //    //         dp[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+    //    //     }
+    //    //
+    //    //     console.log(dp);
+    //    //
+    //    //     return dp[len - 1];
+    //    // };
+    //    //
+    //    // console.log(rob([1,2,3,1]));
+    //
+    //    var rob = function (nums) {
+    //        if (nums.length === 0) {
+    //            return 0;
+    //        }
+    //
+    //        // function getMax(nums, cur, count) {
+    //        //     let len = nums.length - 1;
+    //        //
+    //        //     if(cur >= len) {
+    //        //         return count;
+    //        //     }
+    //        //
+    //        //     let res = count + nums[cur];
+    //        //     let p1 = getMax(nums, cur + 2, res);
+    //        //     let p2 = getMax(nums, cur + 1, count);
+    //        //
+    //        //     return Math.max(p1, p2);
+    //        // }
+    //        //
+    //        // return getMax(nums, 0, 0);
+    //
+    //        // let len = nums.length;
+    //        // let dp = new Array(len).fill(0);
+    //
+    //        // for(let i = 2; i < len; i++) {
+    //        //     dp[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+    //        // }
+    //
+    //        // for (let i = 0; i < len - 1; i++) {
+    //            // if (i >= len) {
+    //            //     console.log('===========');
+    //            //     console.log(dp[i]);
+    //            //     return dp[i];
+    //            // }
+    //            // let res = dp[i] + nums[i];
+    //            // console.log(dp[i + 2]);
+    //            // console.log(dp[i + 1]);
+    //            // let p1 = getMax(nums, cur + 2, count + nums[cur]);
+    //            // let p1 = dp[i - 2] + nums[i];
+    //            // let p2 = dp[i - 1];
+    //
+    //            // console.log(p1);
+    //            // console.log(p2);
+    //
+    //            // let res = count + nums[cur];
+    //            // let p1 = getMax(nums, cur + 2, count + nums[cur]);
+    //            // let p2 = getMax(nums, cur + 1, count);
+    //        //
+    //        //     let p1 = Math.max(dp[i + 2], dp[i] + nums[i]);
+    //        //     let p2 = Math.max(dp[i + 1], dp[i]);
+    //        //
+    //        //     dp[i] = Math.max(p1, p2);
+    //        // }
+    //        //
+    //        // console.log(dp);
+    //        //
+    //        // return dp[len- 1];
+    //
+    //        // function getMax(nums, cur, count) {
+    //        //     let len = nums.length - 1;
+    //        //
+    //        //     if(cur >= len) {
+    //        //         return count;
+    //        //     }
+    //        //
+    //        //     let res = count + nums[cur];
+    //        //     let p1 = getMax(nums, cur + 2, res);
+    //        //     let p2 = getMax(nums, cur + 1, count);
+    //        //
+    //        //     return Math.max(p1, p2);
+    //        // }
+    //        //
+    //        // return getMax(nums, 0, 0);
+    //    };
+    //
+    //    // console.log(rob([1, 2, 3, 1]));
+    //
+    //
+    //
+    //    // const fakeBind = function (obj, callback) {
+    //    //     let target = (obj instanceof Object) ? new Object(obj) : window;
+    //    //
+    //    //     target.self = this;
+    //    //     target.self(obj, arguments);
+    //    //     target.self = undefined;
+    //    //
+    //    //     return function () {
+    //    //
+    //    //     }
+    //    // }
+    //    //
+    //    // function test() {
+    //    //     console.log(this);
+    //    //     return '123';
+    //    // }
+    //    //
+    //    // Function.prototype.myApply = function (obj) {
+    //    //     let target = (obj instanceof Object) ? new Object(obj) : window;
+    //    //     // let res = target.selfFn = this;
+    //    //
+    //    //     // if(!arguments) {
+    //    //     //     res();
+    //    //     // } else {
+    //    //     //     res(arguments);
+    //    //     // }
+    //    //     //
+    //    //     // delete target.selfFn;
+    //    //
+    //    //     const fn = Symbol('uniqueFn');
+    //    //     target.fn = this
+    //    //     let arg = [...arguments].slice(1)
+    //    //     let result = target.fn(arg);
+    //    //     delete target.fn;
+    //    //
+    //    //     return result
+    //    //
+    //    //     // return res;
+    //    // }
+    //    //
+       Function.prototype.newBind = function () {
+           let fn = this;
+           let args = Array.prototype.slice.call(arguments);
+           let selfObj = args.shift();
+
+           return function () {
+               return fn.apply(selfObj, args);
+           }
+       }
+
+       function fakeBind () {
+            let fn = this;
+            let args = Array.prototype.slice.call(arguments);
+            let self = args.shift();
+
+            return function () {
+                return fn.apply(self, args);
+            }
+       }
+    //    //
+    //    // const test1 = test.myApply({name: '456'});
+    //    //
+    //    // console.log(test1);
+    //    //
+    //    //
+    //    // const fakeNew = function (constructor, ...argument) {
+    //    //     let newObj = {};
+    //    //     newObj.__proto__ = constructor.prototype;
+    //    //     let res = constructor.apply(newObj, argument);
+    //    //
+    //    //     return (constructor instanceof Object) ? res : newObj;
+    //    // }
+    //    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //    // function Queue() {
+    //    //     // this.queue = [];
+    //    //     this.enQueue = function () {
+    //    //
+    //    //     }
+    //    //     this.push = function () {
+    //    //
+    //    //         // async queue =
+    //    //         // return new Promise((resolve) => {
+    //    //         //     resolve();
+    //    //         // })
+    //    //         // let task = function () {
+    //    //         //    return new Promise(() => {
+    //    //         //        callback();
+    //    //         //        // setTimeout(() => {
+    //    //         //        //     callback()
+    //    //         //        // }, 0)
+    //    //         //    })
+    //    //         // }
+    //    //         //
+    //    //         // this.queue.push(task);
+    //    //         //
+    //    //         // console.log(this.queue);
+    //    //         //
+    //    //         // // for(let i = 0; i < this.queue.length; i++) {
+    //    //         // //     // this.queue[i]();
+    //    //         // // }
+    //    //         //
+    //    //         // Promise.all(this.queue);
+    //    //
+    //    //         // this.queue[0]();
+    //    //     }
+    //    // }
+    //
+    //    class Queue {
+    //        constructor() {
+    //            this.queue = [];
+    //            this.running = false;
+    //        }
+    //
+    //        push(asyncFn) {
+    //            const task = async () => {
+    //                try {
+    //                    await asyncFn();
+    //                } catch (error) {
+    //                    console.error(error);
+    //                }
+    //
+    //                if (this.queue.length > 0) {
+    //                    const nextTask = this.queue.shift();
+    //                    nextTask();
+    //                } else {
+    //                    this.running = false;
+    //                }
+    //            };
+    //
+    //            if (this.running) {
+    //                this.queue.push(task);
+    //            } else {
+    //                this.running = true;
+    //                task();
+    //            }
+    //        }
+    //    }
+
+    // class Queue {
+    //     constructor(max) {
+    //         this.max = max;
+    //         this.running = 0;
+    //         this.queue = [];
+    //     }
+    //
+    //     push(fn) {
+    //         const task = () => {
+    //             return new Promise((resolve, reject) => {
+    //                 const runTask = async () => {
+    //                     try {
+    //                         this.running++;
+    //                         await fn();
+    //                         resolve();
+    //                     } catch (error) {
+    //                         reject(error);
+    //                     } finally {
+    //                         this.running--;
+    //                         this.next();
+    //                     }
+    //                 };
+    //
+    //                 if (this.running < this.max) {
+    //                     runTask();
+    //                 } else {
+    //                     this.queue.push(runTask);
+    //                 }
+    //             });
+    //         };
+    //
+    //         if (this.running < this.max) {
+    //             return task();
+    //         } else {
+    //             return new Promise((resolve, reject) => {
+    //                 this.queue.push(() => {
+    //                     task().then(resolve).catch(reject);
+    //                 });
+    //             });
     //         }
-    //         reject('fail');
-    //     })
+    //     }
+    //
+    //     next() {
+    //         if (this.running < this.max && this.queue.length > 0) {
+    //             const task = this.queue.shift();
+    //             task();
+    //         }
+    //     }
+    // }
+
+    // class Queue {
+    //     constructor(max) {
+    //         this.max = max;
+    //         this.running = 0;
+    //         this.queue = [];
+    //     }
+    //
+    //     push(fn) {
+    //         const task = () => {
+    //             return new Promise((resolve, reject) => {
+    //                 const runTask = async () => {
+    //                     try {
+    //                         this.running++;
+    //                         await fn();
+    //                         resolve();
+    //                     } catch (e) {
+    //                         reject(e);
+    //                     } finally {
+    //                         this.running--;
+    //                         this.next();
+    //                     }
+    //                 }
+    //
+    //                 if (this.running < this.max) {
+    //                     runTask();
+    //                 } else {
+    //                     this.queue.push(runTask);
+    //                 }
+    //             })
+    //         }
+    //
+    //         if (this.running < this.max) {
+    //             return task();
+    //         } else {
+    //             return new Promise((resolve, reject) => {
+    //                 this.queue.push(() => {
+    //                     task()
+    //                         .then(resolve)
+    //                         .catch(reject);
+    //                 });
+    //             });
+    //         }
+    //     };
+    //
+    //     next() {
+    //         if (this.running < this.max && this.queue.length !== 0) {
+    //             const task = this.queue.shift();
+    //             task();
+    //         }
+    //     };
+    // }
+
+
+    // class Queue {
+    //     constructor(max) {
+    //         this.max = max;
+    //         this.queue = [];
+    //         this.running = 0;
+    //     }
+    //
+    //     push(fn) {
+    //         return new Promise((resolve, reject) => {
+    //             const task = async () => {
+    //                 try {
+    //                     this.running++;
+    //                     let res = await fn();
+    //                     resolve(res);
+    //                 } catch (e) {
+    //                     reject(e);
+    //                 } finally {
+    //                     this.running--;
+    //                     this.next();
+    //                 }
+    //             }
+    //
+    //             if(this.running < this.max) {
+    //                 task();
+    //             } else {
+    //                 this.queue.push(task);
+    //             }
+    //         })
+    //     }
+    //
+    //     next() {
+    //         if(this.running < this.max && this.queue.length !== 0) {
+    //             const task = this.queue.shift();
+    //             task();
+    //         }
+    //     }
+    // }
+
+
+
+    class Queue {
+        constructor(max) {
+            this.max = max;
+            this.queue = [];
+            this.runnig = 0;
+        }
+
+        push(fn) {
+            return new Promise((resolve, reject) => {
+                const task = async () => {
+                    try {
+                        this.runnig++;
+                        let res = await fn();
+                        resolve(res);
+                    } catch (e) {
+                        reject(e);
+                    } finally {
+                        this.runnig--;
+                        this.next();
+                    }
+                }
+
+                if(this.queue.length < this.max) {
+                    task();
+                } else {
+                    this.queue.push(task);
+                }
+            })
+        }
+
+        next() {
+            if(this.queue.length < this.max && this.queue.length !== 0) {
+                const task = this.queue.shift();
+                task();
+            }
+        }
+    }
+
+    class Queue2 {
+        constructor(max) {
+            this.max = max;
+            this.queue = [];
+            this.running = 0;
+        }
+
+        push(fn) {
+            return new Promise((resolve, reject) => {
+                const task = async () => {
+                    try {
+                        this.running++;
+                        let res = await fn();
+                        resolve(res);
+                    } catch (e) {
+                        reject(e);
+                    } finally {
+                        this.running--;
+                        this.next();
+                    }
+                }
+
+                if(this.queue.length < this.max) {
+                    task();
+                } else {
+                    this.queue.push(task);
+                }
+            })
+        }
+
+        next() {
+            if(this.queue.length !== 0 && this.running < this.max) {
+                const task = this.queue.shift();
+                task();
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const queueTest = new Queue(2);
+    //
+    // 题目：实现一个Queue类，傳參 max 控制當前异步併發數，支持按顺序执行异步队列，push方法把一个待执行函数推入队列，push的同时开始执行, 當併發數到達上限時後面的异步 pedding, 並按顺序输出 1,2,3
+    queueTest.push(function () {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                console.log('1')
+                resolve()
+            }, 1000)
+        })
+    }).push(function () {
+        console.log('2');
+    }).push(function () {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                console.log('3')
+                resolve()
+            }, 500)
+        })
+    })
+
+
+    // class Queue {
+    //     constructor(maxConcurrency) {
+    //         this.maxConcurrency = maxConcurrency;
+    //         this.queue = [];
+    //         this.currentConcurrency = 0;
+    //     }
+    //
+    //     async push(task) {
+    //         const executeTask = async () => {
+    //             try {
+    //                 await task();
+    //             } finally {
+    //                 this.currentConcurrency--;
+    //                 this.processQueue();
+    //             }
+    //         };
+    //
+    //         this.queue.push(executeTask);
+    //         this.processQueue();
+    //     }
+    //
+    //     async processQueue() {
+    //         while (this.queue.length > 0 && this.currentConcurrency < this.maxConcurrency) {
+    //             const task = this.queue.shift();
+    //             this.currentConcurrency++;
+    //             await task();
+    //         }
+    //     }
     // }
     //
-    // testPromise(() => {
-    //     return Math.random() > 0.5;
-    // }).then((pass) => {
-    //     console.log(pass);
-    // }).catch((fail) => {
-    //     console.log(fail);
-    // })
+    // class Queue {
+    //     constructor(max) {
+    //         this.max = max;
+    //         this.queue = [];
+    //         this.cur = 0;
+    //     }
+    //
+    //     async then(task) {
+    //       const httpTask = async () => {
+    //           try {
+    //               await task();
+    //           } finally {
+    //               this.cur--;
+    //               this.addQueue();
+    //           }
+    //       }
+    //
+    //         this.queue.push(httpTask);
+    //         this.addQueue();
+    //     }
+    //
+    //     async addQueue() {
+    //         while (this.queue.length > 0 && this.cur < this.max) {
+    //             const task = this.queue.shift();
+    //             this.cur++;
+    //             await task();
+    //         }
+    //     }
+    // }
+
+
+    // class FakeQueue {
+    //     constructor(max) {
+    //         this.max = max;
+    //         this.queue = [];
+    //         this.cur = 0;
+    //     }
+    //
+    //     async then(task) {
+    //         const http = async () => {
+    //             try {
+    //                 task();
+    //             } finally {
+    //                 this.cur--
+    //                 this.checkQueue();
+    //             }
+    //         }
+    //         this.queue.push(http);
+    //         this.checkQueue();
+    //     }
+    //
+    //     async checkQueue() {
+    //         while (this.queue.length > 0 && this.cur < this.max) {
+    //             const task = this.queue.shift();
+    //             this.cur++;
+    //             await task();
+    //         }
+    //     }
+    // }
+
+
+    // output：按顺序输出 1,2,3
+
+    // int minCostII(vector<vector<int>>& costs) {
+    //     int n = costs.size();
+    //     if (!n) return 0;
+    //     int k = costs[0].size();
+    //     // 从i=0房子开始涂色，dp[i][j]表示房子i涂成j颜色的情况下，0-i房子涂色完的最小花费
+    //     auto dp = vector<vector<int>>(n,vector<int>(k,INT_MAX));
+    //     // 初始化dp[0][i]
+    //     for (int i = 0; i < k; ++ i) dp[0][i] = costs[0][i];
+    //     // 开始遍历，填写dp
+    //     // dp[i][j] = min(dp[i-1][c])+cost[i][j] , c!=j
+    //     for (int i = 1; i < n; ++i)
+    //     for (int j = 0; j < k; ++j)
+    //     for (int c = 0; c < k; ++c)
+    //     if (j != c) dp[i][j] = min(dp[i][j],dp[i-1][c]+costs[i][j]);
+    //     // 返回dp[n-1]的最小值
+    //     int ans = INT_MAX;
+    //     for (int i = 0; i < k; ++i) ans = min(ans,dp[n-1][i]);
+    //     return ans;
+
+    //
+    // function minCostII(costs) {
+    //     let res = Number.MIN_VALUE;
+    //     let m = costs.length;
+    //     let k = costs[0].length;
+    //     let dp = new Array(m).fill(0).map(() => new Array(k).fill(0));
+    //
+    //     for (let i = 0; i < k; i++) {
+    //         dp[0][i] = costs[0][i];
+    //     }
+    //
+    //     for (let i = 1; i < m; i++) {
+    //         for (let j = 0; i < k; j++) {
+    //             for (let c = 0; c < k; c++) {
+    //                 if (j !== c) {
+    //                     dp[i][j] = Math.min(dp[i][j], dp[i - 1][c] + costs[i][j]);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     for (let i = 0; i < k; i++) {
+    //         res = Math.min(res, dp[m - 1][i]);
+    //     }
+    //
+    //     return res;
+    // }
+    //
+    // console.log(minCostII([[1, 5, 3], [2, 9, 4]]));
+
+
+    // const array = [
+    //     { "id": 0, "name": "root", "parentId": null},
+    //     { "id": 1, "name": "节点A", "parentId": 0},
+    //     { "id": 3, "name": "节点b", "parentId": 1},
+    //     { "id": 2, "name": "节点c", "parentId": 0},
+    //     { "id": 4, "name": "节点d", "parentId": 1},
+    //     { "id": 5, "name": "节点e", "parentId": 2},
+    //     { "id": 6, "name": "节点f", "parentId": 2}
+    // ]
+    // const test = {
+    //     "id": 0, "name": "root", "parentId": null, "children": [
+    //         {
+    //             "id": 1,
+    //             "name": "节点A",
+    //             "parentId": 0,
+    //             "children": [
+    //                 {
+    //                     "id": 3,
+    //                     "name": "节点C",
+    //                     "parentId": 1,
+    //                     "children": [
+    //                         {"id": 6, "name": "节点F", "parentId": 3}
+    //                     ]
+    //                 },
+    //                 {
+    //                     "id": 4,
+    //                     "name": "节点D",
+    //                     "parentId": 1,
+    //                     "children": [
+    //                         {"id": 8, "name": "节点H", "parentId": 4}]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "id": 2,
+    //             "name": "节点B",
+    //             "parentId": 0,
+    //             "children": [
+    //                 {
+    //                 "id": 5,
+    //                 "name": "节点E",
+    //                 "parentId": 2,
+    //                 "children": [{"id": 9, "name": "节点I", "parentId": 5}]
+    //             }, {"id": 7, "name": "节点G", "parentId": 2}]
+    //         }]
+    // }
+
+    // const array = [
+    //     {"id": 0, "name": "root", "parentId": null},
+    //     {"id": 1, "name": "节点A", "parentId": 0},
+    //     {"id": 3, "name": "节点B", "parentId": 1},
+    //     {"id": 2, "name": "节点C", "parentId": 0},
+    //     {"id": 4, "name": "节点D", "parentId": 1},
+    //     {"id": 5, "name": "节点E", "parentId": 2},
+    //     {"id": 6, "name": "节点F", "parentId": 2}
+    // ];
+
+    // function convertToBinaryTree(array, parentId = null) {
+    //     const children = array.filter(node => node.parentId === parentId);
+    //     const tree = [];
+    //
+    //     children.forEach(child => {
+    //         const subtree = convertToBinaryTree(array, child.id);
+    //         if (subtree.length > 0) {
+    //             child.children = subtree;
+    //         }
+    //         tree.push(child);
+    //     });
+    //
+    //     return tree;
+    // }
+    //
+    // const binaryTree = convertToBinaryTree(array);
+    //
+    // console.log(JSON.stringify(binaryTree, null, 2));
+
+
+    const array = [
+        {"id": 0, "name": "root", "parentId": null},
+        {"id": 1, "name": "节点A", "parentId": 0},
+        {"id": 3, "name": "节点B", "parentId": 1},
+        {"id": 2, "name": "节点C", "parentId": 0},
+        {"id": 4, "name": "节点D", "parentId": 1},
+        {"id": 5, "name": "节点E", "parentId": 2},
+        {"id": 6, "name": "节点F", "parentId": 2}
+    ];
+
+
+    // function  build(data, parentId = null) {
+    //     const childList = data.filter(child => child.parentId === parentId);
+    //     const tree = [];
+    //
+    //     childList.forEach((item) => {
+    //         const subTree = build(data, item.id);
+    //         if(subTree.length > 0) {
+    //             item.children = subTree;
+    //         }
+    //         tree.push(item);
+    //     })
+    //
+    //     return tree;
+    // }
+    //
+    //
+    // const binaryTree = build(array);
+    // console.log(binaryTree);
+
+
+    function build(data, parentId = null) {
+        const childList = data.filter((item) => item.id === parentId);
+        const tree = [];
+
+        childList.forEach((item) => {
+            let subTree = build(data, item.id);
+
+            if(subTree.length > 0) {
+                item.children = subTree;
+            }
+
+            tree.push(item);
+        })
+
+        return tree;
+    }
+
+    // function build(data, parentId = null) {
+    //     const childList = data.filter((child) => child.parentId === parentId);
+    //     const tree = [];
+    //
+    //     childList.forEach((item) => {
+    //         const sub = build(data, item.id);
+    //         if (sub.length > 0) {
+    //             item.children = sub;
+    //         }
+    //         tree.push(item);
+    //     })
+    //
+    //     return tree;
+    // };
+
+    // const binaryTree = build(array);
+    // console.log(binaryTree);
+
 
 </script>
 </body>
