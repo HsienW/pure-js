@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FlattenTree</title>
+</head>
+<body>
+<script>
+    function flattenTree(tree) {
+        const result = {};
+        const stack = []; // 改為 Stack (LIFO)
+
+        // 1. 初始化 Stack
+        tree.forEach(node => {
+            stack.push({ node, parentId: null });
+        });
+
+        while (stack.length > 0) {
+            // 從 Stack 頂部取出元素 (Stack: LIFO)。O(1) 操作。
+            const { node, parentId } = stack.pop();
+            const id = node.id;
+
+            // 2. 處理當前節點
+            result[id] = {
+                ...node,
+                parentId,
+                children: node.children ? node.children.map(child => child.id) : []
+            };
+
+            // 3. 將子節點加入 Stack
+            if (node.children && node.children.length > 0) {
+                // 注意：為了維持正常順序，通常會反向 push 子節點
+                for (let i = node.children.length - 1; i >= 0; i--) {
+                    const child = node.children[i];
+                    stack.push({ node: child, parentId: id });
+                }
+            }
+        }
+        return result;
+    }
+
+
+    // -----------------------------------------------------------
+    // 測試數據定義
+    // -----------------------------------------------------------
+
+    // 測試 1: 基礎樹形結構
+    const input1 = [
+        {
+            id: 'A',
+            name: 'Root A',
+            children: [
+                { id: 'A-1', name: 'Child A-1', children: [] },
+                {
+                    id: 'A-2',
+                    name: 'Child A-2',
+                    children: [
+                        { id: 'A-2-1', name: 'Grandchild A-2-1' }
+                    ]
+                }
+            ]
+        },
+        { id: 'B', name: 'Root B', children: [] }
+    ];
+
+    const expected1 = {
+        'A': { id: 'A', name: 'Root A', parentId: null, children: ['A-1', 'A-2'] },
+        'A-1': { id: 'A-1', name: 'Child A-1', parentId: 'A', children: [] },
+        'A-2': { id: 'A-2', name: 'Child A-2', parentId: 'A', children: ['A-2-1'] },
+        'A-2-1': { id: 'A-2-1', name: 'Grandchild A-2-1', parentId: 'A-2', children: [] },
+        'B': { id: 'B', name: 'Root B', parentId: null, children: [] }
+    };
+
+    // 測試 2: 空輸入
+    const input2 = [];
+    const expected2 = {};
+
+    // 測試 3: 單層結構/無子節點
+    const input3 = [
+        { id: 101, name: 'Item 1' },
+        { id: 102, name: 'Item 2', children: [] }
+    ];
+    const expected3 = {
+        '101': { id: 101, name: 'Item 1', parentId: null, children: [] },
+        '102': { id: 102, name: 'Item 2', children: [], parentId: null }
+    };
+
+    // 測試 4: 深度測試
+    const input4 = [
+        {
+            id: 'D1',
+            name: 'Level 1',
+            children: [
+                {
+                    id: 'D2',
+                    name: 'Level 2',
+                    children: [
+                        { id: 'D3', name: 'Level 3' }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    const expected4 = {
+        'D1': { id: 'D1', name: 'Level 1', parentId: null, children: ['D2'] },
+        'D2': { id: 'D2', name: 'Level 2', parentId: 'D1', children: ['D3'] },
+        'D3': { id: 'D3', name: 'Level 3', parentId: 'D2', children: [] }
+    };
+
+    // -----------------------------------------------------------
+    // 測試執行器
+    // -----------------------------------------------------------
+
+    function runTest(input, expected, name) {
+        const result = flattenTree(input);
+
+        // 優化後的比較邏輯：檢查物件的內容是否深度相等，忽略屬性順序。
+        const success = deepEqual(result, expected);
+
+        console.log(`[${success ? '✅ PASS' : '❌ FAIL'}] ${name}`);
+        if (!success) {
+            console.log('  --- 錯誤詳情 ---');
+            console.log('  期望 (Expected):', expected);
+            console.log('  收到 (Received):', result);
+            console.log('  ------------------');
+        }
+    }
+
+    /**
+     * 簡易的深度相等比較函式 (忽略屬性順序)
+     * 在正式測試中，通常會使用 Lodash 的 _.isEqual 或更完善的庫
+     */
+
+    function deepEqual(tg1, tg2, map = new WeakMap()) {
+        if(tg1 === tg2){
+            return true;
+        }
+
+        if(tg1 === null || typeof tg1 !== 'object' || tg2 === null || typeof tg2 !== 'object') {
+            return false;
+        }
+
+        const keys1 = Object.keys(tg1);
+        const keys2 = Object.keys(tg2);
+
+        if(keys1.length !== keys2.length) {
+            return false;
+        }
+
+        if(map.has(tg1) && map.get(tg1) !== tg2) {
+            return false;
+        }
+
+        map.set(tg1, tg2);
+
+        for(let key of keys1) {
+            if(!keys2.includes(key) || !deepEqual(tg1[key], tg2[key])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // 運行所有測試
+    console.log('--- 運行數據扁平化測試 ---');
+    runTest(input1, expected1, 'Test 1: Standard Tree Structure');
+    runTest(input2, expected2, 'Test 2: Empty Input Array');
+    runTest(input3, expected3, 'Test 3: Flat Structure/No Children');
+    runTest(input4, expected4, 'Test 4: Deeply Nested Tree');
+    console.log('------------------------------');
+
+</script>
+</body>
+</html>
