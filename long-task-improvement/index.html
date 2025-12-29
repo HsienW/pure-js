@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Long Task Improvement</title>
+</head>
+<style>
+</style>
+<body>
+<script>
+    const items = Array.from({ length: 100000 }, (_, i) => i);
+
+    function heavyWork(x) {
+        let s = 0;
+        for (let i = 0; i < 10000; i++) s += (i & 1) ? (i - 1) : (i + 1);
+        return x ^ (s & 255);
+    }
+
+    function taskChunk(list, cb, ts) {
+        const minTs = (ts === null || ts === undefined) ? 4 : ts;
+        const maxTs = 10;
+        const idle = typeof requestIdleCallback === 'function'
+            ? (fn) => requestIdleCallback(fn, { timeout: 200 })
+            : (fn) => setTimeout(fn, 0);
+
+        return new Promise((resolve) => {
+            const res = new Array(list.length);
+            let i = 0;
+
+            function run() {
+                const start = performance.now();
+                const maxRange = start + maxTs;
+
+                while(i < list.length) {
+                    const now = performance.now();
+                    if(now - start >= minTs && now >= maxRange) {
+                        break;
+                    }
+
+                    res[i] = cb(list[i], i);
+                    i++;
+                }
+
+                if(i < list.length) {
+                    idle(run);
+                } else {
+                    resolve(res);
+                }
+            }
+
+            setTimeout(run, 0);
+        })
+    }
+
+    let heartbeat = 0;
+    const hb = setInterval(() => {
+        heartbeat++;
+        console.log("heartbeat:", heartbeat);
+    }, 1000);
+
+
+    function simulateStarvation() {
+        console.log("⚠️ 開始模擬主線程忙碌（餓死 rIC）...");
+
+        const start = Date.now();
+        function busyLoop() {
+            // 每一幀都故意跑 14ms 的同步阻塞，讓瀏覽器覺得完全沒有 idle time (一幀約 16.6ms)
+            const frameStart = performance.now();
+            while (performance.now() - frameStart < 14) {
+                // 讓 CPU 忙碌
+            }
+
+            // 使用 requestAnimationFrame 持續霸佔下一幀
+            if (Date.now() - start < 10000) { // 模擬忙碌 10 秒
+                requestAnimationFrame(busyLoop);
+            } else {
+                console.log("✅ 忙碌結束");
+            }
+        }
+
+        requestAnimationFrame(busyLoop);
+    }
+
+    // 修改啟動邏輯
+    console.log("Chunks start");
+    const t0 = performance.now();
+
+    // 1. 同時啟動長任務
+    taskChunk(items, heavyWork, 4).then(() => {
+        console.log("✨ Chunks done:", Math.round(performance.now() - t0), "ms");
+        clearInterval(hb);
+    });
+
+    // 2. 立即啟動餓死模擬
+    simulateStarvation();
+</script>
+</body>
+</html>
