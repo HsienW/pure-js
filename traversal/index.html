@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Traversal</title>
+</head>
+<body>
+<script>
+    // 把數組打印成下面這樣
+    // 3,2,6,1,5,9,4,8,7
+    //
+    const test = [
+        [1,2,3],
+        [4,5,6],
+        [7,8,9]
+    ];
+
+    function get(arr) {
+        const m = arr.length;
+        const n = arr[0].length;
+        const res = [];
+
+        for(let i = 0; i < m + n - 1; i++) {
+            let r = Math.max(0, i - (n - 1));
+            let c = Math.max(0, (n - 1) - i);
+
+            while(r < m && c < n) {
+                res.push(arr[r][c]);
+                r++;
+                c++;
+            }
+        }
+
+        return res;
+    }
+    
+    console.log(get(test));
+
+
+</script>
+</body>
+</html>
