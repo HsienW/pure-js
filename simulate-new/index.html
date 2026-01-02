@@ -6,7 +6,6 @@
 </head>
 <body>
 <script>
-
     // const Person = function (name) {
     //     this.name = name;
     //     return ['123'];
@@ -59,36 +58,30 @@
     //     return newObj;
     // }
     //
-    // const personA = objectFactory(Person, 'Andy');
-    // const personB = new Person('Andy');
-    //
-    // console.log(personA);
-    // console.log(personB);
 
-    const fakeNew = function (constructor, ...argument) {
-        let obj = {};
-        obj.__proto__ = constructor.prototype;
-        let result = constructor.apply(obj, argument);
-        return (result instanceof Object) ? result : obj;
+    function fakeNew(Constructor, ...args) {
+        const obj = {};
+        obj.__protp__ = Constructor.prototype;
+        const res = Constructor.apply(obj, args);
+
+        if(res && (typeof res === 'object' || typeof res === 'function')) {
+            return res;
+        }
+
+        return obj;
     }
 
-    // simple case
-    // const fakeNew = function (constructor, ...argument) {
-    //     let newPbj = {};
-    //
-    //     newPbj.__proto__ = constructor.prototype;
-    //     constructor.apply(newPbj, argument);
-    //
-    //     return newPbj;
-    // }
-    //
     const Person = function (name) {
         this.name = name;
+        this.getName = function () {
+            return this.name;
+        }
     }
-    //
-    const aaa = fakeNew(Person, 'hello');
-    //
+
+    const aaa = fakeNew(Person, '123');
+
     console.log(aaa);
+    console.log(aaa.getName());
 
 </script>
 </body>
