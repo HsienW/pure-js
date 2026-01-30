@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Shuffle</title>
+</head>
+<body>
+<script>
+    function get(arr) {
+        const len = arr.length - 1;
+
+        for(let i = len; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        return arr;
+    }
+
+    // Case 1: 標準數組
+    console.log(get([1, 2, 3, 4, 5]));
+
+    // Case 2: 只有一個元素的數組（不應報錯）
+    console.log(get([1]));
+
+    // Case 3: 空數組
+    console.log(get([]))
+</script>
+</body>
+</html>
