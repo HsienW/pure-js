@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>decodeStr</title>
+</head>
+<body>
+<script>
+    // 实现一个方法 decodeStr，输入一个字符串，根据约定规则输出编码结果。约定规则如下：
+    // str = "2[a]1[bc]", 返回 "aabc".
+    // str = "2[e2[d]]", 返回 "eddedd".
+    // str = "3[abc]2[cd]ff", 返回 "abcabcabccdcdff".
+    // 可以看出: N[string]，表示string 正好重复 N 次。假设字符串一定是有效正确的字符串
+
+    // 利用棧來做
+    // 1. 遍历输入字符串的每个字符。
+    // 2. 如果当前字符不是 ']'，则将其压入栈中。
+    // 3. 如果当前字符是 ']'，则开始解码过程。
+    // 4. 从栈中弹出字符，直到遇到 '['。这些字符构成了要重复的字符串。
+    // 5. 继续从栈中弹出字符，直到遇到一个数字。这个数字表示要重复的次数。
+    // 6. 将重复次数和重复的字符串拼接起来，并将结果压回栈中。
+    // 7. 最后，栈中剩余的字符组成了最终的解码结果
+
+    function decodeStr(str) {
+        const stack = [];
+
+        for (let char of str) {
+            if (char !== ']') {
+                stack.push(char);
+            } else {
+                let curr = stack.pop();
+                let encodedStr = '';
+
+                while (curr !== '[') {
+                    encodedStr = curr + encodedStr;
+                    curr = stack.pop();
+                }
+
+                let num = '';
+                curr = stack.pop();
+
+                while (!isNaN(curr)) {
+                    num = curr + num;
+                    curr = stack.pop();
+                }
+
+                stack.push(curr);
+                stack.push(encodedStr.repeat(Number(num)));
+            }
+        }
+
+        return stack.join('');
+    }
+
+    const testCases = [
+        { input: "2[a]1[bc]", expected: "aabc" },
+        { input: "2[e2[d]]", expected: "eddedd" },
+        { input: "3[abc]2[cd]ff", expected: "abcabcabccdcdff" },
+        { input: "10[a]", expected: "aaaaaaaaaa" }, // 測試多位數
+        { input: "2[3[a]2[b]]", expected: "aaabbaaabb" }, // 測試深層嵌套
+        { input: "abc3[cd]xyz", expected: "abccdcdcdxyz" } // 測試括號外字元
+    ];
+
+    testCases.forEach(({ input, expected }, index) => {
+        const result = decodeStr(input);
+        const passed = result === expected;
+        console.log(`Test ${index + 1}: ${passed ? '✅ PASSED' : '❌ FAILED'}`);
+        if (!passed) console.log(`   Input: ${input}\n   Expected: ${expected}\n   Got: ${result}`);
+    });
+
+</script>
+</body>
+</html>
