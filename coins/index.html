@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Coins</title>
+</head>
+<body>
+<script>
+    // amount = 5, coins = [1,2,5]，只考慮無序（2+2+1 和 1+2+2 算同一種），問「有幾種給法」
+
+    // dp[x]：湊出金額 x 的組合數
+    // 初始化：dp[0] = 1
+    // 外層遍歷 coin（確保不計順序），內層金額從 coin 到 amount
+    // 轉移：dp[x] += dp[x - coin]
+
+    function change(amount, coins) {
+        const dp = new Array(amount + 1).fill(0);
+        dp[0] = 1;
+
+        for (let i = 0; i < coins.length; i++) {
+            const c = coins[i];
+            for (let x = c; x <= amount; x++) {
+                dp[x] += dp[x - c];
+            }
+        }
+        return dp[amount];
+    }
+
+
+    const tests = [
+        { amount: 5, coins: [1,2,5], expect: 4 },
+        { amount: 3, coins: [2], expect: 0 },
+        { amount: 0, coins: [1,2,5], expect: 1 },
+        { amount: 10, coins: [10], expect: 1 },
+        { amount: 10, coins: [3], expect: 0 },
+        { amount: 4, coins: [1,2], expect: 3 },
+        { amount: 4, coins: [2,1], expect: 3 },
+        { amount: 10, coins: [1,2,5], expect: 10 },
+        { amount: 100, coins: [1,5,10,25], expect: 242 },
+        { amount: 1, coins: [], expect: 0 },
+        { amount: 0, coins: [], expect: 1 },
+        { amount: 2, coins: [1], expect: 1 },
+        { amount: 2, coins: [3,4,5], expect: 0 },
+    ]
+
+    for (const t of tests) {
+        const got = change(t.amount, t.coins);
+        console.log(t, "got=", got, got === t.expect ? "✅" : "❌");
+    }
+
+</script>
+</body>
+</html>
