@@ -68,6 +68,46 @@
         if (!passed) console.log(`   Input: ${input}\n   Expected: ${expected}\n   Got: ${result}`);
     });
 
+
+
+    // Base62 字符表（0-9a-zA-Z）
+    const ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const BASE = BigInt(ALPHABET.length);
+
+    const idToUrl = new Map();   // id -> longUrl
+    const codeToId = new Map();  // code -> id
+    let autoInc = 1n;
+
+    function encodeId(id) {
+        // id: number | bigint
+        let n = BigInt(id);
+        if (n < 0n) throw new Error("id must be non-negative");
+        let s = "";
+        do {
+            const r = n % BASE;
+            s = ALPHABET[Number(r)] + s;
+            n = n / BASE;
+        } while (n > 0n);
+
+        // 固定 6 位：不足補 0（注意：這會讓 decode 仍可還原）
+        return s.padStart(6, "0");
+    }
+
+    const encode = function (longUrl) {
+        const id = autoInc++;
+        idToUrl.set(id, longUrl);
+        const code = encodeId(id);
+        codeToId.set(code, id);
+        return `https://s.com/${code}`;
+    };
+
+    const decode = function (shortUrl) {
+        const code = shortUrl.split("/").pop();
+        const id = codeToId.get(code);
+        if (!id) return null;
+        return idToUrl.get(id) ?? null;
+    };
+
 </script>
 </body>
 </html>
