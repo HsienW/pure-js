@@ -69,43 +69,48 @@
     });
 
 
-
     // Base62 字符表（0-9a-zA-Z）
     const ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const BASE = BigInt(ALPHABET.length);
+    const BASE = ALPHABET.length;
 
-    const idToUrl = new Map();   // id -> longUrl
-    const codeToId = new Map();  // code -> id
-    let autoInc = 1n;
+    const idToUrl = new Map();   // 存儲：ID -> 長網址
+    const codeToUrl = new Map(); // 存儲：短碼 -> 長網址 (優化：直接存網址更直觀)
+    let autoInc = 1;             // 使用一般的 Number 即可處理到 2^53 - 1
 
     function encodeId(id) {
-        // id: number | bigint
-        let n = BigInt(id);
-        if (n < 0n) throw new Error("id must be non-negative");
+        let n = id;
         let s = "";
-        do {
-            const r = n % BASE;
-            s = ALPHABET[Number(r)] + s;
-            n = n / BASE;
-        } while (n > 0n);
 
-        // 固定 6 位：不足補 0（注意：這會讓 decode 仍可還原）
-        return s.padStart(6, "0");
+        // 如果 id 為 0 的處理
+        if (n === 0) return ALPHABET[0];
+
+        // 常見的進位制轉換寫法
+        while (n > 0) {
+            s = ALPHABET[n % BASE] + s;
+            n = Math.floor(n / BASE);
+        }
+
+        return s;
     }
 
-    const encode = function (longUrl) {
+    const encode = function(longUrl) {
+        // 這裡我們直接用自增 ID
         const id = autoInc++;
-        idToUrl.set(id, longUrl);
         const code = encodeId(id);
-        codeToId.set(code, id);
-        return `https://s.com/${code}`;
+
+        // 實務上通常直接建立 code 到 longUrl 的映射，省去中間查找
+        codeToUrl.set(code, longUrl);
+
+        return "http://demo.com/" + code;
     };
 
-    const decode = function (shortUrl) {
-        const code = shortUrl.split("/").pop();
-        const id = codeToId.get(code);
-        if (!id) return null;
-        return idToUrl.get(id) ?? null;
+    const decode = function(shortUrl) {
+        // 使用 split 拿取最後一段短碼
+        const parts = shortUrl.split("/");
+        const code = parts[parts.length - 1];
+
+        // 使用 || 代替 ??，在處理網址字串時更常見
+        return codeToUrl.get(code) || null;
     };
 
 </script>
