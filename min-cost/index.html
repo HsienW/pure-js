@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MinCost</title>
+</head>
+<body>
+<script>
+
+    // 如果有一排房子共有 n
+    // 幢，每個房子都可以漆成k
+    // 種顏色中的一種。房子粉刷成不同顏色的花費成本也是不同的。你需要粉刷所有的房子並且使其相鄰的兩個房子顏色不能相同
+    // 每個房子粉刷 成不同顏色的花費以一個 n x k 的矩陣表示。
+    // 例如，costs[0][0] 表示第 0 幢房子粉刷成 0 號顏色的成本；costs[1][2] 表示第 1 幢房子粉刷成 2 號顏色的成本，以此類推。
+    // 返回 粉刷完所有房子的最低成本
+
+    // 輸入: costs = [[1,5,3],[2,9,4]]
+    // 輸出: 5
+
+    function minCost(costs) {
+        if (!costs || costs.length === 0) return 0;
+
+        const n = costs.length;
+        const k = costs[0].length;
+        if (k === 1 && n > 1) return 0; // 特殊邊界處理
+
+        let prevMin1 = 0;
+        let prevMinIndex = -1;
+        let prevMin2 = 0;
+
+        for (let i = 0; i < n; i++) {
+            let currMin1, currMinIndex, currMin2;
+            // 初始化標記，代表還沒存入任何有效成本
+            let initialized = false;
+
+            for (let j = 0; j < k; j++) {
+                let cost = costs[i][j] + (j === prevMinIndex ? prevMin2 : prevMin1);
+
+                // 第一次進入，直接賦值
+                if (!initialized) {
+                    currMin1 = cost;
+                    currMinIndex = j;
+                    currMin2 = null; // 次小值暫時為空
+                    initialized = true;
+                } else {
+                    // 開始比較與更新
+                    if (cost < currMin1) {
+                        currMin2 = currMin1;
+                        currMin1 = cost;
+                        currMinIndex = j;
+                    } else if (currMin2 === null || cost < currMin2) {
+                        currMin2 = cost;
+                    }
+                }
+            }
+
+            prevMin1 = currMin1;
+            prevMinIndex = currMinIndex;
+            prevMin2 = currMin2;
+        }
+
+        return prevMin1;
+    }
+
+    const testCases = [
+        {costs: [[1, 5, 3], [2, 9, 4]], expected: 5, label: "常規情況"},
+        {costs: [[5], [10]], expected: 0, label: "K=1 邊界"},
+        {costs: [[2, 2, 2], [3, 3, 3]], expected: 5, label: "相同成本"},
+        {costs: [[1, 10, 20], [20, 1, 20]], expected: 2, label: "波動切換"},
+        {costs: [[1, 2], [1, 2]], expected: 3, label: "最小長度矩陣"}
+    ];
+
+    testCases.forEach(({costs, expected, label}) => {
+        const result = minCost(costs);
+        console.log(`[${label}] 結果: ${result}, 預期: ${expected}, ${result === expected ? '✅ 通過' : '❌ 失敗'}`);
+    });
+
+</script>
+</body>
+</html>
