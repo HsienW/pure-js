@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Separator</title>
+</head>
+<body>
+<script>
+    function format(val) {
+        if(typeof val !== 'number' || isNaN(val)) {
+            return 0;
+        }
+
+        let sign = '';
+        let str = String(val);
+
+        if(str[0] === '-') {
+            sign = str[0];
+            str = str.slice(1);
+        }
+
+        let [int, dec] = str.split('.');
+        let res = '';
+
+        while(int.length > 3) {
+            res = ',' + int.slice(-3) + res;
+            int = int.slice(0, -3);
+        }
+
+        res = int + res;
+
+        return sign + res + (dec ? '.' + dec : '');
+    }
+
+
+    const tests = [
+        { val: 1234.56, expected: "1,234.56", label: "標準正小數" },
+        { val: -1234567.89, expected: "-1,234,567.89", label: "大額負小數" },
+        { val: 123, expected: "123", label: "不滿三位數" },
+        { val: 1000, expected: "1,000", label: "剛好四位數" },
+        { val: 1000000, expected: "1,000,000", label: "百萬整數" },
+        { val: 0, expected: "0", label: "零" },
+        { val: -500, expected: "-500", label: "不滿三位負整數" },
+        { val: 0.123, expected: "0.123", label: "純小數" },
+        { val: "1234", expected: 0, label: "非法字串輸入" },
+        { val: NaN, expected: 0, label: "NaN 處理" },
+        { val: Infinity, expected: "Infinity", label: "無限大 (潛在 Bug)" }
+    ];
+
+    tests.forEach(({val, expected, label}) => {
+        const result = format(val);
+        const pass = String(result) === String(expected);
+        console.log(`[${label}] 輸入: ${val} | 輸出: ${result} | ${pass ? '✅' : '❌'}`);
+    });
+</script>
+</body>
+</html>
