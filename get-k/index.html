@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>get-k</title>
+    <style>
+    </style>
+</head>
+<body>
+<script>
+    function topKLargest(nums, k) {
+        if (!Array.isArray(nums) || nums.length === 0 || k <= 0) {
+            return [];
+        }
+
+        k = Math.min(k, nums.length);
+
+        function swap(arr, i, j) {
+            const temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        // 小頂堆調整
+        function heapify(arr, i, size) {
+            let smallest = i;
+            const left = i * 2 + 1;
+            const right = i * 2 + 2;
+
+            if (left < size && arr[left] < arr[smallest]) {
+                smallest = left;
+            }
+
+            if (right < size && arr[right] < arr[smallest]) {
+                smallest = right;
+            }
+
+            if (smallest !== i) {
+                swap(arr, i, smallest);
+                heapify(arr, smallest, size);
+            }
+        }
+
+        // 建小頂堆
+        function buildMinHeap(arr) {
+            for (let i = Math.floor(arr.length / 2) - 1; i >= 0; i--) {
+                heapify(arr, i, arr.length);
+            }
+        }
+
+        // 先取前 k 個建堆
+        const heap = nums.slice(0, k);
+        buildMinHeap(heap);
+
+        // 掃描剩下的元素
+        for (let i = k; i < nums.length; i++) {
+            if (nums[i] > heap[0]) {
+                heap[0] = nums[i];
+                heapify(heap, 0, k);
+            }
+        }
+
+        // 題目通常希望最後結果從大到小
+        heap.sort((a, b) => b - a);
+        return heap;
+    }
+
+    const tests = [
+        {
+            nums: [3, 2, 1, 5, 6, 4],
+            k: 2,
+            expect: [6, 5],
+        },
+        {
+            nums: [3, 2, 3, 1, 2, 4, 5, 5, 6],
+            k: 4,
+            expect: [6, 5, 5, 4],
+        },
+        {
+            nums: [1, 2, 3, 100, 99, 98],
+            k: 3,
+            expect: [100, 99, 98],
+        },
+        {
+            nums: [5, 5, 5, 5],
+            k: 2,
+            expect: [5, 5],
+        },
+        {
+            nums: [-1, -2, -3, -4],
+            k: 2,
+            expect: [-1, -2],
+        },
+        {
+            nums: [0, -1, 5, 3, 0, 2],
+            k: 4,
+            expect: [5, 3, 2, 0],
+        },
+        {
+            nums: [],
+            k: 3,
+            expect: [],
+        },
+        {
+            nums: [1, 2, 3],
+            k: 0,
+            expect: [],
+        },
+        {
+            nums: [4, 2, 7, 1],
+            k: 10,
+            expect: [7, 4, 2, 1],
+        },
+        {
+            nums: [42],
+            k: 1,
+            expect: [42],
+        },
+    ];
+
+    function sameArray(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+
+    for (const { nums, k, expect } of tests) {
+        const got = topKLargest(nums, k);
+        console.log(
+            `nums=${JSON.stringify(nums)}, k=${k}`,
+            sameArray(got, expect)
+                ? "✅"
+                : `❌ got=${JSON.stringify(got)}, expect=${JSON.stringify(expect)}`
+        );
+    }
+</script>
+</body>
+</html>
