@@ -71,15 +71,24 @@
         }
     }
 
-    const tq = new TaskQueue({ ms: 10 }); // 給 10ms 的寬裕時間
+    const tq = new TaskQueue({ms: 10}); // 給 10ms 的寬裕時間
 
     console.log('--- Test 1: Basic Sync Tasks ---');
-    tq.push(() => { console.log('Task 1 Executed'); return true; });
-    tq.push(() => { console.log('Task 2 Executed'); return true; });
-    tq.push(() => { console.log('Task 3 Executed'); return true; });
+    tq.push(() => {
+        console.log('Task 1 Executed');
+        return true;
+    });
+    tq.push(() => {
+        console.log('Task 2 Executed');
+        return true;
+    });
+    tq.push(() => {
+        console.log('Task 3 Executed');
+        return true;
+    });
     // 預期：Task 1 -> 2 -> 3 順序執行
 
-    const tqHeavy = new TaskQueue({ ms: 4 });
+    const tqHeavy = new TaskQueue({ms: 4});
     console.log('--- Test 2: Time Slicing Stress Test ---');
 
     let completed = 0;
@@ -89,7 +98,8 @@
         tqHeavy.push(() => {
             // 模擬一個耗時 1.5ms 的同步操作
             const start = performance.now();
-            while (performance.now() - start < 1.5) {}
+            while (performance.now() - start < 1.5) {
+            }
 
             completed++;
             console.log(`Heavy Task ${i} done at ${Math.round(performance.now())}ms`);
@@ -97,7 +107,44 @@
         });
     }
 
-    // 你會觀察到日誌是「分批」打印的，而不是一次性卡死輸出
+    // 日誌是「分批」打印的，而不是一次性卡死輸出
+
+    const tqAsync = new TaskQueue({ ms: 50 });
+    console.log('--- Test 3: Async and Partial Progress ---');
+
+    let progress = 0;
+
+    tqAsync.push(async () => {
+        console.log('Async task fetching...');
+        await new Promise(resolve => setTimeout(resolve, 100)); // 模擬網絡請求
+        console.log('Async task back!');
+        return true;
+    });
+
+    tqAsync.push(() => {
+        progress++;
+        console.log(`Incremental task: ${progress}/3`);
+        if (progress < 3) return false; // 還沒完，下一輪繼續做同一個任務
+        return true;
+    });
+
+    // const tqError = new TaskQueue();
+    // console.log('--- Test 4: Error Resilience ---');
+    //
+    // tqError.push(() => {
+    //     console.log('I am a good task');
+    //     return true;
+    // });
+    //
+    // tqError.push(() => {
+    //     console.log('I am going to crash...');
+    //     throw new Error('Boom!');
+    // });
+    //
+    // tqError.push(() => {
+    //     console.log('I survived! (The queue still works)');
+    //     return true;
+    // });
 </script>
 </body>
 </html>
