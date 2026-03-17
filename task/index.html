@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Task</title>
+</head>
+<body>
+<script>
+    const Scheduler = {
+        // 優先用 rId；沒有就降級 setTimeout
+        idle(fn, {timeout = 200} = {}) {
+            if (typeof requestIdleCallback === 'function') {
+                requestIdleCallback(fn, {timeout});
+            } else {
+                setTimeout(() => fn({timeRemaining: () => 0, didTimeout: true}), 0);
+            }
+        },
+
+        now() {
+            return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+        }
+    };
+
+
+    class TaskQueue {
+        constructor({ms = 4, schedule = Scheduler.idle} = {}) {
+            this.ms = ms;
+            this.schedule = schedule;
+            this.queue = [];
+            this.running = false;
+        }
+
+        push(taskFn) {
+            this.queue.push(taskFn);
+            this.kick();
+        }
+
+        kick() {
+            if (this.running) return;
+            this.running = true;
+            this.schedule(() => this.run());
+        }
+
+        async run() {
+            const start = Scheduler.now();
+            const deadline = start + this.ms;
+
+            while (this.queue.length > 0) {
+                // 超時就讓出主線
+                if (Scheduler.now() >= deadline) break;
+
+                const task = this.queue[0];
+
+                try {
+                    const done = await task(); // 允許 task 内部用 async
+                    if (done) this.queue.shift();  // 完成就出隊
+                    // 沒完成就留在隊首，下輪再做
+                } catch (e) {
+                    // 出錯也出隊，避免卡死；同時上報
+                    console.error('[TaskQueue] task failed', e);
+                    this.queue.shift();
+                }
+            }
+
+            if (this.queue.length > 0) {
+                // 還有剩餘：排到下一輪 idle/macrotask
+                this.schedule(() => this.run());
+            } else {
+                this.running = false;
+            }
+        }
+    }
+
+    const tq = new TaskQueue({ ms: 10 }); // 給 10ms 的寬裕時間
+
+    console.log('--- Test 1: Basic Sync Tasks ---');
+    tq.push(() => { console.log('Task 1 Executed'); return true; });
+    tq.push(() => { console.log('Task 2 Executed'); return true; });
+    tq.push(() => { console.log('Task 3 Executed'); return true; });
+    // 預期：Task 1 -> 2 -> 3 順序執行
+
+    const tqHeavy = new TaskQueue({ ms: 4 });
+    console.log('--- Test 2: Time Slicing Stress Test ---');
+
+    let completed = 0;
+    const totalTasks = 20;
+
+    for (let i = 0; i < totalTasks; i++) {
+        tqHeavy.push(() => {
+            // 模擬一個耗時 1.5ms 的同步操作
+            const start = performance.now();
+            while (performance.now() - start < 1.5) {}
+
+            completed++;
+            console.log(`Heavy Task ${i} done at ${Math.round(performance.now())}ms`);
+            return true;
+        });
+    }
+
+    // 你會觀察到日誌是「分批」打印的，而不是一次性卡死輸出
+</script>
+</body>
+</html>
