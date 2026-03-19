@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>scheduler</title>
+</head>
+<body>
+<script>
+    if (typeof requestAnimationFrame === "undefined") {
+        requestAnimationFrame = function (cb) {
+            return setTimeout(() => cb(Date.now()), 16);
+        };
+    }
+
+    class Scheduler {
+        constructor(render) {
+            this.render = render;
+            this.pendingMap = new Map();
+            this.frameMap = new Map();
+            this.microtaskScheduled = false;
+            this.frameScheduled = false;
+        }
+
+        key(patch) {
+            return `${patch.chatId}_${patch.msgId}`;
+        }
+
+        merge(oldPatch, newPatch) {
+            if (!oldPatch) return { ...newPatch };
+
+            const terminalSet = new Set(["sent", "failed", "read"]);
+
+            // terminal 狀態不能被 pending 蓋回去
+            if (terminalSet.has(oldPatch.status) && newPatch.status === "pending") {
+                return { ...oldPatch };
+            }
+
+            // seq 小的不能覆蓋 seq 大的
+            if (
+                typeof oldPatch.seq === "number" &&
+                typeof newPatch.seq === "number" &&
+                newPatch.seq < oldPatch.seq
+            ) {
+                return { ...oldPatch };
+            }
+
+            // 預設最後寫入優先
+            return { ...oldPatch, ...newPatch };
+        }
+
+        enqueue(patch) {
+            const k = this.key(patch);
+            const prev = this.pendingMap.get(k);
+            this.pendingMap.set(k, this.merge(prev, patch));
+
+            if (!this.microtaskScheduled) {
+                this.microtaskScheduled = true;
+                queueMicrotask(() => this.flushMicrotask());
+            }
+        }
+
+        flushMicrotask() {
+            this.microtaskScheduled = false;
+
+            for (const [k, patch] of this.pendingMap) {
+                const prev = this.frameMap.get(k);
+                this.frameMap.set(k, this.merge(prev, patch));
+            }
+            this.pendingMap.clear();
+
+            if (!this.frameScheduled) {
+                this.frameScheduled = true;
+                requestAnimationFrame(() => this.flushFrame());
+            }
+        }
+
+        flushFrame() {
+            this.frameScheduled = false;
+            if (this.frameMap.size === 0) return;
+
+            const changeSet = Array.from(this.frameMap.values());
+            this.frameMap.clear();
+
+            this.render(changeSet);
+        }
+    }
+
+    // -------------------------
+    // 測試工具
+    // -------------------------
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function stableSort(list) {
+        return [...list].sort((a, b) => {
+            const ka = `${a.chatId}_${a.msgId}`;
+            const kb = `${b.chatId}_${b.msgId}`;
+            return ka.localeCompare(kb);
+        });
+    }
+
+    function normalize(obj) {
+        if (Array.isArray(obj)) {
+            return stableSort(obj).map(normalize);
+        }
+        if (obj && typeof obj === "object") {
+            const out = {};
+            Object.keys(obj)
+                .sort()
+                .forEach(key => {
+                    out[key] = normalize(obj[key]);
+                });
+            return out;
+        }
+        return obj;
+    }
+
+    function isEqual(actual, expected) {
+        return JSON.stringify(normalize(actual)) === JSON.stringify(normalize(expected));
+    }
+
+    function printCase(title, expected, actual) {
+        const pass = isEqual(actual, expected);
+        console.log(`\n${pass ? "✅" : "❌"} ${title}`);
+        console.log("原消息體:", JSON.stringify(expected, null, 2));
+        console.log("合併後消息體:", JSON.stringify(actual, null, 2));
+        return pass;
+    }
+
+    function createTestEnv() {
+        const renderLogs = [];
+        const scheduler = new Scheduler(changeSet => {
+            renderLogs.push(
+                changeSet.map(item => ({
+                    chatId: item.chatId,
+                    msgId: item.msgId,
+                    text: item.text,
+                    status: item.status,
+                    seq: item.seq
+                }))
+            );
+        });
+        return { scheduler, renderLogs };
+    }
+
+    // -------------------------
+    // Test Cases
+    // -------------------------
+    async function testCase1() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // 同一輪同筆消息多次更新，保留終態
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "pending", text: "hello" });
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "sent", seq: 10, text: "hello" });
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "pending", text: "hello" });
+
+        await sleep(30);
+
+        return printCase(
+            "Case 1: 同一輪內同筆消息應保留終態 sent",
+            [
+                [
+                    { chatId: "c1", msgId: "m1", status: "sent", seq: 10, text: "hello" }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    async function testCase2() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // 同一輪多筆消息 -> 一次 render
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "pending" });
+        scheduler.enqueue({ chatId: "c1", msgId: "m2", status: "pending" });
+        scheduler.enqueue({ chatId: "c1", msgId: "m3", status: "pending" });
+
+        await sleep(30);
+
+        return printCase(
+            "Case 2: 同一輪多筆消息應合成一次 commit",
+            [
+                [
+                    { chatId: "c1", msgId: "m1", status: "pending", text: undefined, seq: undefined },
+                    { chatId: "c1", msgId: "m2", status: "pending", text: undefined, seq: undefined },
+                    { chatId: "c1", msgId: "m3", status: "pending", text: undefined, seq: undefined }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    async function testCase3() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // 不同 task 進來，應拆成兩次 render
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "pending" });
+
+        setTimeout(() => {
+            scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "sent", seq: 20 });
+        }, 0);
+
+        await sleep(50);
+
+        return printCase(
+            "Case 3: 跨 task 更新應拆成兩次 render",
+            [
+                [
+                    { chatId: "c1", msgId: "m1", status: "pending", text: undefined, seq: undefined }
+                ],
+                [
+                    { chatId: "c1", msgId: "m1", status: "sent", text: undefined, seq: 20 }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    async function testCase4() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // seq 小的不能覆蓋大的
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "sent", seq: 100, text: "new" });
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "sent", seq: 99, text: "old" });
+
+        await sleep(30);
+
+        return printCase(
+            "Case 4: seq 小的不能覆蓋 seq 大的",
+            [
+                [
+                    { chatId: "c1", msgId: "m1", status: "sent", seq: 100, text: "new" }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    async function testCase5() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // 多個微任務來源，但同幀只 commit 一次
+        scheduler.enqueue({ chatId: "c1", msgId: "m1", status: "pending" });
+
+        Promise.resolve().then(() => {
+            scheduler.enqueue({ chatId: "c1", msgId: "m2", status: "pending" });
+        });
+
+        Promise.resolve().then(() => {
+            scheduler.enqueue({ chatId: "c1", msgId: "m3", status: "pending" });
+        });
+
+        await sleep(30);
+
+        return printCase(
+            "Case 5: 多個 microtask 來源，同幀只 commit 一次",
+            [
+                [
+                    { chatId: "c1", msgId: "m1", status: "pending", text: undefined, seq: undefined },
+                    { chatId: "c1", msgId: "m2", status: "pending", text: undefined, seq: undefined },
+                    { chatId: "c1", msgId: "m3", status: "pending", text: undefined, seq: undefined }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    async function runAllTests() {
+        const results = [];
+        results.push(await testCase1());
+        results.push(await testCase2());
+        results.push(await testCase3());
+        results.push(await testCase4());
+        results.push(await testCase5());
+        results.push(await testCase6());
+
+        const passed = results.filter(Boolean).length;
+        const total = results.length;
+
+        console.log(`\n====================`);
+        console.log(`總結果: ${passed}/${total} 通過 ${passed === total ? "✅" : "❌"}`);
+        console.log(`====================`);
+    }
+
+    async function testCase6() {
+        const { scheduler, renderLogs } = createTestEnv();
+
+        // 同一消息，多來源競爭
+        // 來源1: 本地 optimistic insert
+        scheduler.enqueue({
+            chatId: "c1",
+            msgId: "m100",
+            text: "hello",
+            status: "pending",
+            source: "local"
+        });
+
+        // 來源2: cache 解密回來，還是舊狀態
+        scheduler.enqueue({
+            chatId: "c1",
+            msgId: "m100",
+            text: "hello",
+            status: "pending",
+            source: "cache"
+        });
+
+        // 來源3: server ack / socket 推送，這才是終態
+        scheduler.enqueue({
+            chatId: "c1",
+            msgId: "m100",
+            text: "hello",
+            status: "sent",
+            seq: 200,
+            source: "ws"
+        });
+
+        // 來源4: 更舊的資料又回來，試圖覆蓋成 pending
+        scheduler.enqueue({
+            chatId: "c1",
+            msgId: "m100",
+            text: "hello-old",
+            status: "pending",
+            source: "old-cache"
+        });
+
+        await sleep(30);
+
+        return printCase(
+            "Case 6: 同一消息多來源狀態競爭，應保留 server 終態 sent",
+            [
+                [
+                    {
+                        chatId: "c1",
+                        msgId: "m100",
+                        text: "hello",
+                        status: "sent",
+                        seq: 200
+                    }
+                ]
+            ],
+            renderLogs
+        );
+    }
+
+    runAllTests();
+</script>
+</body>
+</html>
