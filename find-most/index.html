@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FindMost</title>
+</head>
+<body>
+<script>
+
+    function findMost(arr) {
+        if (arr.length === 0) {
+            return null;
+        }
+
+        // 1..統計次數的同時記錄索引
+        let map = {};
+        
+        for (let i = 0; i < arr.length; i++) {
+            const n = arr[i];
+            map[n] = (map[n] || 0) + 1;
+        }
+
+        // 2. 找到最高出現的次數（遍歷物件的所有 Key）
+        let count = 0;
+        let keys = Object.keys(map);
+        
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            if (map[key] > count) {
+                count = map[key];
+            }
+        }
+
+        // 3. 找到所有出現數 最高的數
+        let most = [];
+        
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            if (map[key] === count) {
+                most.push(key);
+            }
+        }
+
+        // 4. 獲取索引
+        const result = [];
+
+        for (let i = 0; i < most.length; i++) {
+            let str = most[i];
+            let num = Number(str); // 重要：物件 Key 是字串，轉回數字進行比對
+
+            let indices = [];
+            for (let j = 0; j < arr.length; j++) {
+                if (arr[j] === num) {
+                    indices.push(j);
+                }
+            }
+
+            result.push({
+                number: num,
+                count: count,
+                indices: indices
+            });
+        }
+
+        return result;
+    }
+
+    // 測試
+    /**
+     * 自動化測試工具：比對 JSON 字串來判斷是否相等
+     */
+    function runTests(testFn) {
+        const cases = [
+            {
+                name: "基礎單一眾數",
+                input: [1, 2, 3, 1, 1],
+                expected: [{ number: 1, count: 3, indices: [0, 3, 4] }]
+            },
+            {
+                name: "多重眾數（平手）",
+                input: [1, 2, 1, 2],
+                expected: [
+                    { number: 1, count: 2, indices: [0, 2] },
+                    { number: 2, count: 2, indices: [1, 3] }
+                ]
+            },
+            {
+                name: "包含負數與零",
+                input: [0, -5, 0],
+                expected: [{ number: 0, count: 2, indices: [0, 2] }]
+            },
+            {
+                name: "空陣列邊界",
+                input: [],
+                expected: null
+            },
+            {
+                name: "只有一個元素",
+                input: [8],
+                expected: [{ number: 8, count: 1, indices: [0] }]
+            }
+        ];
+
+        console.log("🚀 開始執行測試案例...\n");
+
+        let passedCount = 0;
+
+        for (let i = 0; i < cases.length; i++) {
+            let c = cases[i];
+            let actual = testFn(c.input);
+
+            // 使用 JSON.stringify 進行深度比對
+            let isPassed = JSON.stringify(actual) === JSON.stringify(c.expected);
+
+            if (isPassed) {
+                console.log("✅ [PASSED] " + c.name);
+                passedCount++;
+            } else {
+                console.log("❌ [FAILED] " + c.name);
+                console.log("   - 預期結果:", JSON.stringify(c.expected));
+                console.log("   - 實際結果:", JSON.stringify(actual));
+            }
+        }
+
+        console.log("\n--- 測試總結 ---");
+        console.log("總結: " + passedCount + "/" + cases.length + " 通過");
+
+        if (passedCount === cases.length) {
+            console.log("🎉 太棒了！代碼完全符合預期。");
+        } else {
+            console.log("⚠️ 還有一些 Bug 需要修復喔。");
+        }
+    }
+
+    // 執行測試
+    runTests(findMost);
+
+</script>
+</body>
+</html>
