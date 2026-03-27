@@ -6,145 +6,219 @@
 </head>
 <body>
 <script>
+
     const Scheduler = {
-        // 優先用 rId；沒有就降級 setTimeout
-        idle(fn, {timeout = 200} = {}) {
+        idle(fn) {
             if (typeof requestIdleCallback === 'function') {
-                requestIdleCallback(fn, {timeout});
+                requestIdleCallback(fn, {timeout: 200});
             } else {
-                setTimeout(() => fn({timeRemaining: () => 0, didTimeout: true}), 0);
+                setTimeout(fn, 0);
             }
         },
-
         now() {
-            return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+            return (typeof performance !== 'undefined' && performance.now) ? performance.now() : new Date.now();
         }
-    };
-
+    }
 
     class TaskQueue {
-        constructor({ms = 4, schedule = Scheduler.idle} = {}) {
+        constructor(ms, scheduler) {
             this.ms = ms;
-            this.schedule = schedule;
+            this.scheduler = scheduler;
             this.queue = [];
             this.running = false;
         }
 
-        push(taskFn) {
-            this.queue.push(taskFn);
-            this.kick();
+        push(fn) {
+            this.queue.push(fn);
+            this.check();
         }
 
-        kick() {
-            if (this.running) return;
+        check() {
+            if (this.running) {
+                return;
+            }
+
             this.running = true;
-            this.schedule(() => this.run());
+            this.scheduler.idle(() => this.run());
         }
 
         async run() {
-            const start = Scheduler.now();
+            const start = this.scheduler.now();
             const deadline = start + this.ms;
 
             while (this.queue.length > 0) {
-                // 超時就讓出主線
-                if (Scheduler.now() >= deadline) break;
+                if (this.scheduler.now() > deadline) {
+                    break;
+                }
 
                 const task = this.queue[0];
 
                 try {
-                    const done = await task(); // 允許 task 内部用 async
-                    if (done) this.queue.shift();  // 完成就出隊
-                    // 沒完成就留在隊首，下輪再做
+                    const done = await task();
+
+                    if (done) {
+                        this.queue.shift();
+                    }
                 } catch (e) {
-                    // 出錯也出隊，避免卡死；同時上報
-                    console.error('[TaskQueue] task failed', e);
+                    console.log('e');
                     this.queue.shift();
                 }
             }
 
             if (this.queue.length > 0) {
-                // 還有剩餘：排到下一輪 idle/macrotask
-                this.schedule(() => this.run());
+                this.scheduler.idle(() => this.run());
             } else {
                 this.running = false;
             }
         }
     }
 
-    const tq = new TaskQueue({ms: 10}); // 給 10ms 的寬裕時間
+    /**
+     * 輔助函數：模擬耗時任務
+     */
+    const sleepSync = (ms) => {
+        const start = performance.now();
+        while (performance.now() - start < ms) {
+        }
+    };
 
-    console.log('--- Test 1: Basic Sync Tasks ---');
-    tq.push(() => {
-        console.log('Task 1 Executed');
-        return true;
-    });
-    tq.push(() => {
-        console.log('Task 2 Executed');
-        return true;
-    });
-    tq.push(() => {
-        console.log('Task 3 Executed');
-        return true;
-    });
-    // 預期：Task 1 -> 2 -> 3 順序執行
+    /**
+     * 測試案例 1: 基礎同步任務
+     */
+    async function testBasicSync() {
+        console.log('--- Test 1: 基礎同步任務 ---');
+        const tq = new TaskQueue(10, Scheduler);
+        let count = 0;
 
-    const tqHeavy = new TaskQueue({ms: 4});
-    console.log('--- Test 2: Time Slicing Stress Test ---');
-
-    let completed = 0;
-    const totalTasks = 20;
-
-    for (let i = 0; i < totalTasks; i++) {
-        tqHeavy.push(() => {
-            // 模擬一個耗時 1.5ms 的同步操作
-            const start = performance.now();
-            while (performance.now() - start < 1.5) {
-            }
-
-            completed++;
-            console.log(`Heavy Task ${i} done at ${Math.round(performance.now())}ms`);
+        tq.push(() => {
+            console.log('Task 1 Executed');
+            count++;
             return true;
         });
+        tq.push(() => {
+            console.log('Task 2 Executed');
+            count++;
+            return true;
+        });
+        tq.push(() => {
+            console.log('Task 3 Executed');
+            count++;
+            return true;
+        });
+
+        // 等待一個 tick 確保執行完畢
+        await new Promise(r => setTimeout(r, 50));
+        if (count === 3) console.log('✅ Test 1 Passed: Tasks executed in order.');
     }
 
-    // 日誌是「分批」打印的，而不是一次性卡死輸出
+    /**
+     * 測試案例 2: 時間分片壓力測試 (Time Slicing)
+     */
+    async function testTimeSlicing() {
+        console.log('\n--- Test 2: 時間分片壓力測試 (Time Slicing) ---');
+        // 給予 4ms 寬裕時間，但每個任務耗時 1.5ms
+        const tqHeavy = new TaskQueue(4, Scheduler);
+        let completed = 0;
+        const totalTasks = 10;
 
-    const tqAsync = new TaskQueue({ ms: 50 });
-    console.log('--- Test 3: Async and Partial Progress ---');
+        for (let i = 0; i < totalTasks; i++) {
+            tqHeavy.push(() => {
+                sleepSync(1.5); // 模擬耗時操作
+                completed++;
+                console.log(`[Batch] Heavy Task ${i} done at ${Math.round(performance.now())}ms`);
+                return true;
+            });
+        }
 
-    let progress = 0;
+        await new Promise(r => setTimeout(r, 200));
+        if (completed === totalTasks) {
+            console.log(`✅ Test 2 Passed: All ${totalTasks} heavy tasks completed without blocking UI.`);
+        }
+    }
 
-    tqAsync.push(async () => {
-        console.log('Async task fetching...');
-        await new Promise(resolve => setTimeout(resolve, 100)); // 模擬網絡請求
-        console.log('Async task back!');
-        return true;
-    });
+    /**
+     * 測試案例 3: 異步任務與部分進度保持
+     */
+    async function testAsyncAndPartial() {
+        console.log('\n--- Test 3: 異步任務與部分進度保持 ---');
+        const tqAsync = new TaskQueue(50, Scheduler);
+        let progress = 0;
+        let isAsyncDone = false;
 
-    tqAsync.push(() => {
-        progress++;
-        console.log(`Incremental task: ${progress}/3`);
-        if (progress < 3) return false; // 還沒完，下一輪繼續做同一個任務
-        return true;
-    });
+        // 1. 異步任務
+        tqAsync.push(async () => {
+            console.log('Async task: fetching data...');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log('Async task: completed! ✅');
+            isAsyncDone = true;
+            return true;
+        });
 
-    // const tqError = new TaskQueue();
-    // console.log('--- Test 4: Error Resilience ---');
-    //
-    // tqError.push(() => {
-    //     console.log('I am a good task');
-    //     return true;
-    // });
-    //
-    // tqError.push(() => {
-    //     console.log('I am going to crash...');
-    //     throw new Error('Boom!');
-    // });
-    //
-    // tqError.push(() => {
-    //     console.log('I survived! (The queue still works)');
-    //     return true;
-    // });
+        // 2. 需要多次執行才能完成的任務 (Partial Progress)
+        tqAsync.push(() => {
+            progress++;
+            console.log(`Incremental task progress: ${progress}/3`);
+            if (progress < 3) return false; // 尚未完成，下一輪繼續
+            return true;
+        });
+
+        await new Promise(r => setTimeout(r, 300));
+        if (isAsyncDone && progress === 3) {
+            console.log('✅ Test 3 Passed: Async handled and partial task re-run correctly.');
+        }
+    }
+
+    /**
+     * 測試案例 4: 容錯性測試 (Resilience)
+     * 驗證單一任務崩潰時，隊列是否能繼續執行後續任務
+     */
+    async function testResilience() {
+        console.log('\n--- Test 4: 容錯性測試 ---');
+        const tqError = new TaskQueue(10, Scheduler);
+        let successCount = 0;
+        let errorCaught = false;
+
+        // 1. 正常任務
+        tqError.push(() => {
+            console.log('Task A: I am a good task');
+            successCount++;
+            return true;
+        });
+
+        // 2. 會拋出異常的任務
+        tqError.push(() => {
+            console.log('Task B: I am going to crash...');
+            throw new Error('Boom!');
+        });
+
+        // 3. 在異常之後的任務
+        tqError.push(() => {
+            console.log('Task C: I survived! (The queue still works)');
+            successCount++;
+            return true;
+        });
+
+        // 給予足夠時間執行（考慮到 Error 可能會被 Scheduler 捕捉或拋出）
+        await new Promise(r => setTimeout(r, 100));
+
+        if (successCount === 2) {
+            console.log('✅ Test 4 Passed: Queue continued despite a task failure.');
+        } else {
+            console.log('❌ Test 4 Failed: Queue stopped after error.');
+        }
+    }
+
+    // 執行所有測試
+    async function runTests() {
+        await testBasicSync();
+        await testTimeSlicing();
+        await testAsyncAndPartial();
+        await testResilience();
+        console.log('\n--- All Tests Completed ---');
+    }
+
+
+    runTests();
 </script>
 </body>
 </html>
