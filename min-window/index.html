@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MinWindow</title>
+</head>
+<body>
+<script>
+    function minWindow(s, chars) {
+        const m = s.length;
+        const map = {};
+        const keys = Object.keys(chars);
+        let need = 0;
+
+        for(let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            map[key] = chars[key];
+            need += chars[key];
+        }
+
+        if(m < need) {
+            return '';
+        }
+
+        let l = 0;
+        let start = 0;
+        let end = m + 1;
+        let count = need;
+
+        for(let r = 0; r < m; r++) {
+            const strR = s[r];
+
+            if(map[strR]) {
+                count--;
+            }
+            map[strR]--;
+
+            while(count === 0) {
+                if(r - l + 1 < end) {
+                    end = r - l + 1;
+                    start = l;
+                }
+
+                const strL = s[l];
+
+                if(map[strL] === 0) {
+                    count++;
+                }
+                map[strL]++;
+                l++;
+            }
+        }
+
+        return end > m ? '' : s.slice(start, start + end);
+    }
+
+    console.log(minWindow("ADOBECODEBANC", { A: 1, B: 1, C: 1 }) === "BANC" ? "✅" : "❌");
+    console.log(minWindow("a", { a: 1 }) === "a" ? "✅" : "❌");
+    console.log(minWindow("a", { a: 2 }) === "" ? "✅" : "❌");
+    console.log(minWindow("AAABBC", { A: 2, B: 2, C: 1 }) === "AABBC" ? "✅" : "❌");
+</script>
+</body>
+</html>
