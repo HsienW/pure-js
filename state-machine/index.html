@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>State Machine</title>
+</head>
+<body>
+<script>
+    const State = {
+        Idle: 'Idle',
+        Thinking: 'Thinking',
+        Calling_Tool: 'Calling_Tool',
+        Responding: 'Responding',
+        Error: 'Error',
+    }
+
+    const Event = {
+        Start: 'Start',
+        Call_Tool: 'Call_Tool',
+        Tool_Done: 'Tool_Done',
+        Respond: 'Respond',
+        Done: 'Done',
+        Fail: 'Fail',
+        Error: 'Error',
+        Reset: 'Reset',
+    }
+
+    const table = {
+        [State.Idle]: {
+            [Event.Start]: State.Thinking
+        },
+        [State.Thinking]: {
+            [Event.Call_Tool]: State.Calling_Tool,
+            [Event.Respond]: State.Responding,
+            [Event.Fail]: State.Error,
+        },
+        [State.Calling_Tool]: {
+            [Event.Tool_Done]: State.Thinking,
+            [Event.Fail]: State.Error,
+        },
+        [State.Responding]: {
+            [Event.Done]: State.Idle,
+            [Event.Fail]: State.Error
+        },
+        [State.Error]: {
+            [Event.Reset]: State.Idle,
+        }
+    }
+
+    class AgentState {
+        constructor() {
+            this.state = State.Idle;
+        }
+
+        getState() {
+            return this.state;
+        }
+
+        send(event) {
+            const next = table[this.state]?.[event];
+
+            console.log(`!!!!!!!!!!!!!!!!! ${this.state}`);
+            console.log(`!!!!!!!!!!!!!!!!! ${next}`);
+            
+            if(!next) {
+                throw new Error('狀態流轉不合法');
+            }
+
+            this.state = next;
+            return this.state;
+        }
+    }
+
+    function assertEqual(actual, expected, message) {
+        if (actual !== expected) {
+            console.error(`❌ ${message}`);
+            console.error(`   expected: ${expected}`);
+            console.error(`   actual:   ${actual}`);
+            return;
+        }
+        console.log(`✅ ${message}`);
+    }
+
+    function assertThrow(fn, message) {
+        try {
+            fn();
+            console.error(`❌ ${message}`);
+            console.error(`   expected: throw error, but no error thrown`);
+        } catch (err) {
+            console.log(`✅ ${message}`);
+        }
+    }
+
+    // 1. 初始化
+    {
+        const fsm = new AgentState();
+        assertEqual(fsm.getState(), State.Idle, '初始化應該是 Idle');
+    }
+
+    // 2. 正常主流程
+    {
+        const fsm = new AgentState();
+        assertEqual(fsm.send(Event.Start), State.Thinking, 'Start 後進入 Thinking');
+        assertEqual(fsm.send(Event.Call_Tool), State.Calling_Tool, 'Call_Tool 後進入 Calling_Tool');
+        assertEqual(fsm.send(Event.Tool_Done), State.Thinking, 'Tool_Done 後回到 Thinking');
+        assertEqual(fsm.send(Event.Respond), State.Responding, 'Respond 後進入 Responding');
+        assertEqual(fsm.send(Event.Done), State.Idle, 'Done 後回到 Idle');
+    }
+
+    // 3. 不調工具直接回覆
+    {
+        const fsm = new AgentState();
+        assertEqual(fsm.send(Event.Start), State.Thinking, 'Start 後進入 Thinking');
+        assertEqual(fsm.send(Event.Respond), State.Responding, 'Thinking 可直接進入 Responding');
+        assertEqual(fsm.send(Event.Done), State.Idle, 'Done 後回到 Idle');
+    }
+
+    // 4. Thinking 失敗
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        assertEqual(fsm.send(Event.Fail), State.Error, 'Thinking 遇到 Fail 進入 Error');
+    }
+
+    // 5. Calling_Tool 失敗
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        fsm.send(Event.Call_Tool);
+        assertEqual(fsm.send(Event.Fail), State.Error, 'Calling_Tool 遇到 Fail 進入 Error');
+    }
+
+    // 6. Responding 失敗
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        fsm.send(Event.Respond);
+        assertEqual(fsm.send(Event.Fail), State.Error, 'Responding 遇到 Fail 進入 Error');
+    }
+
+    // 7. Error Reset
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        fsm.send(Event.Fail);
+        assertEqual(fsm.send(Event.Reset), State.Idle, 'Error 可透過 Reset 回到 Idle');
+    }
+
+    // 8. Idle 非法 Done
+    {
+        const fsm = new AgentState();
+        assertThrow(() => {
+            fsm.send(Event.Done);
+        }, 'Idle 不能直接 Done');
+    }
+
+    // 9. Calling_Tool 非法 Done
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        fsm.send(Event.Call_Tool);
+        assertThrow(() => {
+            fsm.send(Event.Done);
+        }, 'Calling_Tool 不能直接 Done');
+    }
+
+    // 10. Error 非法 Respond
+    {
+        const fsm = new AgentState();
+        fsm.send(Event.Start);
+        fsm.send(Event.Fail);
+        assertThrow(() => {
+            fsm.send(Event.Respond);
+        }, 'Error 狀態不能直接 Respond');
+    }
+
+    console.log('🎉 測試結束');
+
+</script>
+</body>
+</html>
