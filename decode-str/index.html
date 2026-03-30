@@ -6,62 +6,101 @@
 </head>
 <body>
 <script>
-    // 实现一个方法 decodeStr，输入一个字符串，根据约定规则输出编码结果。约定规则如下：
-    // str = "2[a]1[bc]", 返回 "aabc".
-    // str = "2[e2[d]]", 返回 "eddedd".
-    // str = "3[abc]2[cd]ff", 返回 "abcabcabccdcdff".
-    // 可以看出: N[string]，表示string 正好重复 N 次。假设字符串一定是有效正确的字符串
+    // 實作一個方法 decodeStr，輸入一個字串，根據約定規則輸出編碼結果。約定規則如下：
+    // str = "2[a]1[bc]", 回傳 "aabc".
+    // str = "2[e2[d]]", 回傳 "eddedd".
+    // str = "3[abc]2[cd]ff", 回傳 "abcabcabccdcdff".
+    // 可以看出: N[string]，表示string 剛好重複 N 次。假設字串一定是有效正確的字串
 
     // 利用棧來做
-    // 1. 遍历输入字符串的每个字符。
-    // 2. 如果当前字符不是 ']'，则将其压入栈中。
-    // 3. 如果当前字符是 ']'，则开始解码过程。
-    // 4. 从栈中弹出字符，直到遇到 '['。这些字符构成了要重复的字符串。
-    // 5. 继续从栈中弹出字符，直到遇到一个数字。这个数字表示要重复的次数。
-    // 6. 将重复次数和重复的字符串拼接起来，并将结果压回栈中。
-    // 7. 最后，栈中剩余的字符组成了最终的解码结果
+    // 1. 遍歷輸入字串的每個字元。
+    // 2. 如果目前字元不是 ']'，則將其壓入堆疊中。
+    // 3. 如果目前字元是 ']'，則開始解碼程序。
+    // 4. 從堆疊中彈出字符，直到遇到 '['。這些字元構成了要重複的字串。
+    // 5. 繼續從堆疊中彈出字符，直到遇到一個數字。這個數字表示要重複的次數。
+    // 6. 將重複次數和重複的字串拼接起來，並將結果壓回堆疊中。
+    // 7. 最後，堆疊中剩餘的字元組成了最終的解碼結果
 
     function decodeStr(str) {
         const stack = [];
 
-        for (let char of str) {
-            if (char !== ']') {
-                stack.push(char);
+        for(let i = 0; i < str.length; i++) {
+            if(str[i] !== ']') {
+                stack.push(str[i]);
             } else {
-                let curr = stack.pop();
-                let encodedStr = '';
+                let encode = '';
 
-                while (curr !== '[') {
-                    encodedStr = curr + encodedStr;
-                    curr = stack.pop();
+                while(stack.length > 0 && stack[stack.length - 1] !== '[') {
+                    encode = stack.pop() + encode;
                 }
+
+                stack.pop();
 
                 let num = '';
-                curr = stack.pop();
 
-                while (!isNaN(curr)) {
-                    num = curr + num;
-                    curr = stack.pop();
+                while(stack.length > 0) {
+                    const top = stack[stack.length - 1];
+                    const n = top.charCodeAt(0);
+
+                    if(n < 48 || n > 57) {
+                        break;
+                    }
+
+                    num = stack.pop() + num;
                 }
 
-                stack.push(curr);
-                stack.push(encodedStr.repeat(Number(num)));
+                stack.push(encode.repeat(Number(num)));
             }
         }
 
         return stack.join('');
     }
 
+    // function decodeStr(str) {
+    //     const stack = [];
+    //
+    //     for(let i = 0; i < str.length; i++) {
+    //         if(str[i] !== ']') {
+    //             stack.push(str[i]);
+    //         } else {
+    //             let encode = '';
+    //
+    //             while(stack.length > 0 && stack[stack.length - 1] !== '[') {
+    //                 encode = stack.pop() + encode;
+    //             }
+    //
+    //             stack.pop();
+    //
+    //             let mun = '';
+    //
+    //             while(stack.length > 0) {
+    //                 const top = stack[stack.length - 1];
+    //                 const code = top.charCodeAt(0);
+    //
+    //                 if (code < 48 || code > 57) {
+    //                     break;
+    //                 }
+    //
+    //                 mun = stack.pop() + mun;
+    //             }
+    //
+    //             stack.push(encode.repeat(Number(mun)));
+    //         }
+    //     }
+    //
+    //     return stack.join('');
+    // }
+
     const testCases = [
-        { input: "2[a]1[bc]", expected: "aabc" },
-        { input: "2[e2[d]]", expected: "eddedd" },
-        { input: "3[abc]2[cd]ff", expected: "abcabcabccdcdff" },
-        { input: "10[a]", expected: "aaaaaaaaaa" }, // 測試多位數
-        { input: "2[3[a]2[b]]", expected: "aaabbaaabb" }, // 測試深層嵌套
-        { input: "abc3[cd]xyz", expected: "abccdcdcdxyz" } // 測試括號外字元
+        {input: "2[a]1[bc]", expected: "aabc"},
+        {input: "2[e2[d]]", expected: "eddedd"},
+        {input: "3[abc]2[cd]ff", expected: "abcabcabccdcdff"},
+        {input: "10[a]", expected: "aaaaaaaaaa"}, // 測試多位數
+        {input: "2[3[a]2[b]]", expected: "aaabbaaabb"}, // 測試深層嵌套
+        {input: "abc3[cd]xyz", expected: "abccdcdcdxyz"} // 測試括號外字元
     ];
 
-    testCases.forEach(({ input, expected }, index) => {
+    testCases.forEach(({input, expected}, index) => {
         const result = decodeStr(input);
         const passed = result === expected;
         console.log(`Test ${index + 1}: ${passed ? '✅ PASSED' : '❌ FAILED'}`);
@@ -93,7 +132,7 @@
         return s;
     }
 
-    const encode = function(longUrl) {
+    const encode = function (longUrl) {
         // 這裡我們直接用自增 ID
         const id = autoInc++;
         const code = encodeId(id);
@@ -104,7 +143,7 @@
         return "http://demo.com/" + code;
     };
 
-    const decode = function(shortUrl) {
+    const decode = function (shortUrl) {
         // 使用 split 拿取最後一段短碼
         const parts = shortUrl.split("/");
         const code = parts[parts.length - 1];
