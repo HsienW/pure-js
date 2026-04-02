@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Memory</title>
+</head>
+<body>
+<script>
+    // 模擬 V8 完整堆內存與 GC 引擎
+    const v8 = {
+        heap: {
+            new: { from: new Map(), to: new Map() },
+            old: new Set() // 老生代使用 Set 方便三色標記
+        },
+
+        // 三色標記狀態
+        gc: {
+            greyStack: [],
+            blackSet: new Set(),
+            markDone: false
+        },
+
+        // 1. 分配與晉升邏輯 (Minor GC)
+        allocate(key, value) {
+            this.heap.new.from.set(key, { ...value, children: [] });
+        },
+
+        upgrade() {
+            console.log('>>> 執行 Minor GC & 晉升');
+            this.heap.new.from.forEach((val) => {
+                this.heap.old.add(val); // 移入老生代
+            });
+            this.heap.new.from.clear();
+            
+            // 翻轉 From/To (引用交換)
+            const temp = v8.new.from;
+            v8.new.from = v8.new.to;
+            v8.new.to = temp;
+        },
+
+        // 2. 老生代增量標記邏輯 (Major GC - Three Color)
+        initGC(roots) {
+            console.log('>>> 初始化 Major GC (三色標記開始)');
+            this.gc.greyStack = [...roots];
+            this.gc.blackSet = new Set();
+            this.gc.markDone = false;
+        },
+
+        mark() {
+            if (this.gc.greyStack.length === 0) {
+                this.gc.markDone = true;
+                console.log('>>> 標記完成！黑色對象為存活，其餘白色為垃圾');
+                return;
+            }
+
+            const current = this.gc.greyStack.pop();
+            console.log(`掃描灰色對象: ${current.name}`);
+
+            // 模擬掃描子節點
+            current.children.forEach(child => {
+                if (!this.gc.blackSet.has(child)) {
+                    this.gc.greyStack.push(child);
+                }
+            });
+
+            this.gc.blackSet.add(current);
+        }
+    };
+
+    // --- 測試場景：模擬長壽對象的回收流程 ---
+
+    // 1. 分配對象
+    v8.allocate('obj1', { name: 'RootObject' });
+    v8.allocate('obj2', { name: 'ChildObject' });
+
+    // 2. 模擬晉升（進入老生代）
+    v8.upgrade();
+
+    // 3. 建立引用關係 (在老生代中 Root 引用了 Child)
+    const allAssets = Array.from(v8.heap.old);
+    const rootObj = allAssets.find(o => o.name === 'RootObject');
+    const childObj = allAssets.find(o => o.name === 'ChildObject');
+    rootObj.children.push(childObj);
+
+    // 4. 開始 Major GC (三色標記)
+    v8.initGC([rootObj]); // 從根節點開始
+
+    // 5. 模擬增量執行 (每幀跑一小步)
+    v8.mark(); // 掃描 Root，發現 Child 並染灰
+    v8.mark(); // 掃描 Child，染黑
+    v8.mark(); // 完成
+
+    console.log('存活對象清單 (Black Set):',
+        Array.from(v8.gc.blackSet).map(o => o.name)
+    );
+    
+</script>
+</body>
+</html>
