@@ -22,6 +22,10 @@
     // 7. 最後，堆疊中剩餘的字元組成了最終的解碼結果
 
     function decodeStr(str) {
+        if(!str) {
+            return '';
+        }
+
         const stack = [];
 
         for(let i = 0; i < str.length; i++) {
@@ -36,60 +40,25 @@
 
                 stack.pop();
 
-                let num = '';
+                let number = '';
 
                 while(stack.length > 0) {
                     const top = stack[stack.length - 1];
-                    const n = top.charCodeAt(0);
+                    const char = top.charCodeAt(0);
 
-                    if(n < 48 || n > 57) {
+                    if(char < 48 || char > 57) {
                         break;
                     }
 
-                    num = stack.pop() + num;
+                    number = stack.pop() + number;
                 }
 
-                stack.push(encode.repeat(Number(num)));
+                stack.push(encode.repeat(Number(number)));
             }
         }
 
         return stack.join('');
     }
-
-    // function decodeStr(str) {
-    //     const stack = [];
-    //
-    //     for(let i = 0; i < str.length; i++) {
-    //         if(str[i] !== ']') {
-    //             stack.push(str[i]);
-    //         } else {
-    //             let encode = '';
-    //
-    //             while(stack.length > 0 && stack[stack.length - 1] !== '[') {
-    //                 encode = stack.pop() + encode;
-    //             }
-    //
-    //             stack.pop();
-    //
-    //             let mun = '';
-    //
-    //             while(stack.length > 0) {
-    //                 const top = stack[stack.length - 1];
-    //                 const code = top.charCodeAt(0);
-    //
-    //                 if (code < 48 || code > 57) {
-    //                     break;
-    //                 }
-    //
-    //                 mun = stack.pop() + mun;
-    //             }
-    //
-    //             stack.push(encode.repeat(Number(mun)));
-    //         }
-    //     }
-    //
-    //     return stack.join('');
-    // }
 
     const testCases = [
         {input: "2[a]1[bc]", expected: "aabc"},
