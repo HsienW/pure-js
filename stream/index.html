@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Stream</title>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+    class Stream {
+        constructor(container) {
+            this.container = container;
+            this.pending = '';
+            this.rest = '';
+            this.scheduled = false;
+        }
+
+        append(chunk) {
+            this.pending += chunk;
+            if (this.scheduled) return;
+
+            this.scheduled = true;
+
+            requestAnimationFrame(() => {
+                this.scheduled = false;
+
+                const text = this.rest + this.pending;
+                this.pending = '';
+
+                const parts = text.split('\n\n');
+                this.rest = text.endsWith('\n\n') ? '' : parts.pop();
+
+                this.render(parts);
+            });
+        }
+
+        render(parts) {
+            const fragment = document.createDocumentFragment();
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                const el = document.createElement('p');
+                el.textContent = part.replace(/\n/g, ' ');
+                fragment.appendChild(el);
+            }
+
+            this.container.appendChild(fragment);
+        }
+    }
+
+    function mockStreamEvents(events, interval, onMessage, onDone) {
+        let index = 0;
+
+        const timer = setInterval(() => {
+            if (index >= events.length) {
+                clearInterval(timer);
+                if (typeof onDone === 'function') {
+                    onDone();
+                }
+                return;
+            }
+
+            const event = events[index];
+            console.log('收到事件 =>', event);
+
+            onMessage(event);
+            index++;
+        }, interval);
+    }
+
+    const renderer = new Stream(document.getElementById('app'));
+
+    const events = [
+        { type: 'token', content: 'Hello' },
+        { type: 'token', content: ' world\n\nHow are' },
+        { type: 'token', content: ' you?\n\nI am fine' },
+        { type: 'token', content: ' too\n\n' },
+        { type: 'done' }
+    ];
+
+    mockStreamEvents(
+        events,
+        500,
+        (data) => {
+            if (data.type === 'token') {
+                renderer.append(data.content);
+            }
+
+            if (data.type === 'done') {
+                console.log('stream done');
+            }
+        },
+        () => {
+            console.log('rest =', JSON.stringify(renderer.rest));
+            console.log('html =', document.getElementById('app').innerHTML);
+        }
+    );
+</script>
+</body>
+</html>
