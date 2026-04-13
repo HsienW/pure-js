@@ -8,94 +8,80 @@
 <div id="app"></div>
 
 <script>
+
     class Stream {
         constructor(container) {
-            this.container = container;
+            this.contianer = container;
             this.pending = '';
-            this.rest = '';
-            this.scheduled = false;
+            this.prev = '';
+            this.running = false;
         }
 
         append(chunk) {
             this.pending += chunk;
-            if (this.scheduled) return;
 
-            this.scheduled = true;
+            if (this.running) {
+                return;
+            }
+
+            this.running = true;
 
             requestAnimationFrame(() => {
-                this.scheduled = false;
+                this.running = false;
 
-                const text = this.rest + this.pending;
+                const text = this.prev + this.pending;
+
                 this.pending = '';
 
                 const parts = text.split('\n\n');
-                this.rest = text.endsWith('\n\n') ? '' : parts.pop();
-
+                this.prev = text.endsWith('\n\m') ? '' : parts.pop();
                 this.render(parts);
-            });
+            })
         }
 
         render(parts) {
             const fragment = document.createDocumentFragment();
 
-            for (let i = 0; i < parts.length; i++) {
-                const part = parts[i];
+            for(let i = 0; i < parts.length; i++) {
+                const p = parts[i];
                 const el = document.createElement('p');
-                el.textContent = part.replace(/\n/g, ' ');
-                fragment.appendChild(el);
+                el.textContent = p.replace('\n/g', ' ')
+                fragment.append(el);
             }
 
-            this.container.appendChild(fragment);
+            this.contianer.append(fragment);
         }
     }
 
-    function mockStreamEvents(events, interval, onMessage, onDone) {
-        let index = 0;
-
-        const timer = setInterval(() => {
-            if (index >= events.length) {
-                clearInterval(timer);
-                if (typeof onDone === 'function') {
-                    onDone();
-                }
-                return;
-            }
-
-            const event = events[index];
-            console.log('收到事件 =>', event);
-
-            onMessage(event);
-            index++;
-        }, interval);
-    }
-
-    const renderer = new Stream(document.getElementById('app'));
+    const container = document.getElementById('app');
+    const renderer = new Stream(container);
 
     const events = [
-        { type: 'token', content: 'Hello' },
-        { type: 'token', content: ' world\n\nHow are' },
-        { type: 'token', content: ' you?\n\nI am fine' },
-        { type: 'token', content: ' too\n\n' },
-        { type: 'done' }
+        {type: 'token', content: 'Hello'},
+        {type: 'token', content: ' world\n\nHow are'},
+        {type: 'token', content: ' you?\n\nI am fine'},
+        {type: 'token', content: ' too\n\n'},
+        {type: 'done'}
     ];
 
-    mockStreamEvents(
-        events,
-        500,
-        (data) => {
-            if (data.type === 'token') {
-                renderer.append(data.content);
-            }
+    let index = 0;
 
-            if (data.type === 'done') {
-                console.log('stream done');
-            }
-        },
-        () => {
-            console.log('rest =', JSON.stringify(renderer.rest));
-            console.log('html =', document.getElementById('app').innerHTML);
+    // 使用 setInterval 每 500ms 模擬一次流式數據到達
+    const timer = setInterval(() => {
+        const event = events[index++];
+
+        // 1. 處理結束邏輯
+        if (!event || event.type === 'done') {
+            clearInterval(timer);
+            console.log('Stream Done. 殘留文字:', renderer.rest);
+            return;
         }
-    );
+
+        // 2. 模擬接收到 Token 並調用 Stream 實例的 append 方法
+        console.log('Receiving:', event.content);
+        renderer.append(event.content);
+
+    }, 500);
 </script>
 </body>
 </html>
