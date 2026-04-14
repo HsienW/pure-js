@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>IOC</title>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<pre id="output"></pre>
+
+<script>
+    Babel.registerPreset("inline-typescript", {
+        presets: [[Babel.availablePresets.typescript, { allExtensions: true }]],
+    });
+</script>
+<script type="text/babel" data-presets="inline-typescript">
+    const output = document.querySelector("#output") as HTMLPreElement;
+
+    function log(message: string, payload?: unknown): void {
+        const suffix = payload === undefined ? "" : ` ${JSON.stringify(payload)}`;
+        console.log(`${message}${suffix}`);
+        output.textContent += `${message}${suffix}\n`;
+    }
+
+    // src/core/navigator-port.ts
+    interface NavigatorPort {
+        navTo(url: string, query: string): void;
+    }
+
+    // src/core/im-core.ts
+    // Core only depends on NavigatorPort, not wx or React Navigation.
+    class ImCore {
+        constructor(private nav: NavigatorPort) {}
+
+        imNavTo(url: string, query: string): void {
+            this.nav.navTo(url, query);
+        }
+    }
+
+    // src/adapters/app/navigator-rn.ts
+    type ReactNavigationLike = {
+        navigate(routeName: string, params?: Record<string, string>): void;
+    };
+
+    class RNNavigatorAdapter implements NavigatorPort {
+        constructor(private nav: ReactNavigationLike) {}
+
+        navTo(url: string, query: string): void {
+            this.nav.navigate(url, { query });
+        }
+    }
+
+    // src/adapters/wxapp/navigator-weapp.ts
+    type WxNavigationLike = {
+        navigateTo(options: { url: string }): void;
+    };
+
+    class WeappNavigatorAdapter implements NavigatorPort {
+        constructor(private wxApi: WxNavigationLike) {}
+
+        navTo(url: string, query: string): void {
+            this.wxApi.navigateTo({
+                url: `${url}?query=${encodeURIComponent(query)}`,
+            });
+        }
+    }
+
+    // src/di/app-host.ts
+    function createImCoreForApp(nav: ReactNavigationLike): ImCore {
+        const navigatorPort = new RNNavigatorAdapter(nav);
+        return new ImCore(navigatorPort);
+    }
+
+    // src/hosts/wxapp-host.ts
+    function createImCoreForWxapp(wxApi: WxNavigationLike): ImCore {
+        const navigatorPort = new WeappNavigatorAdapter(wxApi);
+        return new ImCore(navigatorPort);
+    }
+
+    // src/index.ts
+    // In a real project, @im/host can be aliased to different host files.
+    // This demo runs both hosts directly.
+
+    const fakeRNNav: ReactNavigationLike = {
+        navigate(routeName, params) {
+            log("✅ RN navigate PASS", { routeName, params });
+        },
+    };
+
+    const fakeWxApi: WxNavigationLike = {
+        navigateTo(options) {
+            log("✅ WeApp navigateTo PASS", options);
+        },
+    };
+
+    const appCore = createImCoreForApp(fakeRNNav);
+    appCore.imNavTo("/chatscreen", "chatId=XXX");
+
+    const wxCore = createImCoreForWxapp(fakeWxApi);
+    wxCore.imNavTo("/pages/chat/index", "chatId=weapp XXX");
+
+    log("✅ IoC Navigation Demo ALL PASS");
+</script>
+</body>
+</html>
