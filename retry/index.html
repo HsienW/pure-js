@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Retry</title>
+</head>
+<body>
+<script>
+
+    // 1. 高階函數封裝能力
+    // 2. async / await + Promise 鏈路控制
+    // 3. 指數退避計算
+    // 4. 參數與 this 不丟失
+
+    // 把 setTimeout 包成 Promise，方便 async/await 等待
+    function sleep(ms) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, ms);
+        })
+    }
+
+    // withRetry：高階函數，接收 fn，返回一個帶重試能力的新函數
+    function withRetry(fn, options) {
+        // 1：可配置最大重試次數 / 基礎延遲 / 最大延遲 ?? 避免傳 0 時被 || 誤判成默認值
+        const option = options || {};
+        const maxRetry = option?.maxRetry || 3;
+        const baseDelay = option?.baseDelay || 1000;
+        const maxDelay = option?.maxDelay || 3000;
+
+        // 2：不能用箭頭函數，否則 this 會被詞法綁定，無法透傳調用方 this
+        return async function (...args) {
+            let lastErr = null;
+
+            // 3：maxRetry 表示「最多重試幾次」 總執行次數 = 1 次首次執行 + maxRetry 次重試
+            for (let i = 0; i <= maxRetry; i++) {
+                try {
+                    // 4：用 apply 保留 this，並透傳所有參數
+                    return await fn.apply(this, args);
+                } catch (err) {
+                    lastErr = err;
+
+                    //  5：已經到最後一次，不能再 sleep，直接拋錯
+                    if (i === maxRetry) {
+                        throw lastErr;
+                    }
+
+                    // 6：指數退避
+                    // 第 1 次重試前等待 baseDelay * 2^0
+                    // 第 2 次重試前等待 baseDelay * 2^1
+                    // 第 3 次重試前等待 baseDelay * 2^2
+                    let delay = baseDelay * Math.pow(2, i);
+
+                    // 7：最大延遲兜底，避免等待時間無限增長
+                    if (delay > maxDelay) {
+                        delay = maxDelay;
+                    }
+
+                    await sleep(delay);
+                }
+            }
+        }
+    }
+
+    /***********************
+     * 測試用例
+     ***********************/
+
+// 測試 1：前兩次失敗，第三次成功
+    let count1 = 0;
+
+    async function request1(name) {
+        count1++;
+        console.log(`request1 第 ${count1} 次執行，參數 = ${name}`);
+
+        if (count1 < 3) {
+            throw new Error('request1 失敗');
+        }
+
+        return `hello ${name}`;
+    }
+
+    const retryRequest1 = withRetry(request1, {
+        maxRetry: 3,
+        baseDelay: 300,
+        maxDelay: 1000
+    });
+
+    retryRequest1('Tom')
+        .then(function (res) {
+            console.log(res === 'hello Tom' ? '✅ 測試1通過' : '❌ 測試1失敗', res);
+        })
+        .catch(function (err) {
+            console.log('❌ 測試1失敗', err.message);
+        });
+
+
+    // 測試 2：一直失敗，直到超過最大重試次數
+    let count2 = 0;
+
+    async function request2() {
+        count2++;
+        console.log(`request2 第 ${count2} 次執行`);
+        throw new Error('request2 一直失敗');
+    }
+
+    const retryRequest2 = withRetry(request2, {
+        maxRetry: 2,
+        baseDelay: 200,
+        maxDelay: 500
+    });
+
+    retryRequest2()
+        .then(function () {
+            console.log('❌ 測試2失敗，不應該成功');
+        })
+        .catch(function (err) {
+            console.log(count2 === 3 ? '✅ 測試2通過' : '❌ 測試2失敗', err.message);
+        });
+
+
+    // 測試 3：this 透傳
+    const obj = {
+        value: 100,
+        count: 0,
+        getValue: async function (step) {
+            this.count++;
+            console.log(`getValue 第 ${this.count} 次執行，this.value = ${this.value}`);
+
+            if (this.count < 2) {
+                throw new Error('getValue 先失敗一次');
+            }
+
+            return this.value + step;
+        }
+    };
+
+    obj.retryGetValue = withRetry(obj.getValue, {
+        maxRetry: 3,
+        baseDelay: 300,
+        maxDelay: 1000
+    });
+
+    obj.retryGetValue(23)
+        .then(function (res) {
+            console.log(res === 123 ? '✅ 測試3通過' : '❌ 測試3失敗', res);
+        })
+        .catch(function (err) {
+            console.log('❌ 測試3失敗', err.message);
+        });
+</script>
+</body>
+</html>
