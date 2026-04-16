@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Process</title>
+
+</head>
+<body>
+<script>
+    // 任務按順序串行執行。
+    // 每個 task 是無參 async 函數。
+    // 所有任務完成後，拿到每個任務結果。
+    // 返回兩個方法：
+    //  start()：開始 / 恢復任務
+    //  pause()：暫停任務
+    // 任務具有原子性，不能中途打斷，只能在兩個任務之間暫停
+
+    function processTasks(...tasks) {
+        let i = 0;
+        const result = [];
+        let isRunning = false;
+
+        return {
+            start() {
+                return new Promise(async (resolve) => {
+                    if (isRunning) return;
+
+                    isRunning = true;
+
+                    while (i < tasks.length) {
+                        const task = tasks[i];
+                        const r = await task();
+
+                        result.push(r);
+                        i++;
+
+                        if (!isRunning) return;
+                    }
+
+                    isRunning = false;
+                    resolve(result);
+                });
+            },
+
+            pause() {
+                isRunning = false;
+            }
+        };
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    const p = processTasks(
+        async () => {
+            await sleep(1000);
+            console.log('task1');
+            return 1;
+        },
+        async () => {
+            await sleep(1000);
+            console.log('task2');
+            return 2;
+        },
+        async () => {
+            await sleep(1000);
+            console.log('task3');
+            return 3;
+        }
+    );
+
+    p.start().then(res => console.log('done:', res));
+
+    setTimeout(() => {
+        console.log('pause');
+        p.pause();
+    }, 1500);
+
+    setTimeout(() => {
+        console.log('resume');
+        p.start().then(res => console.log('final:', res));
+    }, 3000);
+</script>
+</body>
+</html>
