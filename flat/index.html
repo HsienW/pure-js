@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Flat</title>
+</head>
+<body>
+<script>
+    // =========================
+    // 工具函數
+    // =========================
+
+    function isPlainObject(value) {
+        return Object.prototype.toString.call(value) === '[object Object]';
+    }
+
+    function printCase(name, actual, expected) {
+        const pass = JSON.stringify(actual) === JSON.stringify(expected);
+        console.log(`${pass ? '✅' : '❌'} ${name}`);
+        if (!pass) {
+            console.log('actual  :', actual);
+            console.log('expected:', expected);
+        }
+    }
+
+    // =========================
+    // 方案一：原生 flat
+    // 只會拍平數組，不會深入拍平對象
+    // =========================
+
+    function flattenByNative(arr) {
+        return arr.flat(Infinity);
+    }
+
+    // =========================
+    // 方案二：遞迴版：只拍平數組
+    // 對象會被當作普通元素保留
+    // =========================
+
+    function flattenArrayRecursive(arr) {
+        const result = [];
+
+        function dfs(list) {
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i];
+
+                if (Array.isArray(item)) {
+                    dfs(item);
+                } else {
+                    result.push(item);
+                }
+            }
+        }
+
+        dfs(arr);
+        return result;
+    }
+
+    // =========================
+    // 方案三：非遞迴版：只拍平數組
+    // 避免遞迴爆棧
+    // =========================
+
+    function flattenArrayIterative(arr) {
+        const result = [];
+        const stack = [];
+
+        for (let i = arr.length - 1; i >= 0; i--) {
+            stack.push(arr[i]);
+        }
+
+        while (stack.length > 0) {
+            const item = stack.pop();
+
+            if (Array.isArray(item)) {
+                for (let i = item.length - 1; i >= 0; i--) {
+                    stack.push(item[i]);
+                }
+            } else {
+                result.push(item);
+            }
+        }
+
+        return result;
+    }
+
+    // =========================
+    // 方案四：非遞迴版：數組 + 對象都拍平為值列表
+    // 例如：
+    // [1, { a: 2, b: [3, { c: 4 }] }] => [1, 2, 3, 4]
+    // =========================
+
+    function flattenValueIterative(input) {
+        const result = [];
+        const stack = [input];
+        const seen = new WeakSet();
+
+        while (stack.length > 0) {
+            const value = stack.pop();
+
+            if (Array.isArray(value)) {
+                if (seen.has(value)) {
+                    throw new Error('存在循環引用');
+                }
+                seen.add(value);
+
+                for (let i = value.length - 1; i >= 0; i--) {
+                    stack.push(value[i]);
+                }
+            } else if (isPlainObject(value)) {
+                if (seen.has(value)) {
+                    throw new Error('存在循環引用');
+                }
+                seen.add(value);
+
+                const keys = Object.keys(value);
+                for (let i = keys.length - 1; i >= 0; i--) {
+                    stack.push(value[keys[i]]);
+                }
+            } else {
+                result.push(value);
+            }
+        }
+
+        return result;
+    }
+
+    // =========================
+    // 方案五：數組 + 對象拍平成 path map
+    // 適合表單、配置、JSON diff
+    // =========================
+
+    function flattenToPathMap(input) {
+        const result = {};
+        const stack = [
+            {
+                value: input,
+                path: ''
+            }
+        ];
+        const seen = new WeakSet();
+
+        while (stack.length > 0) {
+            const node = stack.pop();
+            const value = node.value;
+            const path = node.path;
+
+            if (Array.isArray(value)) {
+                if (seen.has(value)) {
+                    throw new Error('存在循環引用');
+                }
+                seen.add(value);
+
+                for (let i = value.length - 1; i >= 0; i--) {
+                    const nextPath = path ? `${path}[${i}]` : `[${i}]`;
+                    stack.push({
+                        value: value[i],
+                        path: nextPath
+                    });
+                }
+            } else if (isPlainObject(value)) {
+                if (seen.has(value)) {
+                    throw new Error('存在循環引用');
+                }
+                seen.add(value);
+
+                const keys = Object.keys(value);
+                for (let i = keys.length - 1; i >= 0; i--) {
+                    const key = keys[i];
+                    const nextPath = path ? `${path}.${key}` : key;
+
+                    stack.push({
+                        value: value[key],
+                        path: nextPath
+                    });
+                }
+            } else {
+                result[path || '$'] = value;
+            }
+        }
+
+        return result;
+    }
+
+    // =========================
+    // 測試用例
+    // =========================
+
+    const arr1 = [1, [2, [3, 4]], 5];
+
+    printCase(
+        'native flat',
+        flattenByNative(arr1),
+        [1, 2, 3, 4, 5]
+    );
+
+    printCase(
+        '遞迴版：只拍平數組',
+        flattenArrayRecursive(arr1),
+        [1, 2, 3, 4, 5]
+    );
+
+    printCase(
+        '非遞迴版：只拍平數組',
+        flattenArrayIterative(arr1),
+        [1, 2, 3, 4, 5]
+    );
+
+    const mixed = [
+        1,
+        {
+            a: 2,
+            b: [3, { c: 4 }]
+        },
+        [5, [6]]
+    ];
+
+    printCase(
+        '非遞迴版：數組 + 對象拍平成值列表',
+        flattenValueIterative(mixed),
+        [1, 2, 3, 4, 5, 6]
+    );
+
+    printCase(
+        '數組 + 對象拍平成 path map',
+        flattenToPathMap(mixed),
+        {
+            '[0]': 1,
+            '[1].a': 2,
+            '[1].b[0]': 3,
+            '[1].b[1].c': 4,
+            '[2][0]': 5,
+            '[2][1][0]': 6
+        }
+    );
+</script>
+</body>
+</html>
