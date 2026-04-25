@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Tool</title>
+</head>
+<body>
+<script>
+
+    const tools = {
+        tool1: async function (args) {
+            return `tool1 done: ${args.input}`;
+        },
+
+        tool2: async function (args) {
+            return `tool2 done: ${args.input}`;
+        },
+
+        tool3: async function (args) {
+            return `tool3 done: ${args.input}`;
+        }
+    };
+
+    async function runTool(call, toolMap) {
+        const start = performance.now();
+
+        try {
+            const fn = toolMap[call.name];
+
+            if (!fn) {
+                throw new Error(`tool not found: ${call.name}`);
+            }
+
+            const data = await fn(call.args);
+
+            return {
+                id: call.id,
+                name: call.name,
+                ok: true,
+                data,
+                cost: performance.now() - start
+            };
+        } catch (err) {
+            return {
+                id: call.id,
+                name: call.name,
+                ok: false,
+                error: err.message,
+                cost: performance.now() - start
+            };
+        }
+    }
+
+    async function runRound(toolCalls, toolMap) {
+        const tasks = [];
+
+        for (let i = 0; i < toolCalls.length; i++) {
+            tasks.push(runTool(toolCalls[i], toolMap));
+        }
+
+        const settled = await Promise.allSettled(tasks);
+        const results = [];
+
+        for (let i = 0; i < settled.length; i++) {
+            const item = settled[i];
+
+            if (item.status === 'fulfilled') {
+                results.push(item.value);
+            } else {
+                results.push({
+                    id: toolCalls[i].id,
+                    name: toolCalls[i].name,
+                    ok: false,
+                    error: String(item.reason || 'unknown error')
+                });
+            }
+        }
+
+        return results;
+    }
+
+    async function runAgent(rounds, toolMap) {
+        const history = [];
+
+        for (let i = 0; i < rounds.length; i++) {
+            const roundResults = await runRound(rounds[i], toolMap);
+
+            history.push({
+                round: i + 1,
+                results: roundResults
+            });
+        }
+
+        return history;
+    }
+
+    function printCheck(title, pass) {
+        console.log(`${pass ? '✅' : '❌'} ${title}`);
+    }
+
+    (async function () {
+        // case 1：外串內並，全成功
+        const rounds1 = [
+            [
+                { id: '1', name: 'tool1', args: { input: 'A' } },
+                { id: '2', name: 'tool2', args: { input: 'B' } }
+            ],
+            [
+                { id: '3', name: 'tool3', args: { input: 'C' } }
+            ]
+        ];
+
+        const res1 = await runAgent(rounds1, tools);
+
+        printCheck(
+            'case1 - 應該有 2 輪',
+            res1.length === 2
+        );
+
+        printCheck(
+            'case1 - 第 1 輪應該有 2 個結果',
+            res1[0].results.length === 2
+        );
+
+        printCheck(
+            'case1 - 第 2 輪應該有 1 個結果',
+            res1[1].results.length === 1
+        );
+
+        printCheck(
+            'case1 - tool1 應成功',
+            res1[0].results[0].ok === true &&
+            res1[0].results[0].data === 'tool1 done: A'
+        );
+
+        printCheck(
+            'case1 - tool2 應成功',
+            res1[0].results[1].ok === true &&
+            res1[0].results[1].data === 'tool2 done: B'
+        );
+
+        printCheck(
+            'case1 - tool3 應成功',
+            res1[1].results[0].ok === true &&
+            res1[1].results[0].data === 'tool3 done: C'
+        );
+
+        // case 2：同輪一個失敗，不影響另一個
+        const rounds2 = [
+            [
+                { id: '4', name: 'tool1', args: { input: 'X' } },
+                { id: '5', name: 'toolX', args: { input: 'Y' } } // 不存在
+            ]
+        ];
+
+        const res2 = await runAgent(rounds2, tools);
+
+        printCheck(
+            'case2 - tool1 成功',
+            res2[0].results[0].ok === true &&
+            res2[0].results[0].data === 'tool1 done: X'
+        );
+
+        printCheck(
+            'case2 - toolX 失敗',
+            res2[0].results[1].ok === false &&
+            res2[0].results[1].error === 'tool not found: toolX'
+        );
+
+        // case 3：驗證外串，第 2 輪確實有執行
+        const rounds3 = [
+            [
+                { id: '6', name: 'tool1', args: { input: 'M' } },
+                { id: '7', name: 'tool2', args: { input: 'N' } }
+            ],
+            [
+                { id: '8', name: 'tool3', args: { input: 'Z' } }
+            ]
+        ];
+
+        const res3 = await runAgent(rounds3, tools);
+
+        printCheck(
+            'case3 - 第 2 輪 tool3 有執行',
+            res3[1].results[0].ok === true &&
+            res3[1].results[0].name === 'tool3'
+        );
+
+        console.log('--- res1 ---');
+        console.log(res1);
+        console.log('--- res2 ---');
+        console.log(res2);
+        console.log('--- res3 ---');
+        console.log(res3);
+    })();
+
+</script>
+</body>
+</html>
