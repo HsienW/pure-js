@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>LRU</title>
+</head>
+<body>
+<script>
+    class Node {
+        constructor(key, value) {
+            this.key = key;
+            this.value = value;
+            this.prev = null;
+            this.next = null;
+        }
+    }
+
+    class LRUCache {
+        constructor(capacity) {
+            this.capacity = capacity;
+            this.size = 0;
+            this.cache = Object.create(null);
+            this.head = new Node();
+            this.tail = new Node();
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
+        }
+
+        get(key) {
+            const node = this.cache[key];
+            if (!node) return -1;
+            this.move(node);
+            return node.value;
+        }
+
+        put(key, value) {
+            let node = this.cache[key];
+
+            if (node) {
+                node.value = value;
+                this.move(node);
+                return;
+            }
+
+            node = new Node(key, value);
+            this.cache[key] = node;
+            this.push(node);
+            this.size++;
+
+            if (this.size > this.capacity) {
+                node = this.head.next;
+                this.remove(node);
+                delete this.cache[node.key];
+                this.size--;
+            }
+        }
+
+        remove(node) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+
+        push(node) {
+            const last = this.tail.prev;
+            last.next = node;
+            node.prev = last;
+            node.next = this.tail;
+            this.tail.prev = node;
+        }
+
+        move(node) {
+            this.remove(node);
+            this.push(node);
+        }
+    }
+
+
+    const cache = new LRUCache(2);
+
+    cache.put('a', { v: 1 });
+    cache.put('b', { v: 2 });
+    console.log(cache.get('a').v === 1 ? '✅' : '❌'); // 命中 a，a 變最新
+
+    cache.put('c', { v: 3 });
+    console.log(cache.get('b') === -1 ? '✅' : '❌'); // b 應被淘汰
+
+    cache.put('a', { v: 10 });
+    console.log(cache.get('a').v === 10 ? '✅' : '❌'); // a 被更新
+
+    cache.put('d', { v: 4 });
+    console.log(cache.get('c') === -1 ? '✅' : '❌'); // c 應被淘汰
+
+</script>
+</body>
+</html>
