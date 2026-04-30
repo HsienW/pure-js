@@ -16,13 +16,13 @@
     // 1. 遍歷輸入字串的每個字元。
     // 2. 如果目前字元不是 ']'，則將其壓入堆疊中。
     // 3. 如果目前字元是 ']'，則開始解碼程序。
-    // 4. 從堆疊中彈出字符，直到遇到 '['。這些字元構成了要重複的字串。
+    // 4. 從棧中彈出字符，直到遇到 '['。這些字元構成了要重複的字串。
     // 5. 繼續從堆疊中彈出字符，直到遇到一個數字。這個數字表示要重複的次數。
     // 6. 將重複次數和重複的字串拼接起來，並將結果壓回堆疊中。
-    // 7. 最後，堆疊中剩餘的字元組成了最終的解碼結果
+    // 7. 最後，棧中剩餘的字元組成了最終的解碼結果
 
     function decodeStr(str) {
-        if(!str) {
+        if(!str || str.length === 0) {
             return '';
         }
 
@@ -32,28 +32,22 @@
             if(str[i] !== ']') {
                 stack.push(str[i]);
             } else {
-                let encode = '';
+                let subStr = '';
 
                 while(stack.length > 0 && stack[stack.length - 1] !== '[') {
-                    encode = stack.pop() + encode;
+                    subStr  = stack.pop() + subStr;
                 }
 
-                stack.pop();
+                stack.pop(); // 彈出 '['
 
-                let number = '';
+                let numStr = '';
 
-                while(stack.length > 0) {
-                    const top = stack[stack.length - 1];
-                    const char = top.charCodeAt(0);
-
-                    if(char < 48 || char > 57) {
-                        break;
-                    }
-
-                    number = stack.pop() + number;
+                while(stack.length > 0 && stack[stack.length - 1] >= '0' && stack[stack.length - 1] <= '9') {
+                    numStr = stack.pop() + numStr;
                 }
 
-                stack.push(encode.repeat(Number(number)));
+                // 3. 壓回結果
+                stack.push(subStr.repeat(Number(numStr)));
             }
         }
 
