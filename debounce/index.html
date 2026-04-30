@@ -7,78 +7,51 @@
 <body>
 <input type="button" value="click">
 <script>
-
-    const debounce = function (callBack, delay) {
-        console.log('有進來');
+    const debounce2 = function (cb, delay, options = {leading: true, trailing: false}) {
         let timer = null;
 
-        return function () {
-            let self = this;
-            let args = Array.prototype.shift.call(arguments);
+        return function (...args) {
+            const self = this;
+            const isCallNow = !timer && options.leading
 
-            console.log('進入防抖');
-            if (timer !== null) {
-                console.log('發現之前有存在了, 清除掉');
+            if (timer) {
                 clearTimeout(timer);
-                timer = null;
             }
 
             timer = setTimeout(function () {
-                console.log('之前沒有存在了, 記錄下等時間到之後執行');
-                callBack.call(self, args);
-            }, delay);
+                if (options.trailing !== false && !isCallNow) {
+                    cb.apply(self, args);
+                }
+                timer = null;
+            }, delay)
+
+
+            if (isCallNow) {
+                cb.apply(self, args);
+            }
         }
     }
 
-    const testFunction = function (test) {
-        console.log(test)
-        console.log('我變換視窗大小了')
+    const debounce = function (cb, delay) {
+        let timer = null;
+
+        return function (...args) {
+            const self = this;
+
+            clearTimeout(timer);
+
+            timer = setTimeout(function () {
+                cb.apply(self, args);
+            }, delay)
+        }
     }
 
-    // window.onresize = debounce(testFunction, 5000)('hello~');
-    // window.onresize = testFunction;
-
     const button = document.querySelector('input');
-
     const test = function () {
         console.log('123');
     }
 
-    const debounceTwo = function (callback, delay) {
-        let timer;
-        return function () {
-            let self = this;
-            let args = arguments;
-
-            clearTimeout(timer);
-
-            timer = setTimeout(function () {
-                callback.apply(self, args);
-            }, delay)
-        }
-    }
-
-    button.addEventListener('click', debounceTwo(test, 1000));
-
-    const log = function () {
-        console.log('123');
-    }
-
-    const debounce1 = function (callback, delay) {
-        let timer;
-        return function () {
-            let self = this;
-            let args = arguments;
-
-            clearTimeout(timer);
-            timer = setTimeout(function () {
-                callback.apply(self, args)
-            }, delay)
-        }
-    }
-
-    // window.onresize = debdounceTwo(test, 1000)('hello~');
-
+    button.addEventListener('click', debounce2(test, 2000));
 </script>
 </body>
 </html>
