@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Array to tree</title>
+</head>
+<body>
+<script>
+
+    function arrayToTree(list, rootParentId) {
+        const map = Object.create(null);
+        const roots = [];
+
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+
+            map[item.id] = {
+                ...item,
+                children: []
+            }
+        }
+
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            const node = map[item.id];
+            const pId = item.parentId;
+
+            if (pId === rootParentId || !map[item.id]) {
+                roots.push(node);
+            } else {
+                map[pId].children.push(node);
+            }
+        }
+
+        return roots;
+    }
+
+    const list = [
+        {id: 1, parentId: 0, name: 'A'},
+        {id: 2, parentId: 1, name: 'B'},
+        {id: 3, parentId: 1, name: 'C'},
+        {id: 4, parentId: 2, name: 'D'},
+        {id: 5, parentId: 0, name: 'E'}
+    ];
+
+    const tree = arrayToTree(list, 0);
+    console.log(JSON.stringify(tree, null, 2));
+</script>
+</body>
+</html>
