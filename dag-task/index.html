@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>DAG Task</title>
+</head>
+<body>
+<script>
+    // 給定一組任務 tasks，每個任務包含：
+    // • id：任務的唯一標識。
+    // • action：一個返回 Promise 的異步函數，代表任務的執行邏輯。
+    // • deps：一個字符串數組，代表該任務依賴的其他任務 id。
+    // 要求:
+    // 1. 執行順序：只有當一個任務的所有依賴任務都執行完成後，該任務才能開始執行。
+    //    如果沒有依賴（ deps 為空），則該任務為“入口任務”，可以立即執行。
+    // 2. 並行性：在滿足依賴條件的情況下，盡可能多地並行執行任務（例如：A 和 B 互不依賴，它們應該同時啟動）。
+    // 3. 輸出結果：函數執行完後，返回一個 Map，其中 key 是任務 id，value 是 action 執行后的結果。
+    // 4. 異常處理：如果任務之間存在循環依賴，導致無法完成所有任務，請拋出錯誤。
+
+    async function runTasks(tasks) {
+        const taskMap = new Map();
+        const indegree = new Map();
+        const children = new Map();
+
+        // 1. 建立任務表 (將驗證與初始化合併)
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+
+            if (!task || !task.id) {
+                throw new Error('任務缺少 id');
+            }
+            if (taskMap.has(task.id)) {
+                throw new Error(`重複任務 id: ${task.id}`);
+            }
+
+            taskMap.set(task.id, task);
+            indegree.set(task.id, 0);
+            children.set(task.id, []);
+        }
+
+        // 2. 建圖
+        for (let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            const deps = task.deps || [];
+
+            for (let j = 0; j < deps.length; j++) {
+                const depId = deps[j];
+                if (!taskMap.has(depId)) {
+                    throw new Error(`任務 ${task.id} 依賴不存在: ${depId}`);
+                }
+
+                // 檢查環路的一個簡單方式是：若 A 依賴 B，檢查 B 是否依賴 A (進階可使用 DFS 判斷)
+                // 此處保持邏輯簡潔，利用 indegree 與 finished 數值判斷即可
+
+                indegree.set(task.id, indegree.get(task.id) + 1);
+                children.get(depId).push(task.id);
+            }
+        }
+
+        // 3. 找出發點
+        let ready = [];
+        for (let i = 0; i < tasks.length; i++) {
+            const id = tasks[i].id;
+            if (indegree.get(id) === 0) ready.push(id);
+        }
+
+        const result = new Map();
+        let finishedCount = 0;
+
+        // 4. 分批執行
+        while (ready.length > 0) {
+            const batch = ready;
+            ready = [];
+
+            // 使用 Map 儲存當前 batch 的結果，避免在 map 與 array 間頻繁轉換
+            const batchPromises = [];
+            for (let i = 0; i < batch.length; i++) {
+                const id = batch[i];
+                // 確保執行任務
+                batchPromises.push(taskMap.get(id).action().then(value => ({ id, value })));
+            }
+
+            const results = await Promise.all(batchPromises);
+
+            // 5. 處理結果並降低後繼節點入度
+            for (let i = 0; i < results.length; i++) {
+                const { id, value } = results[i];
+                result.set(id, value);
+                finishedCount++;
+
+                const nextList = children.get(id);
+                for (let j = 0; j < nextList.length; j++) {
+                    const nextId = nextList[j];
+                    const newDegree = indegree.get(nextId) - 1;
+                    indegree.set(nextId, newDegree);
+                    if (newDegree === 0) ready.push(nextId);
+                }
+            }
+        }
+
+        if (finishedCount !== tasks.length) {
+            throw new Error('存在循環依賴，無法完成所有任務');
+        }
+
+        return result;
+    }
+
+    const tasks = [
+        {
+            id: 'A',
+            action: function () {
+                return Promise.resolve('Result_A');
+            },
+            deps: []
+        },
+        {
+            id: 'B',
+            action: function () {
+                return Promise.resolve('Result_B');
+            },
+            deps: []
+        },
+        {
+            id: 'C',
+            action: function () {
+                return Promise.resolve('Result_C');
+            },
+            deps: ['A']
+        },
+        {
+            id: 'D',
+            action: function () {
+                return Promise.resolve('Result_D');
+            },
+            deps: ['B', 'C']
+        }
+    ];
+
+    runTasks(tasks).then(function (res) {
+        console.log(res);
+
+        console.log(res.get('A') === 'Result_A' ? '✅ A 通過' : '❌ A 失敗');
+        console.log(res.get('B') === 'Result_B' ? '✅ B 通過' : '❌ B 失敗');
+        console.log(res.get('C') === 'Result_C' ? '✅ C 通過' : '❌ C 失敗');
+        console.log(res.get('D') === 'Result_D' ? '✅ D 通過' : '❌ D 失敗');
+    });
+
+</script>
+</body>
+</html>
