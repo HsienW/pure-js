@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FIFO Queue</title>
+</head>
+<body>
+
+<script>
+    // 實作一個 Queue 類
+    // 傳參
+    // max 控制當前非同步並發數，支援按順序執行異步隊列
+    // push方法把一個待執行函數推入隊列，push的同時開始執行, 當並發數到達上限時後面的異步 pedding
+    // 並按順序輸出 1,2,3
+
+    class Queue {
+        constructor(max) {
+            this.queue = [];
+            this.max = max;
+            this.running = 0;
+        }
+
+        push(fn) {
+            return new Promise((resolve, reject) => {
+                const task = async () => {
+                    try {
+                        this.running++;
+                        const res = await fn();
+                        resolve(res);
+                    } catch (e) {
+                        reject(e);
+                    } finally {
+                        this.running--;
+                        this.next();
+                    }
+                }
+
+                if (this.running < this.max) {
+                    task();
+                } else {
+                    this.queue.push(task);
+                }
+            })
+        }
+
+        next() {
+            if (this.queue.length > 0 && this.running < this.max) {
+                const task = this.queue.shift();
+                task();
+            }
+        }
+    }
+
+    const createTask = function (id, delay) {
+        return function () {
+            return new Promise((resolve, reject) => {
+                console.log(`${id} 被推入了`)
+                setTimeout(function () {
+                    console.log(`${id} 執行了`)
+                    resolve();
+                }, delay)
+            })
+        }
+    }
+
+    const queue = new Queue(3);
+
+    taskList = [
+        createTask(1, 1000),
+        createTask(100, 4600),
+        createTask(5, 3000),
+        createTask(2, 6000),
+    ]
+
+    const allTask = taskList.map((fn) => queue.push(fn));
+
+    Promise.all(allTask).then(() => console.log('全部完成~~~')).catch(() => console.log('失敗'))
+
+    function createTask2(num, delay, output) {
+        return function() {
+            return new Promise(function(resolve) {
+                setTimeout(function() {
+                    output.push(num);
+                    console.log(num);
+                    resolve(num);
+                }, delay);
+            });
+        };
+    }
+
+    const queue2 = new Queue(1);
+    const output = [];
+
+    const p1 = queue2.push(createTask2(1, 300, output));
+    const p2 = queue2.push(createTask2(2, 100, output));
+    const p3 = queue2.push(createTask2(3, 100, output));
+
+    Promise.all([p1, p2, p3]).then(function(res) {
+        const ok =
+            output[0] === 1 &&
+            output[1] === 2 &&
+            output[2] === 3 &&
+            res[0] === 1 &&
+            res[1] === 2 &&
+            res[2] === 3;
+
+        console.log(ok ? '✅ 測試通過：按順序輸出 1,2,3' : '❌ 測試失敗');
+    });
+</script>
+</body>
+</html>
