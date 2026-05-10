@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MinDrops</title>
+</head>
+<body>
+<script>
+
+    function minDrops(floors) {
+        let drops = 0;
+        let cover = 0;
+
+        while (cover < floors) {
+            drops++;
+            cover += drops;
+        }
+
+        return drops;
+    }
+
+    const cases = [
+        {floors: 1, expect: 1},
+        {floors: 2, expect: 2},
+        {floors: 3, expect: 2},
+        {floors: 10, expect: 4},
+        {floors: 100, expect: 14}
+    ];
+
+    for (let i = 0; i < cases.length; i++) {
+        const item = cases[i];
+        const result = minDrops(item.floors);
+
+        console.log(
+            `${result === item.expect ? '✅' : '❌'} floors=${item.floors}, expect=${item.expect}, result=${result}`
+        );
+    }
+
+</script>
+</body>
+</html>
