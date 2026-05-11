@@ -6,235 +6,67 @@
 </head>
 <body>
 <script>
+    class FakePromise {
+        constructor(exe) {
+            this.state = 'pending';
+            this.value = undefined;
+            this.fulfilled = [];
+            this.rejected = [];
 
-    /**  Version-1 Promise **/
-
-    function customPromise(callback) {
-        // promise 初始的 status
-        this.status = 'pending';
-
-        // 用來存放 resolve or reject 結果的 value 變數
-        this.value;
-
-        this.resolve = function (respond) {
-            if (this.status === 'pending') {
-                this.status = 'success';
-                this.value = respond;
-            }
-        }
-
-        this.reject = function (respond) {
-            if (this.status === 'pending') {
-                this.status = 'reject';
-                this.value = respond;
-            }
-        }
-
-        // call 丟入的 callback 並給它 resolve & reject
-        try {
-            callback(this.resolve, this.reject);
-        } catch (error) {
-            this.reject(error);
-        }
-
-        this.then = function (success, failed) {
-            if (this.status === 'success') {
-                return success(this.value);
-            }
-            if (this.status === 'reject') {
-                return failed(this.value);
-            }
-        }
-        this.catch = function (callback) {
-            this.then(null, callback);
-        }
-    }
-
-    /** Version-2 Promise **/
-
-    function CustomPromise2(executor) {
-        let self = this;
-
-        // promise 初始的 status
-        self.status = 'pending';
-
-        // 用來存 then 中的第一個 & 第二個參數,
-        // 就是 resolve & reject handler function (new 出去的 Promise 實例全部的 handler)
-        self.onResolvedCallbacks = [];
-        self.onRejectedCallbacks = [];
-
-        this.resolve = function (respondValue) {
-            if (self.status === 'pending') {
-                self.status = 'resolved';
-                self.respondValue = respondValue;
-                self.onResolvedCallbacks.forEach(resolvesFunction => {
-                    resolvesFunction();
-                })
-            }
-        }
-
-        this.reject = function (rejectValue) {
-            if (self.status === 'pending') {
-                self.status = 'rejected';
-                self.rejectValue = rejectValue;
-                self.onRejectedCallbacks.forEach(rejectsFunction => {
-                    rejectsFunction();
-                })
-            }
-        }
-
-        executor(this.resolve, this.reject);
-    }
-
-    CustomPromise2.prototype.then = function (onCompleted, onRejected) {
-        let self = this;
-
-        // 當 status 還是 pending 時, 表示已經有 Promise 實例 call 了
-        if (self.status === 'pending') {
-
-            // 把所有 Promise 實例的 resolve & reject handler 存起來
-            // 因為不知道多久後會才會用到
-            // 等待 then 內部用到時, 在 call
-            self.onResolvedCallbacks.push(function () {
-                onCompleted(self.respondValue);
-            })
-
-            self.onRejectedCallbacks.push(function () {
-                onRejected(self.rejectValue);
-            })
-        }
-
-        if (self.status === 'resolved') {
-            onCompleted(self.respondValue);
-        }
-        if (self.status === 'rejected') {
-            onRejected(self.rejectValue);
-        }
-
-        // Promise 實例的 total resolve handler
-        console.log(self.onResolvedCallbacks);
-    }
-
-    CustomPromise2.prototype.then2 = function (onCompleted, onRejected) {
-        // onCompleted 是使用 then2 時, 傳入的第一個參數 (function)
-        // onRejected 是使用 then2 時, 傳入的第二個參數 (function)
-
-        let self = this;
-
-        // Promise 能一直 then 下去, 是因為每次都 return 一個 new Promise
-        return new CustomPromise2(function (resolve, reject) {
-
-            // 把所有 Promise 實例的 resolve & reject handler 存起來
-            // 因為不知道多久後會才會用到
-            // 等待 then 內部用到時, 在 call
-            if (self.status === 'pending') {
-                self.onResolvedCallbacks.push(function () {
-                    try {
-                        resolve(onCompleted(self.respondValue));
-                    } catch (error) {
-                        reject(error);
-                    }
-                })
-                self.onRejectedCallbacks.push(function () {
-                    try {
-                        resolve(onRejected(self.rejectValue));
-                    } catch (error) {
-                        reject(error);
-                    }
-                })
-            }
-            if (self.status === 'resolved') {
-                try {
-                    // 把上一層 then 的 onCompleted 放入, 下一層 then resolve, 才能串起 Promise 鍊
-                    resolve(onCompleted(self.respondValue));
-                } catch (error) {
-                    reject(error);
+            const resolve = (value) => {
+                if(this.state !== 'pending') {
+                    return;
                 }
-            }
-            if (self.status === 'rejected') {
-                try {
-                    resolve(onRejected(self.rejectValue));
-                } catch (error) {
-                    reject(error);
+
+                queueMicrotask(() => {
+                    this.state = 'fulfilled';
+                    this.value = value;
+                    this.fulfilled.forEach((fn) => fn(value));
+                })
+            };
+
+            const reject = (error) => {
+                if(this.state !== 'pending') {
+                  return;
                 }
+
+                queueMicrotask(() => {
+                    this.value = error;
+                    this.state = 'rejected';
+                    this.rejected.forEach((fn) => fn(error));
+                })
+            };
+
+            try {
+                exe(resolve, reject);
+            } catch (e) {
+                reject(e);
             }
-        });
+        }
+
+        all() {
+
+        }
+
+        then(onF, onR) {
+            onF = typeof onF === 'function' ? onF : (val) => val;
+            onR = typeof onR === 'function' ? onR : (err) => throw(err);
+
+            const task = async () => {
+                const
+            }
+
+            if(this.state === 'pending') {
+
+            } else if () {
+
+            }
+        }
+
+        catch(e) {
+            return this.then(null, (e) => {e});
+        }
     }
-
-    // let testA = new CustomPromise2(function (resolve, reject) {
-    //     console.log('start')
-    //     setTimeout(function () {
-    //         resolve('data A')
-    //     }, 3000)
-    // })
-    //
-    // let testB = new CustomPromise2(function (resolve, reject) {
-    //     console.log('start')
-    //     setTimeout(function () {
-    //         resolve('data B')
-    //     }, 2000)
-    // })
-
-    let testC = new CustomPromise2(function (resolve, reject) {
-        console.log('start');
-        setTimeout(function () {
-            resolve('data C');
-        }, 2000)
-    })
-
-    // testA.then((value) => {
-    //         console.log('第一個 testA success： ' + value)
-    //     }, (value) => {
-    //         console.log('第一個 testA error： ' + value)
-    //     }
-    // )
-    //
-    // testA.then((value) => {
-    //         console.log('第二個 testA success： ' + value)
-    //     }, (value) => {
-    //         console.log('第二個 testA error： ' + value)
-    //     }
-    // )
-    //
-    // testB.then((value) => {
-    //         console.log('testB success： ' + value)
-    //     }, (value) => {
-    //         console.log('testB error： ' + value)
-    //     }
-    // )
-
-    testC
-        .then2((respond) => {
-                console.log('第一層 testC success：');
-                console.log(respond);
-                return respond;
-            }, (cache) => {
-                console.log('第一層 testC error： ');
-                console.log(cache);
-            }
-        )
-        .then2((respond) => {
-                console.log('第二層 testC success： ');
-                console.log(respond);
-                return {test: 'testObj'};
-            }, (cache) => {
-                console.log('第二層 testC error： ');
-                console.log(cache);
-            }
-        )
-        .then2((respond) => {
-                console.log('第三層 testC success： ');
-                console.log(respond);
-                return respond;
-            }, (cache) => {
-                console.log('第三層 testC error： ');
-                console.log(cache);
-            }
-        )
-
-    console.log('end');
-
-
 </script>
 </body>
 </html>

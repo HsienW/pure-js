@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Chain call</title>
+</head>
+<body>
+<script>
+
+    // Lazy('A').sleep(2).Log('B').sleepFirst(1).Log('C');
+    // 等待 1 秒
+    // A
+    // 等待 2 秒
+    // B
+    // C
+
+    class LazyClass {
+        constructor(str) {
+            this.queue = [];
+            this.str = str;
+
+            this.queue.push(() => {
+                console.log(`${this.str}`);
+                return Promise.resolve();
+            });
+
+            // 等鏈式調用全部收集完，再啟動任務
+            setTimeout(() => {
+                this.next();
+            }, 0);
+        }
+
+        sleep(delay) {
+            const task = () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, delay * 1000);
+                });
+            };
+
+            this.queue.push(task);
+
+            return this;
+        }
+
+        sleepFirst(delay) {
+            const task = () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, delay * 1000);
+                });
+            };
+
+            this.queue.unshift(task);
+
+            return this;
+        }
+
+        log(str) {
+            const task = () => {
+                console.log(`${str}`);
+                return Promise.resolve();
+            };
+
+            this.queue.push(task);
+
+            return this;
+        }
+
+        next() {
+            if (this.queue.length > 0) {
+                const task = this.queue.shift();
+
+                task().then(() => {
+                    this.next();
+                });
+            }
+        }
+    }
+
+    function Lazy(name) {
+        return new LazyClass(name);
+    }
+
+    Lazy('A').sleep(2).log('B').sleepFirst(1).log('C');
+
+</script>
+</body>
+</html>
