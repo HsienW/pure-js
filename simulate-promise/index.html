@@ -10,31 +10,34 @@
         constructor(exe) {
             this.state = 'pending';
             this.value = undefined;
-            this.fulfilled = [];
-            this.rejected = [];
+            this.fulfilledCallbacks = [];
+            this.rejectedCallbacks = [];
 
             const resolve = (value) => {
-                if(this.state !== 'pending') {
+                if (this.state !== 'pending') {
+                    return;
+                }
+
+                // 使用 queueMicrotask 確保在當前調用棧清空後執行
+                queueMicrotask(() => {
+                    if (this.state !== 'pending') return;
+                    this.state = 'fulfilled';
+                    this.value = value;
+                    this.fulfilledCallbacks.forEach((fn) => fn(value));
+                });
+            };
+
+            const reject = (error) => {
+                if (this.state !== 'pending') {
                     return;
                 }
 
                 queueMicrotask(() => {
-                    this.state = 'fulfilled';
-                    this.value = value;
-                    this.fulfilled.forEach((fn) => fn(value));
-                })
-            };
-
-            const reject = (error) => {
-                if(this.state !== 'pending') {
-                  return;
-                }
-
-                queueMicrotask(() => {
-                    this.value = error;
+                    if (this.state !== 'pending') return;
                     this.state = 'rejected';
-                    this.rejected.forEach((fn) => fn(error));
-                })
+                    this.value = error;
+                    this.rejectedCallbacks.forEach((fn) => fn(error));
+                });
             };
 
             try {
@@ -44,29 +47,151 @@
             }
         }
 
-        all() {
+        then(onFulfilled, onRejected) {
+            // 參數校驗：確保是函數，否則透傳值或錯誤
+            onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : (val) => val;
+            onRejected = typeof onRejected === 'function' ? onRejected : (err) => { throw err };
 
+            // then 必須返回一個新的 Promise 以實現鏈式調用
+            return new FakePromise((resolve, reject) => {
+
+                const task = (callback) => {
+                    try {
+                        const res = callback(this.value);
+                        // 如果返回值是 FakePromise，則等待其狀態改變
+                        if (res instanceof FakePromise) {
+                            res.then(resolve, reject);
+                        } else {
+                            resolve(res);
+                        }
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+
+                if (this.state === 'fulfilled') {
+                    queueMicrotask(() => task(onFulfilled));
+                } else if (this.state === 'rejected') {
+                    queueMicrotask(() => task(onRejected));
+                } else {
+                    // pending 狀態下，先暫存回調函數
+                    this.fulfilledCallbacks.push(() => task(onFulfilled));
+                    this.rejectedCallbacks.push(() => task(onRejected));
+                }
+            });
         }
 
-        then(onF, onR) {
-            onF = typeof onF === 'function' ? onF : (val) => val;
-            onR = typeof onR === 'function' ? onR : (err) => throw(err);
-
-            const task = async () => {
-                const
-            }
-
-            if(this.state === 'pending') {
-
-            } else if () {
-
-            }
+        catch(onRejected) {
+            return this.then(null, onRejected);
         }
 
-        catch(e) {
-            return this.then(null, (e) => {e});
+        static resolve(value) {
+            if (value instanceof FakePromise) return value;
+            return new FakePromise((res) => res(value));
+        }
+
+        static reject(reason) {
+            return new FakePromise((res, rej) => rej(reason));
+        }
+
+        static all(promises) {
+            return new FakePromise((resolve, reject) => {
+                let res = [];
+                let count = 0;
+                promises.forEach((p, i) => {
+                    FakePromise.resolve(p).then(
+                        (val) => {
+                            res[i] = val;
+                            count++;
+                            if (count === promises.length) {
+                                resolve(res);
+                            }
+                        },
+                        (err) => reject(err)
+                    );
+                });
+            });
         }
     }
+
+    // ==========================================
+    // 測試用例自動驗證
+    // ==========================================
+
+    console.log("🚀 開始執行 FakePromise 測試...\n");
+
+    // 1. 基礎非同步測試
+    let isSync = true;
+    new FakePromise(res => res("Async")).then(val => {
+        if (val === "Async" && isSync === false) {
+            console.log("✅ 測試 1 (基礎非同步): 通過");
+        } else {
+            console.log("❌ 測試 1 (基礎非同步): 失敗 (可能是同步執行的)");
+        }
+    });
+    isSync = false;
+
+    // 2. 鏈式調用 (回傳值)
+    new FakePromise(res => res(10))
+        .then(v => v * 2)
+        .then(v => {
+            if (v === 20) console.log("✅ 測試 2 (鏈式調用回傳值): 通過");
+            else console.log("❌ 測試 2 (鏈式調用回傳值): 失敗");
+        });
+
+    // 3. 鏈式調用 (回傳 Promise)
+    let p3_start = Date.now();
+    new FakePromise(res => res("Step1"))
+        .then(v => {
+            return new FakePromise(res => setTimeout(() => res("Step2"), 100));
+        })
+        .then(v => {
+            const duration = Date.now() - p3_start;
+            if (v === "Step2" && duration >= 100) {
+                console.log("✅ 測試 3 (鏈式調用等待 Promise): 通過");
+            } else {
+                console.log("❌ 測試 3 (鏈式調用等待 Promise): 失敗");
+            }
+        });
+
+    // 4. 錯誤處理與修復
+    new FakePromise((_, rej) => rej("Error"))
+        .catch(err => {
+            if (err === "Error") return "Recovered";
+        })
+        .then(val => {
+            if (val === "Recovered") console.log("✅ 測試 4 (錯誤捕獲與恢復): 通過");
+            else console.log("❌ 測試 4 (錯誤捕獲與恢復): 失敗");
+        });
+
+    // 5. FakePromise.all 測試
+    const pro1 = FakePromise.resolve(1);
+    const pro2 = new FakePromise(res => setTimeout(() => res(2), 50));
+    const pro3 = 3; // 測試非 Promise 的值處理
+    FakePromise.all([pro1, pro2, pro3]).then(results => {
+        if (JSON.stringify(results) === "[1,2,3]") {
+            console.log("✅ 測試 5 (FakePromise.all 全部成功): 通過");
+        } else {
+            console.log("❌ 測試 5 (FakePromise.all 全部成功): 失敗");
+        }
+    });
+
+    // 6. FakePromise.all 快速失敗
+    const pFail = FakePromise.reject("Fail");
+    FakePromise.all([pro1, pFail]).catch(err => {
+        if (err === "Fail") console.log("✅ 測試 6 (FakePromise.all 快速失敗): 通過");
+        else console.log("❌ 測試 6 (FakePromise.all 快速失敗): 失敗");
+    });
+
+    // 7. 多次訂閱測試
+    const pMulti = new FakePromise(res => setTimeout(() => res("Broadcasting"), 30));
+    let countMulti = 0;
+    pMulti.then(() => countMulti++);
+    pMulti.then(() => countMulti++);
+    setTimeout(() => {
+        if (countMulti === 2) console.log("✅ 測試 7 (多次訂閱執行): 通過");
+        else console.log("❌ 測試 7 (多次訂閱執行): 失敗");
+    }, 100);
 </script>
 </body>
 </html>
