@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Remove Triples</title>
+</head>
+<body>
+<script>
+    // { ch: 字符, count: 連續次數 }
+    // 核心：用棧做「連續段壓縮」，棧裡不直接存每個字符
+    // 當 count === 3 時，直接彈出，後面的字符會自然跟前面的棧頂重新合併，形成連鎖消除
+
+    function removeTriples(s) {
+        const stack = [];
+
+        for (let i = 0; i < s.length; i++) {
+            const ch = s[i];
+            const top = stack[stack.length - 1];
+
+            if (top && top.ch === ch) {
+                top.count++;
+
+                // 連續 3 個相同字符，消除
+                if (top.count === 3) {
+                    stack.pop();
+                }
+            } else {
+                stack.push({
+                    ch,
+                    count: 1
+                });
+            }
+        }
+
+        let res = '';
+
+        for (let i = 0; i < stack.length; i++) {
+            const item = stack[i];
+
+            for (let j = 0; j < item.count; j++) {
+                res += item.ch;
+            }
+        }
+
+        return res;
+    }
+
+    function test(input, expected) {
+        const actual = removeTriples(input);
+        const ok = actual === expected ? '✅' : '❌';
+        console.log(`${ok} input=${input}, expected=${expected}, actual=${actual}`);
+    }
+
+    test('aaab', 'b');
+    test('aabbbaccaa', 'ccaa');
+    test('abcccba', 'abba');
+    test('aaabbb', '');
+    test('aaaa', 'a');
+    test('aabbcc', 'aabbcc');
+    test('', '');
+
+</script>
+</body>
+</html>
