@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>PubSub</title>
+</head>
+<body>
+<script>
+
+    class PubSub {
+        constructor() {
+            this.map = {};
+        }
+
+        sub(type, cb) {
+            if (!type || typeof cb !== 'function') {
+                return;
+            }
+
+            if (!this.map[type]) {
+                this.map[type] = [];
+            }
+
+            this.map[type].push(cb);
+
+            return () => {
+                this.unSub(type, cb);
+            };
+        }
+
+        pub(type, ...args) {
+            const list = this.map[type];
+
+            if (!list || list.length === 0) {
+                return false;
+            }
+
+            const tasks = [...list];
+
+            for (let i = 0; i < tasks.length; i++) {
+                tasks[i].apply(this, args);
+            }
+
+            return true;
+        }
+
+        unSub(type, fn) {
+            const list = this.map[type];
+
+            if (!type || !list || list.length === 0) {
+                return;
+            }
+
+            const newList = [];
+
+            for (let i = 0; i < list.length; i++) {
+                if (list[i] !== fn && list[i].sourceFn !== fn) {
+                    newList.push(list[i]);
+                }
+            }
+
+            if (newList.length === 0) {
+                delete this.map[type];
+            } else {
+                this.map[type] = newList;
+            }
+        }
+
+        once(type, fn) {
+            if (!type || typeof fn !== 'function') {
+                return;
+            }
+
+            const wrapper = (...args) => {
+                this.unSub(type, wrapper);
+                fn.apply(this, args);
+            };
+
+            wrapper.sourceFn = fn;
+
+            return this.sub(type, wrapper);
+        }
+    }
+
+    // =======================
+    // 測試工具
+    // =======================
+
+    function equal(actual, expected) {
+        return JSON.stringify(actual) === JSON.stringify(expected);
+    }
+
+    function test(name, fn) {
+        try {
+            const pass = fn();
+
+            if (pass) {
+                console.log('✅ ' + name);
+            } else {
+                console.log('❌ ' + name);
+            }
+        } catch (e) {
+            console.log('❌ ' + name, e);
+        }
+    }
+
+    // =======================
+    // 測試用例
+    // =======================
+
+    test('sub + pub：可以正常訂閱與發布', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        bus.sub('msg', function(data) {
+            result.push('fn1:' + data);
+        });
+
+        bus.sub('msg', function(data) {
+            result.push('fn2:' + data);
+        });
+
+        const emitted = bus.pub('msg', 'hello');
+
+        return emitted === true && equal(result, [
+            'fn1:hello',
+            'fn2:hello'
+        ]);
+    });
+
+    test('pub：沒有事件時返回 false', function() {
+        const bus = new PubSub();
+
+        return bus.pub('empty') === false;
+    });
+
+    test('unSub：可以移除指定 listener', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        function fn1(data) {
+            result.push('fn1:' + data);
+        }
+
+        function fn2(data) {
+            result.push('fn2:' + data);
+        }
+
+        bus.sub('msg', fn1);
+        bus.sub('msg', fn2);
+
+        bus.unSub('msg', fn1);
+        bus.pub('msg', 'hello');
+
+        return equal(result, [
+            'fn2:hello'
+        ]);
+    });
+
+    test('once：只會執行一次', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        bus.once('login', function(name) {
+            result.push(name);
+        });
+
+        bus.pub('login', 'Tom');
+        bus.pub('login', 'Jerry');
+
+        return equal(result, ['Tom']);
+    });
+
+    test('unSub：可以用原函數移除 once listener', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        function fn() {
+            result.push('run');
+        }
+
+        bus.once('pay', fn);
+        bus.unSub('pay', fn);
+        bus.pub('pay');
+
+        return equal(result, []);
+    });
+
+    test('sub 返回的 unsubscribe 可以取消訂閱', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        const unsubscribe = bus.sub('msg', function(data) {
+            result.push(data);
+        });
+
+        unsubscribe();
+        bus.pub('msg', 'hello');
+
+        return equal(result, []);
+    });
+
+    test('pub 支援多參數傳遞', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        bus.sub('sum', function(a, b, c) {
+            result.push(a + b + c);
+        });
+
+        bus.pub('sum', 1, 2, 3);
+
+        return equal(result, [6]);
+    });
+
+    test('pub 快照：派發中新增 listener 不影響本輪', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        function fn1() {
+            result.push('fn1');
+
+            bus.sub('msg', function() {
+                result.push('fn2');
+            });
+        }
+
+        bus.sub('msg', fn1);
+
+        bus.pub('msg');
+        bus.pub('msg');
+
+        return equal(result, [
+            'fn1',
+            'fn1',
+            'fn2'
+        ]);
+    });
+
+    test('pub 快照：派發中移除 listener 不影響本輪', function() {
+        const bus = new PubSub();
+        const result = [];
+
+        function fn1() {
+            result.push('fn1');
+            bus.unSub('msg', fn2);
+        }
+
+        function fn2() {
+            result.push('fn2');
+        }
+
+        bus.sub('msg', fn1);
+        bus.sub('msg', fn2);
+
+        bus.pub('msg');
+        bus.pub('msg');
+
+        return equal(result, [
+            'fn1',
+            'fn2',
+            'fn1'
+        ]);
+    });
+
+    test('非法 sub：cb 不是函數時不註冊', function() {
+        const bus = new PubSub();
+
+        bus.sub('msg', 123);
+
+        return bus.pub('msg') === false;
+    });
+
+</script>
+</body>
+</html>
