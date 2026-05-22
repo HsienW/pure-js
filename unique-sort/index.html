@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Unique Sort</title>
+</head>
+<body>
+<script>
+    // 數組 [1, [2, [3, 4], 5], 6] 扁平化，並去重排序
+
+    function flattenUniqueSortIter(arr) {
+        const set = new Set();
+        const stack = [arr];
+
+        while (stack.length > 0) {
+            const cur = stack.pop();
+
+            for (let i = 0; i < cur.length; i++) {
+                const item = cur[i];
+
+                if (Array.isArray(item)) {
+                    stack.push(item);
+                } else {
+                    set.add(item);
+                }
+            }
+        }
+
+        return Array.from(set).sort(function(a, b) {
+            return a - b;
+        });
+    }
+
+    function isSameArray(a, b) {
+        if (a.length !== b.length) {
+            return false;
+        }
+
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function runTest(name, input, expected) {
+        const actual = flattenUniqueSortIter(input);
+        const pass = isSameArray(actual, expected);
+
+        console.log(
+            (pass ? '✅' : '❌') + ' ' + name,
+            'actual:', actual,
+            'expected:', expected
+        );
+    }
+
+    runTest(
+        '基礎嵌套',
+        [1, [2, [3, 4], 5], 6],
+        [1, 2, 3, 4, 5, 6]
+    );
+
+    runTest(
+        '有重複元素',
+        [1, [2, [3, 3, 4], 5], 6, 2, 1],
+        [1, 2, 3, 4, 5, 6]
+    );
+
+    runTest(
+        '亂序 + 去重 + 排序',
+        [5, [3, [1, 4], 2], 3, 6, [1]],
+        [1, 2, 3, 4, 5, 6]
+    );
+
+    runTest(
+        '空數組',
+        [],
+        []
+    );
+
+    runTest(
+        '已經是扁平數組',
+        [3, 1, 2, 2, 5, 4],
+        [1, 2, 3, 4, 5]
+    );
+
+    runTest(
+        '多層空數組',
+        [1, [], [2, [], [3, []]], 1],
+        [1, 2, 3]
+    );
+
+    runTest(
+        '包含負數',
+        [3, [-1, [2, -1], 0], 3],
+        [-1, 0, 2, 3]
+    );
+
+    runTest(
+        '深層嵌套',
+        [[[[[1]]]], [2, [3]], 2],
+        [1, 2, 3]
+    );
+
+</script>
+</body>
+</html>

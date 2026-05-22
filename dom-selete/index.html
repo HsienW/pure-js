@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fake Dom Select</title>
+</head>
+<body>
+<script>
+    // 簡單的 dom 選擇器
+    function $(selector, context = document) {
+        // 移除前後空格
+        selector = selector.trim();
+
+        // ID 選擇器
+        if (selector.startsWith('#')) {
+            return context.getElementById(selector.substring(1));
+        }
+
+        // 類選擇器
+        if (selector.startsWith('.')) {
+            return context.getElementsByClassName(selector.substring(1));
+        }
+
+        // 標籤選擇器
+        return context.getElementsByTagName(selector);
+    }
+
+    const element = $('#myElement');
+    console.log(element);
+
+</script>
+</body>
+</html>
