@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Array Pair</title>
+</head>
+<body>
+<script>
+    /**
+     * 具體數組或特定規律的成對處理邏輯
+     *
+     * 場景一：相鄰兩兩配對
+     * 場景二：首尾成對處理
+     * 場景三：找一組兩數之和等於 target 的配對
+     * 場景四：找所有兩數之和等於 target 的配對
+     *
+     * 核心：
+     * 1. 先明確「成對規則」
+     * 2. 相鄰配對：i += 2
+     * 3. 首尾配對：雙指針
+     * 4. 找一組 target pair：Map，O(n)
+     * 5. 找所有 target pair：排序 + 雙指針
+     */
+
+    /**
+     * 先確認「成對規則」是相鄰配對、首尾配對，
+     * 還是滿足某個條件的配對。
+     *
+     * 如果是相鄰配對，用 i += 2 一次遍歷即可。
+     * 如果是首尾配對，用雙指針，左右收縮。
+     * 如果是兩數之和等於 target，暴力是 O(n²)，更好的方式是用 Map，
+     * 把查找補數降到 O(1)，整體 O(n)。
+     * 如果要求所有配對，並且數組可排序，可以排序後雙指針處理。
+     *
+     * 真實業務裡，這類成對處理常見於批量請求合併、AB 對照、
+     * 左右區間比對、首尾資源匹配、IM 消息前後文配對等場景。
+     */
+
+    /**
+     * 工具函數：判斷結果是否一致
+     */
+    function isEqual(a, b) {
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    /**
+     * 工具函數：測試輸出
+     */
+    function test(name, actual, expected) {
+        const ok = isEqual(actual, expected);
+        console.log(ok ? '✅' : '❌', name, '=>', actual);
+    }
+
+
+    /**
+     * 場景一：相鄰兩兩配對
+     *
+     * 例子：
+     * [1, 2, 3, 4, 5]
+     *
+     * 輸出：
+     * [[1, 2], [3, 4], [5]]
+     *
+     * 核心：
+     * 每次 i += 2，處理 arr[i] 和 arr[i + 1]
+     */
+    function pairAdjacent(arr) {
+        const res = [];
+
+        for (let i = 0; i < arr.length; i += 2) {
+            if (i + 1 < arr.length) {
+                res.push([arr[i], arr[i + 1]]);
+            } else {
+                res.push([arr[i]]);
+            }
+        }
+
+        return res;
+    }
+
+
+    /**
+     * 場景二：首尾成對處理
+     *
+     * 例子：
+     * [1, 2, 3, 4, 5]
+     *
+     * 輸出：
+     * [[1, 5], [2, 4], [3]]
+     *
+     * 核心：
+     * left 從左往右
+     * right 從右往左
+     * 每次處理 arr[left] 和 arr[right]
+     */
+    function pairHeadTail(arr) {
+        const res = [];
+        let left = 0;
+        let right = arr.length - 1;
+
+        for (; left <= right; left++, right--) {
+            if (left === right) {
+                res.push([arr[left]]);
+            } else {
+                res.push([arr[left], arr[right]]);
+            }
+        }
+
+        return res;
+    }
+
+
+    /**
+     * 場景三：找一組兩數之和等於 target 的配對
+     *
+     * 例子：
+     * arr = [2, 7, 11, 15]
+     * target = 9
+     *
+     * 輸出：
+     * [2, 7]
+     *
+     * 暴力解法：雙層 for，O(n²)
+     * 優化解法：Map 記錄已遍歷元素，O(n)
+     *
+     * 核心：
+     * 當前值 cur
+     * 需要的值 need = target - cur
+     * 如果 need 已經出現過，直接返回 [need, cur]
+     */
+    function findPairBySum(arr, target) {
+        const map = new Map();
+
+        for (let i = 0; i < arr.length; i++) {
+            const cur = arr[i];
+            const need = target - cur;
+
+            if (map.has(need)) {
+                return [need, cur];
+            }
+
+            map.set(cur, i);
+        }
+
+        return null;
+    }
+
+
+    /**
+     * 場景四：找所有兩數之和等於 target 的配對
+     *
+     * 例子：
+     * arr = [1, 2, 3, 4, 5, 6]
+     * target = 7
+     *
+     * 輸出：
+     * [[1, 6], [2, 5], [3, 4]]
+     *
+     * 核心：
+     * 先排序，再雙指針
+     * sum === target：收集結果，left++，right--
+     * sum < target：left++
+     * sum > target：right--
+     */
+    function findAllPairsBySum(arr, target) {
+        const nums = arr.slice().sort(function(a, b) {
+            return a - b;
+        });
+
+        const res = [];
+        let left = 0;
+        let right = nums.length - 1;
+
+        for (; left < right;) {
+            const sum = nums[left] + nums[right];
+
+            if (sum === target) {
+                res.push([nums[left], nums[right]]);
+                left++;
+                right--;
+            } else if (sum < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+
+        return res;
+    }
+
+
+    /**
+     * =========================
+     * 測試用例
+     * =========================
+     */
+
+    // 場景一：相鄰兩兩配對
+    test(
+        '相鄰配對：偶數長度',
+        pairAdjacent([1, 2, 3, 4]),
+        [[1, 2], [3, 4]]
+    );
+
+    test(
+        '相鄰配對：奇數長度',
+        pairAdjacent([1, 2, 3, 4, 5]),
+        [[1, 2], [3, 4], [5]]
+    );
+
+    test(
+        '相鄰配對：空數組',
+        pairAdjacent([]),
+        []
+    );
+
+
+    // 場景二：首尾成對處理
+    test(
+        '首尾配對：偶數長度',
+        pairHeadTail([1, 2, 3, 4]),
+        [[1, 4], [2, 3]]
+    );
+
+    test(
+        '首尾配對：奇數長度',
+        pairHeadTail([1, 2, 3, 4, 5]),
+        [[1, 5], [2, 4], [3]]
+    );
+
+    test(
+        '首尾配對：單元素',
+        pairHeadTail([10]),
+        [[10]]
+    );
+
+    test(
+        '首尾配對：空數組',
+        pairHeadTail([]),
+        []
+    );
+
+
+    // 場景三：找一組 target pair
+    test(
+        '找一組兩數之和：正常命中',
+        findPairBySum([2, 7, 11, 15], 9),
+        [2, 7]
+    );
+
+    test(
+        '找一組兩數之和：中間命中',
+        findPairBySum([1, 3, 5, 7], 10),
+        [3, 7]
+    );
+
+    test(
+        '找一組兩數之和：沒有命中',
+        findPairBySum([1, 2, 3], 100),
+        null
+    );
+
+    test(
+        '找一組兩數之和：包含重複值',
+        findPairBySum([3, 3], 6),
+        [3, 3]
+    );
+
+
+    // 場景四：找所有 target pair
+    test(
+        '找所有兩數之和：正常命中',
+        findAllPairsBySum([1, 2, 3, 4, 5, 6], 7),
+        [[1, 6], [2, 5], [3, 4]]
+    );
+
+    test(
+        '找所有兩數之和：無序數組',
+        findAllPairsBySum([6, 1, 5, 2, 4, 3], 7),
+        [[1, 6], [2, 5], [3, 4]]
+    );
+
+    test(
+        '找所有兩數之和：部分命中',
+        findAllPairsBySum([1, 1, 2, 3, 4], 5),
+        [[1, 4], [2, 3]]
+    );
+
+    test(
+        '找所有兩數之和：沒有命中',
+        findAllPairsBySum([1, 2, 3], 10),
+        []
+    );
+</script>
+</body>
+</html>
