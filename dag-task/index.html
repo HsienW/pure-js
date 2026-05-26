@@ -17,6 +17,7 @@
     // 3. 輸出結果：函數執行完後，返回一個 Map，其中 key 是任務 id，value 是 action 執行后的結果。
     // 4. 異常處理：如果任務之間存在循環依賴，導致無法完成所有任務，請拋出錯誤。
 
+    // Kahn 拓撲排序 + Promise.all
     async function runTasks(tasks) {
         const taskMap = new Map();
         const indegree = new Map();
