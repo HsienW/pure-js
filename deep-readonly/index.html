@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8">
+    <title>Deep Readonly</title>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+
+<script>
+    Babel.registerPreset("inline-typescript", {
+        presets: [[Babel.availablePresets.typescript, { allExtensions: true }]],
+    });
+</script>
+<script type="text/babel" data-presets="inline-typescript" src="./main.ts"></script>
+</body>
+</html>
