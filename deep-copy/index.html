@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>DeepCopy</title>
+</head>
+<body>
+<script>
+    function deep(obj, map = new WeakMap()) {
+        if (!obj || typeof obj !== 'object') {
+            return obj;
+        }
+
+        if (map.has(obj)) {
+            return map.get(obj);
+        }
+
+        if (obj instanceof Date) {
+            return new Date(obj.getTime());
+        }
+
+        if (obj instanceof RegExp) {
+            return new RegExp(obj.source, obj.flags);
+        }
+
+        if (obj instanceof Map) {
+            const newMap = new Map();
+            map.set(obj, newMap);
+            obj.forEach((value, key) => {
+                newMap.set(
+                    deep(key, map),
+                    deep(value, map)
+                )
+            })
+            return newMap;
+        }
+
+        if (obj instanceof Set) {
+            const newSet = new Set();
+            map.set(obj, newSet);
+            obj.forEach((value) => {
+                newSet.add(
+                    deep(value, map)
+                );
+            })
+            return newSet;
+        }
+
+        const res = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj));
+
+        map.set(obj, res);
+
+        const keys = [
+
+            ...Object.keys(obj),
+
+            ...Object.getOwnPropertySymbols(obj)
+
+        ]
+
+        for (let i = 0; i < keys.length; i++) {
+            const k = keys[i];
+
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                res[k] = deep(obj[k], map);
+            }
+        }
+
+
+        // for(let key in obj) {
+        //     if(Object.prototype.hasOwnProperty.call(obj, key)) {
+        //         res[key] = deep(obj[key], map);
+        //     }
+        // }
+
+        return res;
+
+    }
+
+    // ---------------- 測試用例撰寫 ----------------
+
+    console.log("=== 開始測試 ===");
+
+    const runTest = (name, assertFn) => {
+        try {
+            const pass = assertFn();
+            console.log(`${pass ? '✅' : '❌'} ${name}`);
+        } catch (e) {
+            console.log(`❌ ${name} (拋出錯誤)`);
+        }
+    };
+
+    // 1. 基本型別
+    runTest("基本型別 (Primitives)", () => deep(123) === 123 && deep("abc") === "abc" && deep(null) === null);
+
+    // 2. 一般物件與陣列 (深拷貝且參照不同)
+    const obj1 = { a: 1, b: [2, 3] };
+    const clone1 = deep(obj1);
+    runTest("一般物件與嵌套陣列", () => clone1.a === 1 && clone1.b[0] === 2 && clone1 !== obj1 && clone1.b !== obj1.b);
+
+    // 3. Date 與 RegExp
+    const obj2 = { d: new Date('2023-01-01'), r: /test/gi };
+    const clone2 = deep(obj2);
+    runTest("Date 與 RegExp", () =>
+        clone2.d.getTime() === obj2.d.getTime() && clone2.d !== obj2.d &&
+        clone2.r.source === obj2.r.source && clone2.r !== obj2.r
+    );
+
+    // 4. Map 與 Set
+    const mapObj = new Map([['key', { val: 1 }]]);
+    const setObj = new Set([{ val: 2 }]);
+    runTest("Map 與 Set", () => {
+        const cMap = deep(mapObj);
+        const cSet = deep(setObj);
+        return cMap.get('key').val === 1 && cMap.get('key') !== mapObj.get('key') &&
+            [...cSet][0].val === 2 && [...cSet][0] !== [...setObj][0];
+    });
+
+    // 5. 循環參照
+    const circularObj = { name: "loop" };
+    circularObj.self = circularObj;
+    const cloneCircular = deep(circularObj);
+    runTest("循環參照 (Circular Reference)", () => cloneCircular.name === "loop" && cloneCircular.self === cloneCircular);
+
+    // 6. Symbol 屬性
+    const sym = Symbol('id');
+    const objSym = { [sym]: "symbol_value" };
+    runTest("Symbol 屬性", () => deep(objSym)[sym] === "symbol_value");
+
+    // 7. 保留原型鏈
+    class Person { constructor(name) { this.name = name; } }
+    const p1 = new Person("Alice");
+    runTest("保留自定義原型鏈", () => deep(p1) instanceof Person && deep(p1).name === "Alice");
+
+    // 8. 函式 (共用參照)
+    const fnObj = { func: () => "hello" };
+    runTest("函式 (返回原參照)", () => deep(fnObj).func === fnObj.func);
+
+    // ---------------- 以下為此代碼無法完美處理的盲區 (打叉項目) ----------------
+
+    // 9. 不可列舉屬性 (Non-enumerable)
+    const hiddenObj = {};
+    Object.defineProperty(hiddenObj, 'secret', { value: 42, enumerable: false });
+    runTest("不可列舉屬性拷貝 (預期會失敗 ❌)", () => deep(hiddenObj).secret === 42); // 回傳 undefined，所以失敗
+
+    // 10. 包裝物件 (Wrapper Objects)
+    const numWrapper = new Number(100);
+    runTest("包裝物件 (預期會失敗 ❌)", () => deep(numWrapper).valueOf() === 100); // 無法正確拷貝原始值
+
+    // 11. Error 物件
+    const errObj = new Error("發生錯誤");
+    runTest("Error 物件 (預期會失敗 ❌)", () => deep(errObj).message === "發生錯誤"); // message 無法拷貝
+</script>
+</body>
+</html>
