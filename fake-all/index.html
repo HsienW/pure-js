@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fake All</title>
+</head>
+<body>
+<script>
+    function fakeAll(promises) {
+        const list = [...promises];
+        const len = list.length;
+
+        if (len <= 0) {
+            return Promise.resolve([]);
+        }
+
+        return new Promise((resolve, reject) => {
+            const res = new Array(len);
+            let cur = 0;
+
+            for (let i = 0; i < len; i++) {
+                Promise.resolve(list[i])
+                    .then((val) => {
+                        res[i] = val;
+                        cur++;
+                        if (cur === len) {
+                            resolve(res);
+                        }
+                    }, reject);
+            }
+        });
+    }
+
+    function fakeAllSettled(promises) {
+        const list = [...promises];
+        const len = list.length;
+
+        if (len === 0) {
+            return Promise.resolve([]);
+        }
+
+        return new Promise((resolve) => {
+            const res = new Array(len);
+            let cur = 0;
+
+            list.forEach((p, i) => {
+                Promise.resolve(p)
+                    .then((value) => {
+                        res[i] = { status: 'fulfilled', value };
+                    })
+                    .catch((reason) => {
+                        res[i] = { status: 'rejected', reason };
+                    })
+                    .finally(() => {
+                        cur++;
+                        if (cur === len) {
+                            resolve(res);
+                        }
+                    });
+            });
+        });
+    }
+
+    // ========== 小工具：延遲用 ==========
+    const delay = (ms, val, shouldReject = false) =>
+        new Promise((resolve, reject) =>
+            setTimeout(() => (shouldReject ? reject(val) : resolve(val)), ms)
+        );
+
+    // ========== 測試框架（極簡版）==========
+    let passCount = 0;
+    let failCount = 0;
+
+    function normalize(v) {
+        // 把 Error 物件轉成可比較的簡單形式
+        if (v instanceof Error) return { __error__: v.message };
+        if (Array.isArray(v)) return v.map(normalize);
+        if (v && typeof v === 'object') {
+            const out = {};
+            for (const k of Object.keys(v)) out[k] = normalize(v[k]);
+            return out;
+        }
+        return v;
+    }
+
+    function deepEqual(a, b) {
+        return JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
+    }
+
+    async function runTest(name, fn) {
+        try {
+            await fn();
+            console.log(`✅ [通過] ${name}`);
+            passCount++;
+        } catch (err) {
+            console.log(`❌ [失敗] ${name}`);
+            console.log(`    原因: ${err.message}`);
+            failCount++;
+        }
+    }
+
+    function assertEqual(actual, expected, msg = '結果不符') {
+        if (!deepEqual(actual, expected)) {
+            throw new Error(
+                `${msg}\n    預期: ${JSON.stringify(normalize(expected))}\n    實際: ${JSON.stringify(normalize(actual))}`
+            );
+        }
+    }
+
+    // ========== fakeAll 測試案例 ==========
+
+    async function testFakeAll() {
+        console.log('\n========== fakeAll 測試 ==========');
+
+        await runTest('全部成功，結果順序需與輸入一致', async () => {
+            const result = await fakeAll([
+                delay(30, 'a'),
+                delay(10, 'b'),
+                delay(20, 'c'),
+            ]);
+            assertEqual(result, ['a', 'b', 'c']);
+        });
+
+        await runTest('混合純值與 Promise', async () => {
+            const result = await fakeAll([1, delay(10, 2), 3]);
+            assertEqual(result, [1, 2, 3]);
+        });
+
+        await runTest('空陣列應回傳空陣列', async () => {
+            const result = await fakeAll([]);
+            assertEqual(result, []);
+        });
+
+        await runTest('任一失敗應立即 reject，帶出該失敗原因', async () => {
+            try {
+                await fakeAll([
+                    delay(30, 'ok'),
+                    delay(10, new Error('boom'), true),
+                    delay(20, 'ok2'),
+                ]);
+                throw new Error('應該要 reject 但卻 resolve 了');
+            } catch (err) {
+                assertEqual(err, new Error('boom'), 'reject 原因不符');
+            }
+        });
+
+        await runTest('全部同時完成，順序仍要正確', async () => {
+            const result = await fakeAll([
+                delay(5, 'x'),
+                delay(5, 'y'),
+                delay(5, 'z'),
+            ]);
+            assertEqual(result, ['x', 'y', 'z']);
+        });
+    }
+
+    // ========== fakeAllSettled 測試案例 ==========
+
+    async function testFakeAllSettled() {
+        console.log('\n========== fakeAllSettled 測試 ==========');
+
+        await runTest('全部成功，格式應為 fulfilled', async () => {
+            const result = await fakeAllSettled([
+                delay(20, 'a'),
+                delay(10, 'b'),
+            ]);
+            assertEqual(result, [
+                { status: 'fulfilled', value: 'a' },
+                { status: 'fulfilled', value: 'b' },
+            ]);
+        });
+
+        await runTest('混合成功與失敗，順序需與輸入一致', async () => {
+            const result = await fakeAllSettled([
+                delay(30, 'ok'),
+                delay(10, new Error('fail1'), true),
+                delay(20, 'ok2'),
+            ]);
+            assertEqual(result, [
+                { status: 'fulfilled', value: 'ok' },
+                { status: 'rejected', reason: new Error('fail1') },
+                { status: 'fulfilled', value: 'ok2' },
+            ]);
+        });
+
+        await runTest('空陣列應回傳空陣列', async () => {
+            const result = await fakeAllSettled([]);
+            assertEqual(result, []);
+        });
+
+        await runTest('全部失敗，不應 reject 整個 Promise', async () => {
+            const result = await fakeAllSettled([
+                delay(10, new Error('e1'), true),
+                delay(5, new Error('e2'), true),
+            ]);
+            assertEqual(result, [
+                { status: 'rejected', reason: new Error('e1') },
+                { status: 'rejected', reason: new Error('e2') },
+            ]);
+        });
+
+        await runTest('混合純值與 Promise', async () => {
+            const result = await fakeAllSettled([1, delay(10, 2), 3]);
+            assertEqual(result, [
+                { status: 'fulfilled', value: 1 },
+                { status: 'fulfilled', value: 2 },
+                { status: 'fulfilled', value: 3 },
+            ]);
+        });
+    }
+
+    // ========== 執行全部測試 ==========
+
+    (async () => {
+        await testFakeAll();
+        await testFakeAllSettled();
+
+        console.log('\n========== 測試總結 ==========');
+        console.log(`✅ 通過: ${passCount}   ❌ 失敗: ${failCount}`);
+    })();
+</script>
+</body>
+</html>
