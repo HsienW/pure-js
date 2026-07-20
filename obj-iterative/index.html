@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Obj Iterative</title>
+</head>
+<body>
+<script>
+    function flattenObjectIterative(obj) {
+        const result = {};
+        const stack = [{ node: obj, prefix: '' }];
+
+        while (stack.length > 0) {
+            const { node, prefix } = stack.pop();
+            const keys = Object.keys(node);
+
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const value = node[key];
+                const newKey = prefix ? `${prefix}.${key}` : key;
+
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    stack.push({ node: value, prefix: newKey });
+                } else {
+                    result[newKey] = value;
+                }
+            }
+        }
+        return result;
+    }
+
+    // ==================== 測試工具 ====================
+
+    // 用於深層比較兩個物件是否相等的輔助函式
+    function deepEqual(obj1, obj2) {
+        if (obj1 === obj2) return true;
+        if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) return false;
+
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        if (keys1.length !== keys2.length) return false;
+
+        for (const key of keys1) {
+            if (!obj2.hasOwnProperty(key) || !deepEqual(obj1[key], obj2[key])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 測試案例定義
+    const testCases = [
+        {
+            name: "單純的巢狀物件與陣列 (原測資)",
+            input: { a: 1, b: { c: 2, d: { e: 3, f: 4 } }, g: [5, 6] },
+            expected: { 'a': 1, 'g': [5, 6], 'b.c': 2, 'b.d.e': 3, 'b.d.f': 4 }
+        },
+        {
+            name: "已經是扁平的物件",
+            input: { x: 10, y: 20, z: 30 },
+            expected: { x: 10, y: 20, z: 30 }
+        },
+        {
+            name: "空物件處理",
+            input: {},
+            expected: {}
+        },
+        {
+            name: "包含 null、undefined 與布林值等特殊型態",
+            input: { a: null, b: undefined, c: { d: true, e: false } },
+            expected: { 'a': null, 'b': undefined, 'c.d': true, 'c.e': false }
+        },
+        {
+            name: "極深層的單一嵌套",
+            input: { level1: { level2: { level3: { value: "deep" } } } },
+            expected: { "level1.level2.level3.value": "deep" }
+        }
+    ];
+
+    // 執行測試
+    console.log("開始執行物件拍平測試...\n-----------------------------------");
+
+    let passedCount = 0;
+
+    for (let i = 0; i < testCases.length; i++) {
+        const tc = testCases[i];
+        const actual = flattenObjectIterative(tc.input);
+        const isPass = deepEqual(actual, tc.expected);
+
+        if (isPass) {
+            console.log(`✓ [通過] 測試 ${i + 1}: ${tc.name}`);
+            passedCount++;
+        } else {
+            console.error(`✗ [失敗] 測試 ${i + 1}: ${tc.name}`);
+            console.error("  預期輸出:", tc.expected);
+            console.error("  實際輸出:", actual);
+        }
+    }
+
+    console.log(`\n-----------------------------------\n測試結束：共通過 ${passedCount} / ${testCases.length} 個測試案例。`);
+</script>
+</body>
+</html>
