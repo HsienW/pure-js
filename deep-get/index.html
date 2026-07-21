@@ -18,7 +18,7 @@
             if (Array.isArray(cur)) {
                 // (1) 明確索引（數字或數字字串）
                 if (typeof k === 'number' || (typeof k === 'string' && k !== '' && !isNaN(+k))) {
-                    return get(cur[Number(k)], i + 1); // ⚠️ bug: k+1 字串拼接，應為 cur[+k]
+                    return get(cur[Number(k)], i + 1);
                 }
                 // (2) '*'：顯式展開到下一層
                 if (k === '*') {
