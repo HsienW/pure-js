@@ -5,14 +5,27 @@
     <title>Debounce</title>
 </head>
 <body>
-<input type="button" value="click">
 <script>
-    const debounce2 = function (cb, delay, options = {leading: true, trailing: false}) {
+    function debounce(cb, delay) {
         let timer = null;
 
         return function (...args) {
             const self = this;
-            const isCallNow = !timer && options.leading
+
+            clearTimeout(timer);
+
+            timer = setTimeout(function () {
+                cb.apply(self, args);
+            }, delay);
+        };
+    }
+
+    const debounce2 = function (cb, delay, options = { leading: true, trailing: false }) {
+        let timer = null;
+
+        return function (...args) {
+            const self = this;
+            const isCallNow = !timer && options.leading;
 
             if (timer) {
                 clearTimeout(timer);
@@ -23,35 +36,270 @@
                     cb.apply(self, args);
                 }
                 timer = null;
-            }, delay)
-
+            }, delay);
 
             if (isCallNow) {
                 cb.apply(self, args);
             }
+        };
+    };
+
+    // -------- Fake Timer 工具 --------
+    // 用同步方式控制時間，不依賴真實 setTimeout
+
+    (function runAllTests() {
+        let _now = 0;
+        const _queue = [];  // { triggerAt, fn }
+
+        const _origSet   = globalThis.setTimeout;
+        const _origClear = globalThis.clearTimeout;
+        let   _idCounter = 1;
+
+        // 安裝假計時器
+        function installFakeTimers() {
+            _now = 0;
+            _queue.length = 0;
+            _idCounter = 1;
+
+            globalThis.setTimeout = function (fn, delay) {
+                const id = _idCounter++;
+                _queue.push({ id, triggerAt: _now + (delay || 0), fn, cancelled: false });
+                return id;
+            };
+
+            globalThis.clearTimeout = function (id) {
+                const entry = _queue.find(e => e.id === id);
+                if (entry) entry.cancelled = true;
+            };
         }
-    }
 
-    const debounce = function (cb, delay) {
-        let timer = null;
-
-        return function (...args) {
-            const self = this;
-
-            clearTimeout(timer);
-
-            timer = setTimeout(function () {
-                cb.apply(self, args);
-            }, delay)
+        // 還原真實計時器
+        function restoreFakeTimers() {
+            globalThis.setTimeout  = _origSet;
+            globalThis.clearTimeout = _origClear;
         }
-    }
 
-    const button = document.querySelector('input');
-    const test = function () {
-        console.log('123');
-    }
+        // 推進虛擬時間 ms 毫秒，觸發到期的回呼
+        function tick(ms) {
+            _now += ms;
+            // 持續執行直到沒有新任務在這個時間點到期
+            let ran = true;
+            while (ran) {
+                ran = false;
+                // 按觸發時間排序
+                _queue.sort((a, b) => a.triggerAt - b.triggerAt);
+                for (const entry of _queue) {
+                    if (!entry.cancelled && !entry.executed && entry.triggerAt <= _now) {
+                        entry.executed = true;
+                        ran = true;
+                        entry.fn();
+                        break; // 重新掃描（fn 可能又加了新任務）
+                    }
+                }
+            }
+        }
 
-    button.addEventListener('click', debounce2(test, 2000));
+        // -------- 測試執行器 --------
+        const results = [];
+
+        function runTest(name, fn) {
+            installFakeTimers();
+            try {
+                const pass = fn();
+                results.push({ pass: !!pass, name });
+                console.log(`${pass ? '✅' : '❌'} ${name}`);
+            } catch (e) {
+                results.push({ pass: false, name });
+                console.log(`❌ ${name} （拋出錯誤：${e.message}）`);
+            } finally {
+                restoreFakeTimers();
+            }
+        }
+
+        // ================================================================
+        //  debounce（trailing-only 版）
+        // ================================================================
+        console.log('\n===== debounce（trailing-only 版）=====');
+
+        // 1. Happy Path：延遲後確實執行一次
+        runTest('delay 後執行 callback', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 300);
+            fn();
+            tick(300);
+            return count === 1;
+        });
+
+        // 2. 連續呼叫只執行最後一次（防抖核心）
+        runTest('連續呼叫只執行最後一次', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 300);
+            fn(); tick(100);
+            fn(); tick(100);
+            fn(); tick(300); // 最後一次 300ms 後才觸發
+            return count === 1;
+        });
+
+        // 3. delay 未到之前不執行
+        runTest('delay 未到不執行', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 300);
+            fn();
+            tick(299);
+            return count === 0;
+        });
+
+        // 4. 正確傳遞參數
+        runTest('正確傳遞參數給 callback', () => {
+            let received = null;
+            const fn = debounce((...args) => { received = args; }, 100);
+            fn(1, 'hello', true);
+            tick(100);
+            return received[0] === 1 && received[1] === 'hello' && received[2] === true;
+        });
+
+        // 5. this 綁定正確
+        runTest('this 綁定正確', () => {
+            let ctx = null;
+            const obj = {
+                fn: debounce(function () { ctx = this; }, 100)
+            };
+            obj.fn();
+            tick(100);
+            return ctx === obj;
+        });
+
+        // 6. delay = 0 仍為非同步（tick(0) 後才執行）
+        runTest('delay=0：tick(0) 後才執行', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 0);
+            fn();
+            if (count !== 0) return false; // tick 前不能執行
+            tick(0);
+            return count === 1;
+        });
+
+        // 7. 多次獨立呼叫（間隔 > delay）各自執行
+        runTest('間隔超過 delay 時每次都執行', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 100);
+            fn(); tick(100);
+            fn(); tick(100);
+            return count === 2;
+        });
+
+        // 8. 大量快速呼叫只觸發一次
+        runTest('大量快速呼叫（50次）只觸發一次', () => {
+            let count = 0;
+            const fn = debounce(() => count++, 200);
+            for (let i = 0; i < 50; i++) { fn(); tick(10); }
+            tick(200);
+            return count === 1;
+        });
+
+        // 9. callback 拋出錯誤不影響防抖機制本身
+        runTest('callback 拋出錯誤後可繼續使用', () => {
+            let secondCount = 0;
+            let threw = false;
+            const fn = debounce((shouldThrow) => {
+                if (shouldThrow) { threw = true; throw new Error('oops'); }
+                secondCount++;
+            }, 100);
+
+            try { fn(true); tick(100); } catch (_) { /* 預期內 */ }
+            fn(false); tick(100);
+            return threw && secondCount === 1;
+        });
+
+        // ================================================================
+        //  debounce2（leading / trailing 選項版）
+        // ================================================================
+        console.log('\n===== debounce2（leading / trailing 選項版）=====');
+
+        // 10. 預設 {leading:true, trailing:false}：立即執行，之後不再執行
+        runTest('leading=true trailing=false：立即執行，delay 後不再執行', () => {
+            let log = [];
+            const fn = debounce2(() => log.push(_now), 300);
+            fn();            // 應立即執行（_now=0）
+            tick(300);       // delay 到期，trailing=false 不補一次
+            return log.length === 1 && log[0] === 0;
+        });
+
+        // 11. leading=false, trailing=true：行為像 debounce1
+        runTest('leading=false trailing=true：delay 後才執行', () => {
+            let count = 0;
+            const fn = debounce2(() => count++, 300, { leading: false, trailing: true });
+            fn();
+            tick(299);
+            if (count !== 0) return false;
+            tick(1);
+            return count === 1;
+        });
+
+        // 12. leading=true, trailing=true：首次立即，delay 後再執行一次
+        runTest('leading=true trailing=true：首次立即 + delay 後再執行', () => {
+            let count = 0;
+            const fn = debounce2(() => count++, 300, { leading: true, trailing: true });
+            fn();       // 立即執行 (count=1)
+            fn();       // 重置計時，trailing 標記
+            tick(300);  // trailing 再執行 (count=2)
+            return count === 2;
+        });
+
+        // 13. leading=true：連續呼叫只在最開始執行一次
+        runTest('leading=true：快速連呼只在第一次執行', () => {
+            let count = 0;
+            const fn = debounce2(() => count++, 300, { leading: true, trailing: false });
+            fn(); tick(50);
+            fn(); tick(50);
+            fn(); tick(300);
+            return count === 1;
+        });
+
+        // 14. timer 歸零後再呼叫，leading 重新觸發
+        runTest('timer 到期後再呼叫，leading 再次立即執行', () => {
+            let log = [];
+            const fn = debounce2(() => log.push(_now), 200, { leading: true, trailing: false });
+            fn();       // _now=0，立即執行
+            tick(200);  // timer 清空
+            fn();       // _now=200，再次立即執行
+            tick(200);
+            return log.length === 2 && log[0] === 0 && log[1] === 200;
+        });
+
+        // 15. leading=false, trailing=true：連續呼叫只執行最後一次
+        runTest('trailing=true：連續呼叫只執行最後一次', () => {
+            let count = 0;
+            const fn = debounce2(() => count++, 200, { leading: false, trailing: true });
+            fn(); tick(50);
+            fn(); tick(50);
+            fn(); tick(200);
+            return count === 1;
+        });
+
+        // 16. 正確傳遞參數（debounce2）
+        runTest('leading 模式正確傳遞參數', () => {
+            let received = null;
+            const fn = debounce2((...args) => { received = args; }, 100, { leading: true, trailing: false });
+            fn(42, 'world');
+            return received && received[0] === 42 && received[1] === 'world';
+        });
+
+        // 17. this 綁定正確（debounce2）
+        runTest('this 綁定正確（debounce2）', () => {
+            let ctx = null;
+            const obj = {
+                fn: debounce2(function () { ctx = this; }, 100, { leading: true, trailing: false })
+            };
+            obj.fn();
+            return ctx === obj;
+        });
+
+        // -------- 總結 --------
+        const passed = results.filter(r => r.pass).length;
+        console.log(`\n===== 結果：${passed} / ${results.length} 通過 =====`);
+    })();
+
 </script>
 </body>
 </html>
