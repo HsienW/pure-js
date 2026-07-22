@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Deep Get</title>
+</head>
+<body>
+<script>
+    function deepGet(obj, ...rest) {
+        const keys = (rest.length === 1 && Array.isArray(rest[0])) ? rest[0] : rest;
+
+        function get(cur, i) {
+            if (cur == null) return undefined;
+            if (i === keys.length) return cur;
+
+            const k = keys[i];
+
+            if (Array.isArray(cur)) {
+                // (1) 明確索引（數字或數字字串）
+                if (typeof k === 'number' || (typeof k === 'string' && k !== '' && !isNaN(+k))) {
+                    return get(cur[Number(k)], i + 1);
+                }
+                // (2) '*'：顯式展開到下一層
+                if (k === '*') {
+                    const out = [];
+                    for (let j = 0; j < cur.length; j++) out.push(get(cur[j], i + 1));
+                    return out;
+                }
+                // (3) 未給索引：自動穿透
+                const out = [];
+                for (let j = 0; j < cur.length; j++) out.push(get(cur[j], i));
+                return out;
+            }
+            return get(cur[k], i + 1);
+        }
+        return get(obj, 0);
+    }
+
+    // -------- 測試執行器 --------
+
+    const results = [];
+
+    function runTest(name, fn) {
+        try {
+            const pass = fn();
+            results.push({ pass: !!pass, name });
+            console.log(`${pass ? '✅' : '❌'} ${name}`);
+        } catch (e) {
+            results.push({ pass: false, name });
+            console.log(`❌ ${name} （拋出錯誤：${e.message}）`);
+        }
+    }
+
+    function deepEqual(a, b) {
+        if (a === b) return true;
+        if (a == null || b == null) return a === b;
+        if (Array.isArray(a) && Array.isArray(b)) {
+            if (a.length !== b.length) return false;
+            return a.every((v, i) => deepEqual(v, b[i]));
+        }
+        if (typeof a === 'object' && typeof b === 'object') {
+            const ka = Object.keys(a), kb = Object.keys(b);
+            if (ka.length !== kb.length) return false;
+            return ka.every(k => deepEqual(a[k], b[k]));
+        }
+        return false;
+    }
+
+    // -------- 測試資料 --------
+
+    const testObj = {
+        a: { b: [{ c: 1 }, { c: 2 }] },
+        users: [{ name: 'A', age: 10 }, { name: 'B', age: 20 }],
+        x: { y: { z: 42 } },
+        empty: [],
+        nullVal: null,
+    };
+
+    // ================================================================
+    //  一、基本存取
+    // ================================================================
+    console.log('\n===== 一、基本存取 =====');
+
+    runTest('單層 key', () =>
+        deepEqual(deepGet(testObj, 'x'), { y: { z: 42 } })
+    );
+
+    runTest('多層 key（展開參數）', () =>
+        deepEqual(deepGet(testObj, 'x', 'y', 'z'), 42)
+    );
+
+    runTest('多層 key（陣列參數）', () =>
+        deepEqual(deepGet(testObj, ['x', 'y', 'z']), 42)
+    );
+
+    runTest('展開參數與陣列參數結果一致', () =>
+        deepEqual(deepGet(testObj, 'x', 'y', 'z'), deepGet(testObj, ['x', 'y', 'z']))
+    );
+
+    // ================================================================
+    //  二、陣列數字索引
+    // ================================================================
+    console.log('\n===== 二、陣列數字索引 =====');
+
+    runTest('數字索引 0 取第一個元素', () =>
+        deepEqual(deepGet(testObj, 'a', 'b', 0, 'c'), 1)
+    );
+
+    runTest('數字索引 1 取第二個元素', () =>
+        deepEqual(deepGet(testObj, 'a', 'b', 1, 'c'), 2)
+    );
+
+    runTest('數字字串索引 "0"', () =>
+        deepEqual(deepGet(testObj, 'a', 'b', '0', 'c'), 1)
+    );
+
+    runTest('數字字串索引 "1"', () =>
+        deepEqual(deepGet(testObj, 'a', 'b', '1', 'c'), 2)
+    );
+
+    runTest('陣列參數形式的數字索引', () =>
+        deepEqual(deepGet(testObj, ['a', 'b', 1, 'c']), 2)
+    );
+
+    // ================================================================
+    //  三、萬用字元 *
+    // ================================================================
+    console.log('\n===== 三、萬用字元 * =====');
+
+    runTest('* 展開單個欄位', () =>
+        deepEqual(deepGet(testObj, 'users', '*', 'name'), ['A', 'B'])
+    );
+
+    runTest('* 展開多個欄位（age）', () =>
+        deepEqual(deepGet(testObj, 'users', '*', 'age'), [10, 20])
+    );
+
+    runTest('* 展開整個元素', () =>
+        deepEqual(deepGet(testObj, 'users', '*'), [{ name: 'A', age: 10 }, { name: 'B', age: 20 }])
+    );
+
+    runTest('* 對巢狀陣列展開', () =>
+        deepEqual(deepGet(testObj, 'a', 'b', '*', 'c'), [1, 2])
+    );
+
+    // ================================================================
+    //  四、自動穿透（無索引直接給 key）
+    // ================================================================
+    console.log('\n===== 四、自動穿透 =====');
+
+    runTest('自動穿透取 name', () =>
+        deepEqual(deepGet(testObj, 'users', 'name'), ['A', 'B'])
+    );
+
+    runTest('自動穿透取 age', () =>
+        deepEqual(deepGet(testObj, 'users', 'age'), [10, 20])
+    );
+
+    runTest('自動穿透與 * 結果相同', () =>
+        deepEqual(
+            deepGet(testObj, 'users', 'name'),
+            deepGet(testObj, 'users', '*', 'name')
+        )
+    );
+
+    // ================================================================
+    //  五、邊界 / 錯誤路徑
+    // ================================================================
+    console.log('\n===== 五、邊界 / 錯誤路徑 =====');
+
+    runTest('不存在的 key 回傳 undefined', () =>
+        deepGet(testObj, 'nope') === undefined
+    );
+
+    runTest('中途路徑不存在回傳 undefined', () =>
+        deepGet(testObj, 'x', 'nope', 'z') === undefined
+    );
+
+    runTest('路徑走到 null 回傳 undefined', () =>
+        deepGet(testObj, 'nullVal', 'anything') === undefined
+    );
+
+    runTest('空陣列上 * 回傳空陣列', () =>
+        deepEqual(deepGet(testObj, 'empty', '*'), [])
+    );
+
+    runTest('空陣列自動穿透回傳空陣列', () =>
+        deepEqual(deepGet(testObj, 'empty', 'name'), [])
+    );
+
+    runTest('無 key（只傳 obj）回傳整個物件', () =>
+        deepEqual(deepGet(testObj), testObj)
+    );
+
+    runTest('值為 0（falsy）正確回傳', () => {
+        const data = { a: { b: 0 } };
+        return deepGet(data, 'a', 'b') === 0;
+    });
+
+    runTest('值為 false（falsy）正確回傳', () => {
+        const data = { flag: false };
+        return deepGet(data, 'flag') === false;
+    });
+
+    runTest('值為空字串正確回傳', () => {
+        const data = { s: '' };
+        return deepGet(data, 's') === '';
+    });
+
+    runTest('超出陣列長度的索引回傳 undefined', () =>
+        deepGet(testObj, 'a', 'b', 99, 'c') === undefined
+    );
+
+    // ================================================================
+    //  六、複雜巢狀
+    // ================================================================
+    console.log('\n===== 六、複雜巢狀 =====');
+
+    runTest('三層巢狀物件', () => {
+        const data = { a: { b: { c: { d: 99 } } } };
+        return deepGet(data, 'a', 'b', 'c', 'd') === 99;
+    });
+
+    runTest('陣列裡包陣列 + 數字索引', () => {
+        const data = { matrix: [[1, 2], [3, 4]] };
+        return deepGet(data, 'matrix', 0, 1) === 2;
+    });
+
+    runTest('* 對兩層陣列展開', () => {
+        const data = { groups: [{ items: [1, 2] }, { items: [3, 4] }] };
+        return deepEqual(deepGet(data, 'groups', '*', 'items'), [[1, 2], [3, 4]]);
+    });
+
+    // -------- 總結 --------
+    const passed = results.filter(r => r.pass).length;
+    console.log(`\n===== 結果：${passed} / ${results.length} 通過 =====`);
+</script>
+</body>
+</html>
