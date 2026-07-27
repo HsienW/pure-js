@@ -10,50 +10,47 @@
     // 單次請求失敗可重試
     // 單次請求超時也算一次失敗，繼續重試
     // 從開始算起，整體超過 10 秒就直接失敗
-    
-    function poll(fn, options) {
-        const interval = options?.interval || 3000; // 每次失敗後，3 秒再試
-        const baseTimeout = options?.baseTimeout || 2000; // 單次請求超時
-        const maxTimeout = options?.maxTimeout || 10000;  // 整體 10 秒失敗
 
+    // interval = 3000;
+    // onceTimeout = 1000;
+    // maxTimeout = 10000;
+
+    function poll(fn, option = {}) {
+        const { interval = 3000, onceTimeout = 1000, maxTimeout = 10000 } = option;
         const start = performance.now();
 
         return new Promise((resolve, reject) => {
             function requestWithTimeout() {
                 return Promise.race([
                     fn(),
-                    new Promise((_, reject) => {
+                    new Promise((_, onceReject) => {
                         setTimeout(() => {
-                            reject(new Error('單次請求超時'));
-                        }, baseTimeout);
+                            onceReject(new Error('onceTimeout'));
+                        }, onceTimeout)
                     })
-                ]);
+                ])
             }
 
             function run() {
-                if (performance.now() - start >= maxTimeout) {
-                    reject(new Error('整體 10 秒失敗'));
-                    return;
+                if(performance.now() - start >= maxTimeout) {
+                    reject(new Error('maxTimeout'));
+;                    return;
                 }
 
                 requestWithTimeout()
-                    .then((res) => {
-                        resolve(res);
+                    .then((value) => {
+                        resolve(value);
                     })
                     .catch(() => {
-                        if (performance.now() - start >= maxTimeout) {
-                            reject(new Error('整體 10 秒失敗'));
-                            return;
-                        }
-
                         setTimeout(() => {
                             run();
                         }, interval);
-                    });
+                    })
             }
 
             run();
-        });
+        })
+
     }
 
     let count = 0;
@@ -69,7 +66,7 @@
                 } else {
                     resolve('成功');
                 }
-            }, 1000);
+            }, 2000);
         });
     }
 
